@@ -29,8 +29,6 @@ const BuildNavigation = (props: BuildNavigationProps) => {
     }
     const icon: JSX.Element | string = category ? iconMap[category] : "";
 
-    console.log(props);
-
     // When the select edit mode is changed, update to the correct select screen
     const onChange = (value: "workflow" | "agent" | "model" | "skill" | null): void => {
         handleEdit(value, null);

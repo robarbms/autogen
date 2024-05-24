@@ -10,7 +10,6 @@ const IndexPage = ({ data }: any) => {
   const [ create, setCreate ] = useState<"workflow" | "agent" | "skill" | "model" | null>(null);
   const [ buildNavOpen, setBuildNavOpen ] = useState(false);
   const buildNav = (category: "workflow" | "agent" | "skill" | "model") => {
-      console.log(category);
       setCreate(category);
   }
 

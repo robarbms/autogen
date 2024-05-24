@@ -94,7 +94,6 @@ const BuildView = (props: BuildViewProps) => {
   }
 
   useEffect(() => {
-    console.log({editMode, workflow});
     if (editMode === "agent" || workflow) {
       props.setNavExpand(false);
     }

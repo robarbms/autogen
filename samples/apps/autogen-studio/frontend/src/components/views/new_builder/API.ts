@@ -223,8 +223,6 @@ export class API {
                 id = max + 1;
             }
 
-            console.log({id, skills, skill});
-
             const headers = this.POST_HEADERS;
             const timestamp = this.timestamp();
             const body = {

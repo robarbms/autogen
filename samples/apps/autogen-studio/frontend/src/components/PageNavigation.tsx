@@ -25,7 +25,6 @@ const PageNavigation = (props: PageNavigationProps) => {
     const { buildNav, buildNavOpen, setBuildNavOpen, hasGallery, navToggle, userAvatar, userName } = props;
 
     useEffect(() => {
-        console.log({buildNavOpen});
     }, [ buildNavOpen ])
 
     const buildMenu = [
