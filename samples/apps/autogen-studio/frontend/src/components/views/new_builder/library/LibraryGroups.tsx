@@ -45,7 +45,7 @@ const LibraryGroups = (props: LibraryGroupsProps) => {
  const groups = props.groups ? props.groups.map(({title, icon, items, key}) => ({
     key,
     label: <GroupTitle {...{title, icon}} />,
-    children: items ? items.map((item, idx) => <LibraryItem {...item} addNode={props.addNode} />) : []
+    children: items ? items.map((item, idx) => <LibraryItem key={idx} {...item} addNode={props.addNode} />) : []
  }))
   : [];
 

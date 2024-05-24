@@ -118,7 +118,8 @@ const Workflow = (props: WorkflowProps) => {
                 setTimeout(() => setEdges([{
                   target: node_id.toString(),
                   source: initiator.id,
-                  selected: false
+                  selected: false,
+                  id: initiator.id.toString(),
                 }] as Edge[]), 100);
               }
             }
@@ -143,7 +144,7 @@ const Workflow = (props: WorkflowProps) => {
           addNode(receiver.id, receiver_pos, (ret_nodes_2) => {
             const source: string = ret_nodes_2[0].id;
             const target: string = ret_nodes_2[1].id;
-            setEdges([ { source, target, selected: false } ] as Edge[]);
+            setEdges([ { source, target, selected: false, id: source } ] as Edge[]);
             setWorkflowLoaded(true);
           }, ret_nodes);
         } else {
@@ -245,7 +246,8 @@ const Workflow = (props: WorkflowProps) => {
         edge = {
           source: initiator.id,
           target: id.toString(),
-          selected: false
+          id: initiator.id,
+          selected: false,
         } as Edge;
       }
     }
