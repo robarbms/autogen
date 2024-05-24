@@ -1,0 +1,358 @@
+html,
+body {
+    display: block;
+    width: 100%;
+    max-width: none;
+}
+
+nav + .flex-1 {
+    height: calc(100% - 160px);
+}
+
+.build-layout {
+    display: grid;
+    grid-template-columns: 270px 1fr 0 0;
+    transition: all .3s ease-out;
+}
+
+.build-layout-content {
+    position: relative;
+    margin-left: var(--spacing);
+}
+
+.build-layout-properties {
+    grid-template-columns: 0 1fr 340px 0;
+}
+
+.build-layout-chat {
+    grid-template-columns: 0 1fr 0 340px;
+}
+
+.build-layout-properties.build-layout-chat {
+    grid-template-columns: 0 1fr 340px 340px;
+}
+
+.build-layout-properties .build-layout-content {
+    margin-left: 0;
+}
+
+.build-layout-properties .build-layout-props,
+.build-layout-chat .build-layout-actions {
+    margin-left: var(--spacing);
+}
+
+/* Home page styles */
+.build-home {
+    position: relative;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .26);
+    overflow: hidden;
+    max-width: 1800px;
+    padding: 20px;
+}
+
+.build-home-const {
+    display: grid;
+    grid-template-rows: 200px 1fr 60%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.build-home-back {
+    background: url(/images/build_background.png) no-repeat;
+    opacity: .7;
+}
+
+.build-home-back,
+.build-home-back::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.build-home-back::before {
+    content: "";
+    display: block;
+    background: linear-gradient(0deg, #fff 25%, transparent 85%);
+}
+
+.build-home h1 {
+    font-size: 28px;
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.build-home h2 {
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 600;
+    margin: 0 0 30px;
+}
+
+.build-home-create {
+    display: flex;
+    height: fit-content;
+    justify-content: space-between;
+}
+
+.build-tile {
+    border: 1px solid #fff;
+    border-radius: 16px;
+    width: 270px;
+    height: auto;
+    background: rgba(255, 255, 255, .43);
+    font-weight: 600;
+    padding: 60px 20px;
+    cursor: pointer;
+}
+
+.build-tile-icon {
+    width: 44px;
+    height: 44px;
+    text-align: center;
+    background: rgba(255, 255, 255, .82);
+    border-radius: 8px;
+    margin: 0 0 8px;
+}
+
+.build-tile-icon svg {
+    display: inline-block;
+    height: 20px;
+    margin: 10px 0 0;
+}
+
+.build-create-area {
+    max-width: 1200px;
+    border: 1px solid rgba(255, 255, 255, .6);
+    margin: 0 auto;
+    padding: 20px 40px;
+    border-radius: 20px;
+    min-height: 363px;
+    backdrop-filter: blur(8px);
+}
+
+.tile-workflow {
+    background: linear-gradient(270deg, #6087f3, #bb93f7);
+    color: #fff;
+}
+
+.tile-agent .build-tile-icon {
+    background: #d7d7ff;
+}
+
+.tile-model .build-tile-icon {
+    background: #bff1ff;
+}
+
+.tile-skill .build-tile-icon {
+    background: #fae9be;
+}
+
+.tile-example .build-tile-icon {
+    background: #eecbea; 
+}
+
+.build-create-items {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 30px;
+}
+
+.build-create-workflow {
+    border: 1px solid rgba(255, 255, 255, .6);
+    border-radius: 16px;
+    padding: 50px 36px 36px 50px;
+}
+
+.build-home p {
+    font-size: 16px;
+    color: #605e5c;
+    margin: 0 80px 40px 0;
+}
+
+.recent-work {
+    margin: 40px 0 0;
+    padding: 20px;
+    border-radius: 16px;
+    display: grid;
+    grid-template-rows: 32px 32px 1fr;
+}
+
+/* filter bar styles */
+div.ant-segmented {
+    background: transparent;
+    font-weight: 600;
+    color: #000;
+}
+
+div.ant-segmented label.ant-segmented-item {
+    background: #fff;
+    border: 1px solid #d6cfc2;
+    border-radius: 8px;;
+}
+
+div.ant-segmented label.ant-segmented-item-selected {
+    background: rgba(70, 79, 235, .2);
+}
+
+.ant-segmented-item + .ant-segmented-item {
+    margin: 0 0 0 12px;
+}
+
+.ant-segmented-thumb {
+    background: transparent!important;
+}
+
+.recent-work-scroll {
+    height: 100%;
+}
+
+.recent-work table {
+    width: 100%;
+    line-height: 36px;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.recent-work tr {
+    cursor: pointer;
+}
+
+.recent-work tr:hover {
+    background: rgba(200, 200, 200, .3);
+}
+
+.recent-work tr + tr td {
+    border-top: 1px solid #d1d1d1;
+}
+
+.recent-work td {
+    padding: 10px;
+}
+
+.recent-work svg {
+    display: inline-block;
+    margin: 0 10px 0 0;
+}
+
+.create-workflow {
+    background: linear-gradient(270deg, #6087f3, #bb93f7);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    padding: 16px;
+    border-radius: 12px;
+    min-width: 350px;
+}
+
+.create-workflow svg {
+    width: 20px;
+    display: inline-block;
+}
+
+.build-create-nodes {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.build-create-nodes button {
+    border: 1px solid rgba(255, 255, 255, .6);
+    display: block;
+    padding: 25px;
+    border-radius: 16px;
+    text-align: left;
+    font-size: 14px;
+    color: #212121;
+    font-weight: 600;
+    background: rgba(255, 255, 255, .3);
+}
+
+.create-icon {
+    float: right;
+}
+
+.build-create-nodes button svg {
+    width: 14px;
+    display: inline-block;
+}
+
+/* Create workflow */
+.workflow-create {
+    max-width: 836px;
+}
+
+.workflow-create h1 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.create-skill {
+    max-width: 1200px;
+}
+
+.create-skill-actions {
+    text-align: right;
+    padding: 40px 0 0;
+}
+
+.create-skill-actions button + button {
+    margin: 0 0 0 10px;
+}
+
+/* Site navigation */
+.build-nav {
+    font-size: 14px;
+    margin: 20px 0;
+}
+
+.nav-over-canvas {
+    position: absolute;
+    z-index: 1;
+    left: 20px;
+    top: 10px;
+    margin: 0;
+}
+
+.build-nav-select {
+    margin: 0 0 0 10px;
+}
+
+.build-nav-category {
+    margin: 0 0 0 10px;
+}
+
+.build-nav-work {
+    border-radius: 8px;
+    padding: 5px 10px;
+    margin: 0 0 0 10px;
+    display: inline-block;
+    background: #f0f0fd;
+}
+
+.nav-over-canvas .build-nav-work {
+    background: #fff;
+}
+
+.build-nav-work svg {
+    display: inline-block;
+    margin: 0 5px 0 0;
+}
+
+.build-nav-home {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.edit-model {
+    max-width: 1200px;
+}

@@ -1,0 +1,65 @@
+.library {
+    min-height: 100%;
+    padding: 10px;
+    display: grid;
+    grid-template-rows: 136px 1fr;
+    background: #fff;
+    border-radius: 8px;
+}
+
+.library h2 {
+    font-size: 24px;
+    font-weight: 400;
+    color: #393938;
+    margin: 0 0 10px;
+}
+
+.library h2 svg {
+    display: inline-block;
+    width: 24px;
+    margin: 0 5px 0 0;
+}
+  
+.library-search {
+    width: 100%;
+    margin: 12px 0;
+}
+
+.library_item {
+    border-style: solid;
+    border-width: 1px 1px 1px 6px;
+    border-radius: 3px;
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    font-weight: 500;
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 42px;
+    cursor: pointer;
+    background: #fff;
+}
+
+.item_emph {
+    border-style: dashed dashed dashed solid;
+}
+
+.group_agent,
+.group_agent .node_title {
+    border-color: var(--agent-color);
+}
+
+.group_model,
+.group_model .node_title {
+    border-color: var(--model-color);
+}
+
+.group_skill,
+.group_skill .node_title {
+    border-color: var(--skill-color);
+}
+
+div.library-groups {
+    background: transparent;
+}
+  
