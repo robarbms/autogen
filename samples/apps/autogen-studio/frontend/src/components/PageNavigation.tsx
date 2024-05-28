@@ -3,6 +3,7 @@ import { CollapseMenuIcon, BuildIcon, ExpandMenuIcon, PlaygroundIcon } from "./v
 import { IUser } from "../hooks/provider";
 import { Collapse } from "antd";
 import { useNavigationStore } from "../hooks/navigationStore";
+import { BuildSections, IBuildState, useBuildStore } from "../hooks/buildStore";
 
 // Properties for the PageNavigation component
 type PageNavigationProps = {
@@ -17,9 +18,17 @@ type PageNavigationProps = {
  */
 const PageNavigation = (props: PageNavigationProps) => {
     const { buildNav, hasGallery, } = props;
+    const { setEditScreen, setEditId } = useBuildStore(({setEditScreen, setEditId}) => ({
+        setEditScreen,
+        setEditId
+    }));
     const { buildExpand, setBuildExpand, navigationExpand, setNavigationExpand, user } = useNavigationStore();
     const userAvatar = user?.avatar_url;
     const userName = user?.name || "Uknown";
+    const create = (category: BuildSections) => () => {
+        setEditId(null);
+        setEditScreen(category);
+    }
 
     const buildMenu = [
         {
@@ -27,10 +36,10 @@ const PageNavigation = (props: PageNavigationProps) => {
             label: (<><BuildIcon /> <label>Build</label></>),
             children: 
             <>
-                <div className="build-nav-item" onClick={buildNav.bind(this, "workflow")}>Workflows</div>
-                <div className="build-nav-item" onClick={buildNav.bind(this, "agent")}>Agents</div>
-                <div className="build-nav-item" onClick={buildNav.bind(this, "skill")}>Skills</div>
-                <div className="build-nav-item" onClick={buildNav.bind(this, "model")}>Models</div>
+                <div className="build-nav-item" onClick={create("workflow")}>Workflows</div>
+                <div className="build-nav-item" onClick={create("agent")}>Agents</div>
+                <div className="build-nav-item" onClick={create("skill")}>Skills</div>
+                <div className="build-nav-item" onClick={create("model")}>Models</div>
             </>
         }
     ]
