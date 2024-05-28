@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, MouseEventHandler } from "react";
+import React, { ChangeEvent, ChangeEventHandler, useState, useEffect, useRef, MouseEventHandler } from "react";
 import { MonacoEditor } from "../../atoms";
 import { Button, Input } from "antd";
 import { ISkill } from "../../types";
@@ -14,8 +14,6 @@ import { API } from "./API";
 
 // Properties for creating and editing skills
 type EditSkillProps = {
-    skill?: ISkill;
-    addNode: () => {};
     api: API;
 }
 
@@ -28,7 +26,7 @@ const EditSkill = (props: EditSkillProps) => {
         setEditScreen,
         setEditId
     }));
-    const { api, skill } = props;
+    const { api } = props;
     const [ localSkill, setLocalSkill ] = useState<ISkill>();
     const [loading, setLoading] = useState<boolean>(false);
     const editorRef = useRef<any | null>(null);
@@ -59,12 +57,18 @@ const EditSkill = (props: EditSkillProps) => {
         if (editorRef.current) {
             const value = editorRef.current.getValue();
             const updatedSkill: ISkill = { ...localSkill, content: value } as ISkill;
-            api.addSkill(updatedSkill, setSkills);
+            api.addSkill(updatedSkill, () => {
+                api.getItems("skills", setSkills, true);
+            });
         }
         cancel();
     }
 
-    const handleEdit = () => {};
+    const onChange: ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
+        const updatedSkill = { ...localSkill, name: e?.target?.value || ""} as ISkill;
+        setLocalSkill(updatedSkill);
+    }
+
     const addNode = () => {};
 
     return (
@@ -72,19 +76,13 @@ const EditSkill = (props: EditSkillProps) => {
             menu={<Library libraryItems={[{label: "Skills", items: skills}]} user={user ? user : ""} addNode={addNode}/>}
         >
             {localSkill &&
-                <BuildNavigation editting={dataToWorkItem(user || "", localSkill)} handleEdit={handleEdit} category="skill" />
-            }
-            {localSkill &&
             <>
                 <div style={{ minHeight: "70vh" }}>
                     <div className="mb-2">
                         <Input
                             placeholder="Skill Name"
                             value={localSkill.name}
-                            onChange={(e) => {
-                            const updatedSkill = { ...localSkill, name: e.target.value || ""};
-                            setLocalSkill(updatedSkill);
-                            }}
+                            onChange={onChange}
                         />
                     </div>
 
