@@ -3,15 +3,12 @@ import { appContext } from "../hooks/provider";
 import PageNavigation from "./PageNavigation";
 import "../styles/site.css";
 import "../styles/layout.css";
+import { useNavigationStore } from "../hooks/navigationStore";
 
 // Properties used by the PageLayout component
 type PageLayoutProps = {
     buildNav: (category: "workflow" | "agent" | "skill" | "model") => void;
-    buildNavOpen: boolean;
-    setBuildNavOpen: (open: boolean) => void;
     children: ReactElement | Array<ReactElement>;
-    navExpand: boolean;
-    setNavExpand: (expand: boolean) => void;
 }
 
 /**
@@ -20,12 +17,16 @@ type PageLayoutProps = {
  * @returns 
  */
 const PageLayout = (props: PageLayoutProps) => {
-    const { buildNav, buildNavOpen, setBuildNavOpen, children, navExpand, setNavExpand } = props;
-    const { darkMode } = React.useContext(appContext);
-    const { user, logout } = React.useContext(appContext);
-    const userName = user ? user.name : "Unknown";
-    const userAvatarUrl = user ? user.avatar_url : "";
-    const user_id = user ? user.username : "unknown";
+    const { setUser, navigationExpand } = useNavigationStore(({setUser, navigationExpand}) => ({
+        setUser,
+        navigationExpand
+    }));
+    const { buildNav, children } = props;
+    const { darkMode, user } = React.useContext(appContext);
+
+    useEffect(() => {
+        setUser(user);
+    }, []);
   
     const links: any[] = [
       { name: "Build", href: "/build" },
@@ -36,8 +37,8 @@ const PageLayout = (props: PageLayoutProps) => {
     ];
 
     return (
-        <div className={`page-layout ${darkMode === "dark" ? "dark" : "light"} ${navExpand ? "nav-wide" : "nav-narrow"}`}>
-            <PageNavigation buildNav={buildNav} buildNavOpen={buildNavOpen} setBuildNavOpen={setBuildNavOpen} navToggle={setNavExpand} hasGallery={false} user={user} userName={userName} userAvatarUrl={userAvatarUrl} user_id={user_id} />
+        <div className={`page-layout ${darkMode === "dark" ? "dark" : "light"} ${navigationExpand ? "nav-wide" : "nav-narrow"}`}>
+            <PageNavigation buildNav={buildNav} hasGallery={false} />
             <main className="page-content">
                 {children}
             </main>

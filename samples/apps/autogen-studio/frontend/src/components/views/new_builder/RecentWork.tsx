@@ -3,6 +3,8 @@ import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "./Icons";
 import { dataToWorkItem, IWorkItem } from "./utils";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
 import { Segmented } from "antd";
+import { BuildSections, IBuildState, useBuildStore } from "../../../hooks/buildStore";
+import { useNavigationStore } from "../../../hooks/navigationStore";
 
 /**
  * Rendering of a work item row (agent, model, skill or workflow)
@@ -10,17 +12,13 @@ import { Segmented } from "antd";
  * @returns 
  */
 const RecentRow = (props: IWorkItem & {
-    openWorkflow: Function,
-    handleEdit: (category: "agent" | "model" | "skill" | "workflow" | null, id: number) => void
+    setEditScreen: Function,
+    setEditId: Function
 }) => {
-    const {category, openWorkflow, id, name, description, type, time, edit, handleEdit} = props;
-    let click = () => {}
-
-    if (category === "workflow") {
-        click = () => openWorkflow(props.id);
-    }
-    else {
-        click = () => handleEdit(category as "agent" | "model" | "skill", props.id);
+    const {category, openWorkflow, id, name, description, type, time, edit, setEditScreen, setEditId} = props;
+    let click = () => {
+        setEditScreen(category);
+        setEditId(id);
     }
 
     const icons: {[key: string]: React.JSX.Element} = {
@@ -43,13 +41,6 @@ const RecentRow = (props: IWorkItem & {
 
 // Properties for the RecentWork component
 type RecentWorkProps = {
-    agents: IAgent[];
-    models: IModelConfig[];
-    openWorkflow: Function;
-    skills: ISkill[];
-    user: string;
-    workflows: IWorkflow[];
-    handleEdit: (category: "agent" | "model" | "skill" | "workflow" | null, id: number) => void;
 }
 
 /**
@@ -60,23 +51,16 @@ type RecentWorkProps = {
 const RecentWork = (props: RecentWorkProps) => {
     const [work, setWork] = useState<IWorkItem[]>([]);
     const [filter, setFilter] = useState<String>("All");
-    const { 
-        agents,
-        handleEdit,
-        models,
-        openWorkflow,
-        skills,
-        user,
-        workflows
-    }: {
-        agents: IAgent[],
-        handleEdit: (category: "agent" | "model" | "skill" | "workflow" | null, id: number) => void,
-        models: IModelConfig[],
-        openWorkflow: Function,
-        skills: ISkill[],
-        user: string,
-        workflows: IWorkflow[]
-    } = props;
+    const { agents, models, setEditScreen, setEditId, skills, workflows } = useBuildStore((state: IBuildState) => ({
+        agents: state.agents,
+        models: state.models,
+        setEditScreen: state.setEditScreen,
+        setEditId: state.setEditId,
+        skills: state.skills,
+        workflows: state.workflows
+    }));
+    const userObj = useNavigationStore(state => state.user);
+    const user = userObj?.name || "Unknown";
 
     const filterOptions = [
         {
@@ -130,7 +114,25 @@ const RecentWork = (props: RecentWorkProps) => {
         const dataForUser: (work: IAgent | IModelConfig | ISkill | IWorkflow) => IWorkItem = dataToWorkItem.bind(null, user);
         let workItms: IWorkItem[] = ["Agents", "Models", "Skills", "Workflows"].reduce((itms, label) => {
             if (filter === "All" || filter === label) {
-                itms = itms.concat(props[label.toLowerCase()].map(dataForUser));
+                let target = null;
+                switch (label){
+                    case "Agents":
+                       target = agents as IAgent[];
+                       break;
+                    case "Models":
+                        target = models as IModelConfig[];
+                        break;
+                    case "Skills":
+                        target = skills as ISkill[];
+                        break;
+                    case "Workflows":
+                        target = workflows as IWorkflow[];
+                    break;
+                }
+
+                if (target) {
+                    itms = itms.concat(target.map(dataForUser));
+                }
             }
             return itms;
         }, []);
@@ -149,7 +151,7 @@ const RecentWork = (props: RecentWorkProps) => {
                 <table>
                     <tbody>
                         {work &&
-                            work.map((item, idx) => <RecentRow handleEdit={handleEdit} openWorkflow={openWorkflow} key={idx} {...item} />)
+                            work.map((item, idx) => <RecentRow setEditScreen={setEditScreen} setEditId={setEditId} key={idx} {...item} />)
                         }
                     </tbody>
                 </table>

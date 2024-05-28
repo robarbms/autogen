@@ -7,6 +7,7 @@ import EditAgent from "./EditAgent";
 import EditModel from "./EditModel";
 import EditSkill from "./EditSkill";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
+import { useBuildStore } from "../../../hooks/buildStore";
 
 type Categories = "agents" | "models" | "skills" | "workflows";
 
@@ -22,15 +23,17 @@ type BuildViewProps = {
  * @returns 
  */
 const BuildView = (props: BuildViewProps) => {
+  const { setAgents, setModels, setSkills, setWorkflows, editScreen, editId } = useBuildStore(({setAgents, setModels, setSkills, setWorkflows, editScreen, editId}) => ({
+    setAgents,
+    setModels,
+    setSkills,
+    setWorkflows,
+    editScreen,
+    editId
+  }));
   const { createNav } = props;
-  const [workflows, setWorkflows] = useState<IWorkflow[]>([]);
-  const [agents, setAgents] = useState<IAgent[]>([]);
-  const [models, setModels] = useState<IModelConfig[]>([]);
-  const [skills, setSkills] = useState<ISkill[]>([]);
   const [workflow, setWorkflow] = useState<null | number>(null);
   const api = new API();
-  const [editMode, setEditMode] = useState<null | "workflow" | "agent" | "model" | "skill">(null);
-  const [editId, setEditId] = useState<number | null>();
 
   // Load agents, models, skills and workflows on component mount
   useEffect(() => {
@@ -57,18 +60,8 @@ const BuildView = (props: BuildViewProps) => {
     })
   }
 
-  const handleEdit = (category: "agent" | "model" | "skill" | "workflow" | null, id: number | null, workflow_id?: number | null) => {
-    setEditId(id);
-    setEditMode(category);
-    if (workflow_id !== undefined) {
-      setWorkflow(null);
-    }
-  }
-
   // Closes edit mode
   const closeEdit =  (category: Categories ) => () => {
-    update(category);
-    handleEdit(null, null);
   }
 
   // Adds a new skill
@@ -93,46 +86,25 @@ const BuildView = (props: BuildViewProps) => {
     }
   }
 
-  useEffect(() => {
-    if (editMode === "agent" || workflow) {
-      props.setNavExpand(false);
-    }
-  }, [editMode, workflow]);
-
-  useEffect(() => {
-    if (createNav) {
-      handleEdit(createNav, null);
-    }
-  }, [ createNav ]);
-
   return (
     <div className="build h-full">
-      {workflow === null && editMode === null &&
-        <Home
-          editMode={setEditMode}
-          handleEdit={handleEdit}
-          openWorkflow={setWorkflow}
-          agents={agents}
-          models={models}
-          skills={skills}
-          workflows={workflows}
-          user={api.user?.email || ""}
-        />
+      {workflow === null && editScreen === null &&
+        <Home />
       }
-      {editMode === "workflow" &&
+      {editScreen === "workflow" &&
         <EditWorkflow close={closeEdit("workflows")} updateWorkflow={handleWorkflowEdit} />
       }
-      {editMode === "agent" &&
-        <EditAgent close={closeEdit("agents")} agents={agents} skills={skills} models={models} user={api.user?.email} />
+      {editScreen === "agent" &&
+        <EditAgent />
       }
-      {editMode === "model" &&
-        <EditModel id={editId} close={closeEdit("models")} models={models} user={api.user?.email} handleEdit={handleEdit} />
+      {editScreen === "model" &&
+        <EditModel />
       }
-      {editMode === "skill" &&
-        <EditSkill id={editId} skills={skills} handleEdit={handleEdit} addSkill={addSkill} user={api.user?.email} addNode={() => {}} />
+      {editScreen === "skill" &&
+        <EditSkill api={api} />
       }
-      {editMode === null && workflow && workflow >= 0 &&
-        <Workflow api={api} workflow_id={workflow} agents={agents} workflows={workflows} {...props} handleEdit={handleEdit} />
+      {editScreen === null && workflow && workflow >= 0 &&
+        <Workflow />
       }
     </div>
   );

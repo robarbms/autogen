@@ -2,18 +2,12 @@ import React, { useEffect } from "react";
 import { CollapseMenuIcon, BuildIcon, ExpandMenuIcon, PlaygroundIcon } from "./views/new_builder/Icons";
 import { IUser } from "../hooks/provider";
 import { Collapse } from "antd";
+import { useNavigationStore } from "../hooks/navigationStore";
 
 // Properties for the PageNavigation component
 type PageNavigationProps = {
     buildNav: (category: "workflow" | "agent" | "skill" | "model") => void;
-    buildNavOpen: boolean;
-    setBuildNavOpen: (open: boolean) => void;
     hasGallery: boolean;
-    navToggle: (expand?: boolean) => void;
-    user: IUser | null;
-    user_id: string;
-    userAvatar: string;
-    userName: string;
 }
 
 /**
@@ -22,10 +16,10 @@ type PageNavigationProps = {
  * @returns 
  */
 const PageNavigation = (props: PageNavigationProps) => {
-    const { buildNav, buildNavOpen, setBuildNavOpen, hasGallery, navToggle, userAvatar, userName } = props;
-
-    useEffect(() => {
-    }, [ buildNavOpen ])
+    const { buildNav, hasGallery, } = props;
+    const { buildExpand, setBuildExpand, navigationExpand, setNavigationExpand, user } = useNavigationStore();
+    const userAvatar = user?.avatar_url;
+    const userName = user?.name || "Uknown";
 
     const buildMenu = [
         {
@@ -49,7 +43,7 @@ const PageNavigation = (props: PageNavigationProps) => {
             <nav>
                 <section>
                     <a href="/"><PlaygroundIcon /><label>Playground</label></a>
-                    <Collapse onChange={(value) => setBuildNavOpen(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildNavOpen ? ['1'] : []} />
+                    <Collapse onChange={(value) => setBuildExpand(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildExpand ? ['1'] : []} />
                 </section>
                 {hasGallery &&
                     <section>
@@ -68,8 +62,8 @@ const PageNavigation = (props: PageNavigationProps) => {
                     <span className="user-name">{userName}</span>
                 </div>
                 <div className="nav-view">
-                    <div className="nav-minimize" onClick={navToggle.bind(this, false)}><CollapseMenuIcon />Close sidebar</div>
-                    <div className="nav-expand" onClick={navToggle.bind(this, true)}><ExpandMenuIcon /></div>
+                    <div className="nav-minimize" onClick={setNavigationExpand.bind(this, false)}><CollapseMenuIcon />Close sidebar</div>
+                    <div className="nav-expand" onClick={setNavigationExpand.bind(this, true)}><ExpandMenuIcon /></div>
                 </div>
             </div>
         </div>

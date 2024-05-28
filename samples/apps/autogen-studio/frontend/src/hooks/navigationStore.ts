@@ -26,9 +26,11 @@ export const useNavigationStore = create<NavigationState>()((set) => ({
     user: null,
     setUser: user => set({user}),
     navigationExpand: true,
-    setNavigationExpand: navigationExpand => set( state => ({
+    setNavigationExpand: navigationExpand => set( state => {
+    console.log({navigationExpand, buildExpand: state.buildExpand});
+    return {
         navigationExpand,
         // collapsing the navigation should collapse the build menu
-        buildExpand: !navigationExpand ? false : state.buildExpand
-    })),
+        buildExpand: false
+    }}),
 }));

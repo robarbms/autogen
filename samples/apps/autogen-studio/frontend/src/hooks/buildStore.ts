@@ -2,12 +2,12 @@ import { create } from "zustand";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../components/types";
 import { Node, Edge } from "reactflow";
 
-type BuildSections = "agent" | "model" | "skill" | "workflow";
+export type BuildSections = "agent" | "model" | "skill" | "workflow";
 
 /**
  * Build state type
  */
-export interface BuildState {
+export interface IBuildState {
     agents: IAgent[];
     setAgents: (agents: IAgent[]) => void;
     models: IModelConfig[];
@@ -17,7 +17,7 @@ export interface BuildState {
     workflows: IWorkflow[];
     setWorkflows: (workflows: IWorkflow[]) => void;
     editScreen: BuildSections | null;
-    setEditScreen: (editScreen: BuildSections) => void;
+    setEditScreen: (editScreen: BuildSections | null) => void;
     editId: number | null;
     setEditId: (editId: number | null) => void;
     workflowId: number | null;
@@ -34,7 +34,7 @@ export interface BuildState {
 /**
  * Store used to manage the state for the build page
  */
-export const useBuildStore = create<BuildState>()((set) => ({
+export const useBuildStore = create<IBuildState>()((set) => ({
     agents: [],
     setAgents: (agents: IAgent[]) => set({agents}),
     models: [],

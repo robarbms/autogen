@@ -6,17 +6,15 @@ import PageLayout from "../components/PageLayout";
 
 // markup
 const IndexPage = ({ data }: any) => {
-  const [ navExpand, setNavExpand] = useState(true);
   const [ create, setCreate ] = useState<"workflow" | "agent" | "skill" | "model" | null>(null);
-  const [ buildNavOpen, setBuildNavOpen ] = useState(false);
   const buildNav = (category: "workflow" | "agent" | "skill" | "model") => {
       setCreate(category);
   }
 
 
   return (
-    <PageLayout navExpand={navExpand} setNavExpand={setNavExpand} buildNav={buildNav} buildNavOpen={buildNavOpen} setBuildNavOpen={setBuildNavOpen}>
-      <NewBuildView createNav={create} setNavExpand={setNavExpand} />
+    <PageLayout buildNav={buildNav}>
+      <NewBuildView createNav={create} />
     </PageLayout>
   );
 };

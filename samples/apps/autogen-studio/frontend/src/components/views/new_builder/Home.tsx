@@ -2,6 +2,7 @@ import React from "react";
 import RecentWork from "./RecentWork";
 import { AgentIcon, ModelIcon, SkillIcon, WorkflowIcon } from "./Icons";
 import { IAgent, IModelConfig,ISkill, IStatus, IWorkflow } from "../../types";
+import { BuildSections, IBuildState, useBuildStore } from "../../../hooks/buildStore";
 
 // Properties for the BuildTile component
 type BuildTileProps = {
@@ -34,14 +35,6 @@ const BuildTile = (props: BuildTileProps) => {
 
 // Properties for the Home component
 type HomeProps = {
-    agents: IAgent[];
-    editMode: Function;
-    models: IModelConfig[];
-    openWorkflow: Function;
-    skills: ISkill[];
-    user: string;
-    workflows: IWorkflow[];
-    handleEdit: (category: "agent" | "model" | "skill" | "workflow" | null, id: number | null) => void;
 }
 
 /**
@@ -50,16 +43,15 @@ type HomeProps = {
  * @returns 
  */
 const Home = (props: HomeProps) => {
-    const {
-        agents,
-        editMode,
-        models,
-        openWorkflow,
-        skills,
-        user,
-        workflows,
-        handleEdit
-    } = props;
+    const {setEditScreen, setEditId} = useBuildStore((state: IBuildState) => ({
+        setEditScreen: state.setEditScreen,
+        setEditId: state.setEditId,
+    }));
+
+    const editNew = (category: BuildSections) => {
+        setEditScreen(category);
+        setEditId(null);
+    }  
 
     return (
         <div className="build-home h-full">
@@ -67,20 +59,12 @@ const Home = (props: HomeProps) => {
             <div className="build-home-const h-full">
             <h1>Welcome to AutoGen</h1>
                 <div className="build-home-create">
-                    <BuildTile category="workflow" label="Build workflow" action={handleEdit.bind(this, "workflow", null)} />
-                    <BuildTile category="agent" label="Add Agents" action={handleEdit.bind(this, "agent", null)} />
-                    <BuildTile category="model" label="Add Models" action={handleEdit.bind(this, "model", null)} />
-                    <BuildTile category="skill" label="Add Skills" action={handleEdit.bind(this, "skill", null)} />
+                    <BuildTile category="workflow" label="Build workflow" action={editNew.bind(this, "workflow",)} />
+                    <BuildTile category="agent" label="Add Agents" action={editNew.bind(this, "agent")} />
+                    <BuildTile category="model" label="Add Models" action={editNew.bind(this, "model")} />
+                    <BuildTile category="skill" label="Add Skills" action={editNew.bind(this, "skill")} />
                 </div>
-                <RecentWork
-                    openWorkflow={openWorkflow}
-                    agents={agents}
-                    models={models}
-                    skills={skills}
-                    workflows={workflows}
-                    user={user}
-                    handleEdit={handleEdit}
-                />
+                <RecentWork />
             </div>
         </div>
     )

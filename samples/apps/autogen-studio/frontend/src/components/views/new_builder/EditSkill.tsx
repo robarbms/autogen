@@ -7,31 +7,40 @@ import BuildLayout from "./canvas/BuildLayout";
 import Library from "./library/Library";
 import { IWorkItem, dataToWorkItem } from "./utils";
 import BuildNavigation from "./BuildNavigation";
+import { useBuildStore } from "../../../hooks/buildStore";
+import { useNavigationStore } from "../../../hooks/navigationStore";
+import { API } from "./API";
+
 
 // Properties for creating and editing skills
 type EditSkillProps = {
     skill?: ISkill;
-    skills: ISkill[];
-    addSkill: (skill: ISkill & {content: string}) => void;
-    user: string | undefined;
     addNode: () => {};
-    handleEdit: (category: "agent" | "model" | "skill" | "workflow" | null, id: number | null) => void;
-    id: number | null | undefined;
+    api: API;
 }
 
 // Panel for creating and editing skills
 const EditSkill = (props: EditSkillProps) => {
-    const { handleEdit, skill, addSkill, skills, user, addNode, id } = props;
+    const { editId, skills, setSkills, setEditScreen, setEditId } = useBuildStore(({ editId, skills, setSkills, setEditScreen, setEditId}) => ({
+        editId,
+        skills,
+        setSkills,
+        setEditScreen,
+        setEditId
+    }));
+    const { api, skill } = props;
     const [ localSkill, setLocalSkill ] = useState<ISkill>();
     const [loading, setLoading] = useState<boolean>(false);
     const editorRef = useRef<any | null>(null);
     const [librarySkills, setLibrarySkills] = useState<IWorkItem[]>([]);
+    const loggedInUser = useNavigationStore(({user}) => user);
+    const user = loggedInUser?.name || "Uknown";
 
     // If a skill is being editted, it will be passed and set
     // Otherwise use a sample skill
     useEffect(() => {
-        if (id) {
-            const skill_edit = skills.find(skill => skill.id === id);
+        if (editId) {
+            const skill_edit = skills.find(skill => skill.id === editId);
             if (skill_edit) {
                 setLocalSkill(skill_edit);
             }
@@ -40,6 +49,23 @@ const EditSkill = (props: EditSkillProps) => {
             setLocalSkill(getSampleSkill());
         }
     }, []);
+
+    const cancel = () => {
+        setEditScreen(null);
+        setEditId(null);
+    }
+
+    const save = () => {
+        if (editorRef.current) {
+            const value = editorRef.current.getValue();
+            const updatedSkill: ISkill = { ...localSkill, content: value } as ISkill;
+            api.addSkill(updatedSkill, setSkills);
+        }
+        cancel();
+    }
+
+    const handleEdit = () => {};
+    const addNode = () => {};
 
     return (
         <BuildLayout
@@ -56,7 +82,7 @@ const EditSkill = (props: EditSkillProps) => {
                             placeholder="Skill Name"
                             value={localSkill.name}
                             onChange={(e) => {
-                            const updatedSkill = { ...localSkill, name: e.target.value };
+                            const updatedSkill = { ...localSkill, name: e.target.value || ""};
                             setLocalSkill(updatedSkill);
                             }}
                         />
@@ -73,7 +99,7 @@ const EditSkill = (props: EditSkillProps) => {
                 <div className="create-skill-actions">
                     <Button
                         key="back"
-                        onClick={handleEdit.bind(this, null, null)}
+                        onClick={cancel}
                     >
                         Cancel
                     </Button>
@@ -81,14 +107,7 @@ const EditSkill = (props: EditSkillProps) => {
                         key="submit"
                         type="primary"
                         loading={loading}
-                        onClick={(e) => {
-                            handleEdit(null, null);
-                            if (editorRef.current) {
-                                const value = editorRef.current.getValue();
-                                const updatedSkill = { ...localSkill, content: value };
-                                addSkill(updatedSkill);
-                            }
-                        }}
+                        onClick={save}
                     >
                         Save
                     </Button>
