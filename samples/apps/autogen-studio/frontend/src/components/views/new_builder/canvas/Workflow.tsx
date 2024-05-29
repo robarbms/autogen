@@ -59,6 +59,9 @@ const Workflow = (props: WorkflowProps) => {
     workflowId,
     workflows
   }));
+  const { setNavigationExpand } = useNavigationStore(({setNavigationExpand}) => ({
+    setNavigationExpand
+  }));
   const [bounding, setBounding] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode | IAgent>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -139,6 +142,9 @@ const Workflow = (props: WorkflowProps) => {
   // Load and set Agents and workflows
   // TODO: Load all first, then set all in a single object so there are fewer rerenders.
   useEffect(() => {
+    // Collapse page left navigation
+    setNavigationExpand(false);
+    
     // Load workflow
     api.getWorkflowLinks(workflowId, (sender: IAgent, receiver: IAgent) => {
       const sender_pos: NodePosition = { x: 100, y: 100};
