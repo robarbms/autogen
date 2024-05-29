@@ -187,7 +187,9 @@ div.workflow-canvas {
 }
 
 .node-property-empty {
-  border: 1px dashed;
+  color: #605e5c;
+  border: 1px dashed #949494;
+  background: #f1f1f1;
   border-radius: 5px;
   padding: 5px 10px;
   width: auto;

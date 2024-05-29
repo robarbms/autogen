@@ -344,7 +344,7 @@ const Workflow = (props: WorkflowProps) => {
   // When interacting with the node properties, updates the node view
   const handleInteract = (event: MouseEvent) => {
     const selectedNodeIndex = nodes.findIndex(node => node.selected);
-    if (selectedNodeIndex) {
+    if (selectedNodeIndex !== undefined) {
       const selectedNode: IAgentNode = nodes[selectedNodeIndex];
       const agentId = selectedNode.data.id;
 
