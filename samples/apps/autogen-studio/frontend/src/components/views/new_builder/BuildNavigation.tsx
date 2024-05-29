@@ -50,12 +50,11 @@ const BuildNavigation = (props: BuildNavigationProps) => {
 
     return (
         <div className={`build-nav ${className || ""}`}>
-            <div onClick={homeLink} className="build-nav-home">Build /</div>
             <Select onChange={onChange} className="build-nav-select" defaultValue={category} options={[
-                { value: "workflow", label: "Workflow"},
-                { value: "agent", label: "Agent"},
-                { value: "model", label: "Model"},
-                { value: "skill", label: "Skill"}
+                { value: "workflow", label: "Build Workflows"},
+                { value: "agent", label: "Build Agents"},
+                { value: "model", label: "Build Models"},
+                { value: "skill", label: "Build Skills"}
             ]} />
             <div className="build-nav-work">{icon}{editting && editting.id ? editting?.name : `Add ${category}`}</div>
         </div>

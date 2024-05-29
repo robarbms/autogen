@@ -1,4 +1,4 @@
-import React, {ReactNode} from "react";
+import React, {ReactNode, MouseEventHandler } from "react";
 import { AgentConfigView, AgentViewer } from "../../builder/utils/agentconfig";
 import { AgentTypeSelector, SkillSelector, AgentSelector, ModelSelector } from "../../builder/utils/selectors";
 import { BugAntIcon, CpuChipIcon, UserGroupIcon } from "@heroicons/react/24/outline";
@@ -10,6 +10,7 @@ import { ItemType } from "antd/es/menu/hooks/useItems";
 type NodePropertiesProps = {
   agent: IAgent;
   setAgent: (agents: IAgent) => void;
+  handleInteract: MouseEventHandler<HTMLDivElement>;
 }
 
 type CollapsePanel = {
@@ -24,7 +25,7 @@ type CollapsePanel = {
  * @returns 
  */
 const NodeProperties = (props: NodePropertiesProps) => {
-    const { agent, setAgent } = props;
+    const { agent, setAgent, handleInteract } = props;
     let items: ItemType[] = [
         {
           label: (
@@ -90,7 +91,7 @@ const NodeProperties = (props: NodePropertiesProps) => {
       }
     
     return (
-        <div className="node-properties h-full">
+        <div className="node-properties h-full" onMouseUp={handleInteract}>
             <h2>Agent: {agent.config.name}</h2>
             <Collapse
                 className="node-prop-collapse"

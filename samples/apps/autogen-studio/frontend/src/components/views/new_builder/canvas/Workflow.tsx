@@ -1,4 +1,4 @@
-import React, { createRef, useContext, useEffect, useState } from "react";
+import React, { createRef, useContext, useEffect, useState, MouseEvent } from "react";
 import Library from "../library/Library";
 import BuildLayout from "./BuildLayout";
 import WorkflowCanvas from "./WorkflowCanvas";
@@ -151,18 +151,20 @@ const Workflow = (props: WorkflowProps) => {
       const receiver_pos: NodePosition = {x: 500, y: 100};
 
       if(sender && sender.id) {
-        addNode(sender.id || 0, sender_pos, (ret_nodes: Array<Node & IAgentNode | IAgentNode>) => {
-          if (receiver && receiver.id) {
-            addNode(receiver.id, receiver_pos, (ret_nodes_2) => {
-              const source: string = ret_nodes_2[0].id;
-              const target: string = ret_nodes_2[1].id;
-              setEdges([ { source, target, selected: false, id: source } ] as Edge[]);
+        if (nodes.length === 0 || !nodes.find(node => node.data.id === sender.id)) { // Don't load workflow on re-renders
+          addNode(sender.id || 0, sender_pos, (ret_nodes: Array<Node & IAgentNode | IAgentNode>) => {
+            if (receiver && receiver.id) {
+              addNode(receiver.id, receiver_pos, (ret_nodes_2) => {
+                const source: string = ret_nodes_2[0].id;
+                const target: string = ret_nodes_2[1].id;
+                setEdges([ { source, target, selected: false, id: source } ] as Edge[]);
+                setWorkflowLoaded(true);
+              }, ret_nodes);
+            } else {
               setWorkflowLoaded(true);
-            }, ret_nodes);
-          } else {
-            setWorkflowLoaded(true);
-          }
-        });
+            }
+          });
+        }
       }
     });
     const curr_work = workflows.find(work => work.id == workflowId)
@@ -170,6 +172,7 @@ const Workflow = (props: WorkflowProps) => {
       const ed_work = dataToWorkItem(api.user?.email, curr_work);
       setEditting(ed_work);
     }
+
   }, []);
 
     useEffect(() => {
@@ -177,7 +180,7 @@ const Workflow = (props: WorkflowProps) => {
       let isValid = false;
 
       // Should have an initiator
-      const initiator: Node  | undefined = nodes.find(node => node.data.isInitiator);
+      const initiator: Node | undefined = nodes.find(node => node.data.isInitiator);
 
       if (initiator) {
         // should be connected to an agent
@@ -200,6 +203,8 @@ const Workflow = (props: WorkflowProps) => {
         // Use only the last added edge
         setEdges([edges[edges.length -1]]);
       }
+
+      console.log({agents, edges, nodes});
     }, [agents, nodes, edges]);
 
   // Updates workflow agents sender and receiver based on canvas nodes and edges
@@ -288,11 +293,49 @@ const Workflow = (props: WorkflowProps) => {
     setShowChat(true);
   }
 
+  // When interacting with the node properties, updates the node view
+  const handleInteract = (event: MouseEvent) => {
+    const selectedNodeIndex = nodes.findIndex(node => node.selected);
+    if (selectedNodeIndex) {
+      const selectedNode: IAgentNode = nodes[selectedNodeIndex];
+      const agentId = selectedNode.data.id;
+
+      // get the models and agents for this node
+      api.getAgentModels(agentId, (agentModels: IModelConfig[]) => {
+        api.getAgentSkills(agentId, (agentSkills: ISkill[]) => {
+          const newNodes = JSON.parse(JSON.stringify(nodes));
+          let agentUpdated = false;
+          const compare = (existing, dbValues) => {
+            const toSortedId = (itms) => JSON.stringify(itms.map(itm => itm.id).sort());
+            return toSortedId(existing) === toSortedId(dbValues);
+          }
+          // Check length of agents and skills
+          if ((agentModels.length > 0 && !selectedNode.data.models) ||
+            (selectedNode.data.models && agentModels.length !== selectedNode.data.models.length) ||
+            !compare(selectedNode.data.models, agentModels)) {
+              newNodes[selectedNodeIndex].data.models = agentModels;
+              agentUpdated = true;
+          }
+          if ((agentSkills.length > 0 && !selectedNode.data.models) ||
+            (selectedNode.data.skills && agentSkills.length !== selectedNode.data.skills.length) ||
+            !compare(selectedNode.data.skills, agentSkills)) {
+              newNodes[selectedNodeIndex].data.skills = agentSkills;
+              agentUpdated = true;
+          }
+
+          if (agentUpdated) {
+            setNodes(newNodes);
+          }
+        });
+      });
+    }
+  }
+
   return (
     <ReactFlowProvider>
       <BuildLayout
-        menu={<Library libraryItems={[{ label: "Agents", items: agents}]} addNode={addNode} user={api.user.email} />}
-        properties={selectedNode !== null ? <NodeProperties agent={selectedNode} /> : null}
+        menu={<Library libraryItems={[{ label: "Agents", items: agents}, { label: "Models", items: models}, { label: "Skills", items: skills}]} addNode={addNode} user={api.user.email} />}
+        properties={selectedNode !== null ? <NodeProperties agent={selectedNode} handleInteract={handleInteract} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >
         <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />
