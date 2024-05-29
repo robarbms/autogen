@@ -15,6 +15,7 @@ import BuildNavigation from "../BuildNavigation";
 import { IWorkItem, dataToWorkItem } from "../utils";
 import { useBuildStore } from "../../../../hooks/buildStore";
 import { useNavigationStore } from "../../../../hooks/navigationStore";
+import { API } from "../API";
 
 // Type for positioning of a node
 type NodePosition = {
@@ -35,7 +36,8 @@ export interface IAgentNode {
     node_id: number;
     models?: IModelConfig[];
     skills?: ISkill[];
-  }
+    api: API,
+  },
 }
 
 /**
@@ -102,6 +104,7 @@ const Workflow = (props: WorkflowProps) => {
     if (agentData) {
       api.getAgentModels(agentId, (models: IModelConfig[]) => {
         api.getAgentSkills(agentId, (skills: ISkill[]) => {
+          console.log({api});
           const node_id: number = getNodeId(curr_nodes);
           const nodeData: IAgentNode = {
             data: {...agentData,
@@ -109,7 +112,8 @@ const Workflow = (props: WorkflowProps) => {
               node_id,
               isInitiator,
               models: models,
-              skills: skills
+              skills: skills,
+              api
             },
             position,
             id: node_id.toString(),
@@ -203,8 +207,6 @@ const Workflow = (props: WorkflowProps) => {
         // Use only the last added edge
         setEdges([edges[edges.length -1]]);
       }
-
-      console.log({agents, edges, nodes});
     }, [agents, nodes, edges]);
 
   // Updates workflow agents sender and receiver based on canvas nodes and edges
@@ -303,9 +305,9 @@ const Workflow = (props: WorkflowProps) => {
       // get the models and agents for this node
       api.getAgentModels(agentId, (agentModels: IModelConfig[]) => {
         api.getAgentSkills(agentId, (agentSkills: ISkill[]) => {
-          const newNodes = JSON.parse(JSON.stringify(nodes));
+          const newNodes: IAgentNode[] = JSON.parse(JSON.stringify(nodes));
           let agentUpdated = false;
-          const compare = (existing, dbValues) => {
+          const compare = (existing: {id: number}, dbValues: {id: number}) => {
             const toSortedId = (itms) => JSON.stringify(itms.map(itm => itm.id).sort());
             return toSortedId(existing) === toSortedId(dbValues);
           }

@@ -3,14 +3,14 @@ import React, { memo, useEffect, createRef } from 'react';
 import { Handle, Position } from 'reactflow';
 import { AgentIcon } from '../Icons';
 import { IAgent } from '../../../types';
+import AgentProperties from './AgentProperties';
+import { IAgentNode } from '../canvas/Workflow';
 
-type dataType = IAgent & {
-  data: {}
-}
+type dataType = IAgentNode;
 
-const UserproxyNode = memo((data, isConnectable) => {
+const UserproxyNode = memo((data: IAgentNode, isConnectable) => {
   return (
-    <div className="node group_agent">
+    <div className="node group_agent node-has-content">
       {data.data.isInitiator &&
         <div className="node_tag">Initiator &gt;</div>
       }
@@ -18,6 +18,7 @@ const UserproxyNode = memo((data, isConnectable) => {
         <h2><AgentIcon />{data.data.config.name}</h2>
         {data.data.config.description}
       </div>
+      <AgentProperties data={data.data} />
       {data.isConnectable &&
         <Handle
           type="source"

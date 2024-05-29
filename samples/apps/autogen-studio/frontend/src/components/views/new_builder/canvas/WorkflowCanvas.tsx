@@ -107,7 +107,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
             setSelection(nodes);
         }
     });
-  
+
     return (
         <ReactFlow
             ref={canvasWrap}

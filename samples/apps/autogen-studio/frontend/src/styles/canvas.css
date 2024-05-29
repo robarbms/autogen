@@ -43,7 +43,7 @@ div.workflow-canvas {
 
 .node_properties {
   padding: 10px;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   gap: 10px;
 }
@@ -58,7 +58,7 @@ div.workflow-canvas {
   padding: 5px;
   color: #222;
   background: #fff;
-  flex-basis: content;
+  align-self: start;
 }
 
 .node-model svg,
@@ -184,6 +184,14 @@ div.workflow-canvas {
 
 .node-properties > div {
     width: 300px;
+}
+
+.node-property-empty {
+  border: 1px dashed;
+  border-radius: 5px;
+  padding: 5px 10px;
+  width: auto;
+  flex-basis: auto;
 }
 
 .build-chat > div {

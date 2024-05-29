@@ -253,4 +253,13 @@ export class API {
     public addAgent(model: IAgent, callback: Function) {
 
     }
+
+    // Gets agents linked to a paticular agent id
+    public getLinkedAgents(agentId: number, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/agents/link/agent/${agentId}`;
+        const headers = this.GET_HEADERS;
+        fetchJSON(url, headers, (data) => {
+            callback(data.data);
+        }, this._error);
+    }
 }
