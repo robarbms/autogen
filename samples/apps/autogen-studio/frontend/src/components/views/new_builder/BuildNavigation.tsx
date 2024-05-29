@@ -3,6 +3,7 @@ import { IWorkItem } from "./utils";
 import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "./Icons";
 import { Select } from "antd";
 import "../../../styles/build.css";
+import { useBuildStore } from "../../../hooks/buildStore";
 
 /**
  * Properties for the BuildNavigation component
@@ -20,6 +21,11 @@ type BuildNavigationProps = {
  * @returns 
  */
 const BuildNavigation = (props: BuildNavigationProps) => {
+    const { setEditId, setEditScreen, setWorkflowId } = useBuildStore(({ setEditScreen, setEditId, setWorkflowId}) => ({
+        setEditId,
+        setEditScreen,
+        setWorkflowId
+    }))
     const { category, className, handleEdit, editting } = props;
     const iconMap: { [key: string]: JSX.Element} = {
         "workflow": <WorkflowIcon />,
@@ -31,12 +37,15 @@ const BuildNavigation = (props: BuildNavigationProps) => {
 
     // When the select edit mode is changed, update to the correct select screen
     const onChange = (value: "workflow" | "agent" | "model" | "skill" | null): void => {
-        handleEdit(value, null);
+        setEditId(null);
+        setEditScreen(value);
     }
 
     // Link to take the user back to the homepage by setting the edit screen, and edit id to null
     const homeLink = (): void => {
-        handleEdit(null, null, null);
+        setEditScreen(null);
+        setEditId(null);
+        setWorkflowId(null);
     }
 
     return (

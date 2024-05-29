@@ -13,8 +13,6 @@ type Categories = "agents" | "models" | "skills" | "workflows";
 
 // Properties for the BuildView component
 type BuildViewProps = {
-  createNav: "workflow" | "agent" | "skill" | "model" | null;
-  setNavExpand: (expand: boolean) => void;
 }
 
 /**
@@ -23,15 +21,15 @@ type BuildViewProps = {
  * @returns 
  */
 const BuildView = (props: BuildViewProps) => {
-  const { setAgents, setModels, setSkills, setWorkflows, editScreen, editId } = useBuildStore(({setAgents, setModels, setSkills, setWorkflows, editScreen, editId}) => ({
+  const { setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId } = useBuildStore(({setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId}) => ({
     setAgents,
     setModels,
     setSkills,
     setWorkflows,
     editScreen,
-    editId
+    editId,
+    workflowId
   }));
-  const { createNav } = props;
   const [workflow, setWorkflow] = useState<null | number>(null);
   const api = new API();
 
@@ -60,42 +58,17 @@ const BuildView = (props: BuildViewProps) => {
     })
   }
 
-  // Closes edit mode
-  const closeEdit =  (category: Categories ) => () => {
-  }
-
-  // Adds a new skill
-  const addSkill = (skill: ISkill) => {
-    api.addSkill(skill, setSkills);
-  }
-
-  const update = (category: Categories) => {
-    const setters: {[key: Categories]: (itms: any) => void} = {
-      "workflows": setWorkflows,
-      "agents": setAgents,
-      "models": setModels,
-      "skills": setSkills
-    };
-    if (category) {
-      api.getItems(category, setters[category], true);
-    }
-    else {
-      for(let cat in setters) {
-        api.getItems(cat, setters[cat], true);
-      }
-    }
-  }
 
   return (
     <div className="build h-full">
-      {workflow === null && editScreen === null &&
+      {workflowId === null && editScreen === null &&
         <Home />
       }
       {editScreen === "workflow" &&
-        <EditWorkflow close={closeEdit("workflows")} updateWorkflow={handleWorkflowEdit} />
+        <EditWorkflow api={api} />
       }
       {editScreen === "agent" &&
-        <EditAgent />
+        <EditAgent api={api} />
       }
       {editScreen === "model" &&
         <EditModel api={api} />
@@ -103,8 +76,8 @@ const BuildView = (props: BuildViewProps) => {
       {editScreen === "skill" &&
         <EditSkill api={api} />
       }
-      {editScreen === null && workflow && workflow >= 0 &&
-        <Workflow />
+      {editScreen === null && workflowId !== null && workflowId >= 0 &&
+        <Workflow api={api} />
       }
     </div>
   );

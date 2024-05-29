@@ -13,12 +13,20 @@ import { useNavigationStore } from "../../../hooks/navigationStore";
  */
 const RecentRow = (props: IWorkItem & {
     setEditScreen: Function,
-    setEditId: Function
+    setEditId: Function,
+    setWorkflowId: Function
 }) => {
-    const {category, openWorkflow, id, name, description, type, time, edit, setEditScreen, setEditId} = props;
+    const {category, id, name, description, type, time, edit, setEditScreen, setEditId, setWorkflowId} = props;
     let click = () => {
-        setEditScreen(category);
-        setEditId(id);
+        if (category === "workflow") {
+            setWorkflowId(id);
+            setEditScreen(null);
+            setEditId(null);
+        }
+        else {
+            setEditScreen(category);
+            setEditId(id);
+        }
     }
 
     const icons: {[key: string]: React.JSX.Element} = {
@@ -51,16 +59,17 @@ type RecentWorkProps = {
 const RecentWork = (props: RecentWorkProps) => {
     const [work, setWork] = useState<IWorkItem[]>([]);
     const [filter, setFilter] = useState<String>("All");
-    const { agents, models, setEditScreen, setEditId, skills, workflows } = useBuildStore((state: IBuildState) => ({
+    const { agents, models, setEditScreen, setEditId, skills, workflows, setWorkflowId } = useBuildStore((state: IBuildState) => ({
         agents: state.agents,
         models: state.models,
         setEditScreen: state.setEditScreen,
         setEditId: state.setEditId,
         skills: state.skills,
-        workflows: state.workflows
+        workflows: state.workflows,
+        setWorkflowId: state.setWorkflowId
     }));
     const userObj = useNavigationStore(state => state.user);
-    const user = userObj?.name || "Unknown";
+    const user = userObj?.email || "Unknown";
 
     const filterOptions = [
         {
@@ -151,7 +160,7 @@ const RecentWork = (props: RecentWorkProps) => {
                 <table>
                     <tbody>
                         {work &&
-                            work.map((item, idx) => <RecentRow setEditScreen={setEditScreen} setEditId={setEditId} key={idx} {...item} />)
+                            work.map((item, idx) => <RecentRow setEditScreen={setEditScreen} setEditId={setEditId} setWorkflowId={setWorkflowId} key={idx} {...item} />)
                         }
                     </tbody>
                 </table>

@@ -13,6 +13,8 @@ import TestWorkflow from "./TestWorkflow";
 import Chat from "./Chat";
 import BuildNavigation from "../BuildNavigation";
 import { IWorkItem, dataToWorkItem } from "../utils";
+import { useBuildStore } from "../../../../hooks/buildStore";
+import { useNavigationStore } from "../../../../hooks/navigationStore";
 
 // Type for positioning of a node
 type NodePosition = {
@@ -40,12 +42,7 @@ export interface IAgentNode {
  * Properties for the Workflow component
  */
 type WorkflowProps = {
-  // TODO: pass page config here
-  workflow_id: number;
-  workflows: IWorkflow[];
-  agents: IAgent[];
   api: any;
-  handleEdit: Function;
 }
 
 /**
@@ -54,7 +51,14 @@ type WorkflowProps = {
  * @returns 
  */
 const Workflow = (props: WorkflowProps) => {
-  const {workflows, agents, api, workflow_id, handleEdit } = props;
+  const { api } = props;
+  const { agents, models, skills, workflowId, workflows } = useBuildStore(({ agents, models, skills, workflowId, workflows}) => ({
+    agents,
+    models,
+    skills,
+    workflowId,
+    workflows
+  }));
   const [bounding, setBounding] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode | IAgent>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -73,7 +77,7 @@ const Workflow = (props: WorkflowProps) => {
   const EDGE_ON_DROP = true;
 
   // Gets a new node id based on existing nodes
-  const getNodeId = (n: Array<Node & IAgentNode> | undefined): number => {
+  const getNodeId = (n: Array<Node & IAgentNode | undefined> | null): number => {
     n = n || nodes;
     if (!n || n.length === 0) {
       return 1;
@@ -136,23 +140,26 @@ const Workflow = (props: WorkflowProps) => {
   // TODO: Load all first, then set all in a single object so there are fewer rerenders.
   useEffect(() => {
     // Load workflow
-    api.getWorkflowLinks(workflow_id, (sender: IAgent, receiver: IAgent) => {
+    api.getWorkflowLinks(workflowId, (sender: IAgent, receiver: IAgent) => {
       const sender_pos: NodePosition = { x: 100, y: 100};
       const receiver_pos: NodePosition = {x: 500, y: 100};
-      addNode(sender.id || 0, sender_pos, (ret_nodes: Array<Node & IAgentNode | IAgentNode>) => {
-        if (receiver && receiver.id) {
-          addNode(receiver.id, receiver_pos, (ret_nodes_2) => {
-            const source: string = ret_nodes_2[0].id;
-            const target: string = ret_nodes_2[1].id;
-            setEdges([ { source, target, selected: false, id: source } ] as Edge[]);
+
+      if(sender && sender.id) {
+        addNode(sender.id || 0, sender_pos, (ret_nodes: Array<Node & IAgentNode | IAgentNode>) => {
+          if (receiver && receiver.id) {
+            addNode(receiver.id, receiver_pos, (ret_nodes_2) => {
+              const source: string = ret_nodes_2[0].id;
+              const target: string = ret_nodes_2[1].id;
+              setEdges([ { source, target, selected: false, id: source } ] as Edge[]);
+              setWorkflowLoaded(true);
+            }, ret_nodes);
+          } else {
             setWorkflowLoaded(true);
-          }, ret_nodes);
-        } else {
-          setWorkflowLoaded(true);
-        }
-      });
+          }
+        });
+      }
     });
-    const curr_work = workflows.find(work => work.id == workflow_id)
+    const curr_work = workflows.find(work => work.id == workflowId)
     if (curr_work) {
       const ed_work = dataToWorkItem(api.user?.email, curr_work);
       setEditting(ed_work);
@@ -180,7 +187,7 @@ const Workflow = (props: WorkflowProps) => {
       setIsValidWorkflow(isValid);
 
       // update the workflows sender and receiver
-      api.getWorkflowLinks(workflow_id, updateWorkflow, true);
+      api.getWorkflowLinks(workflowId, updateWorkflow, true);
 
       // Should only ever have 1 edge
       if (edges.length > 1) {
@@ -200,7 +207,7 @@ const Workflow = (props: WorkflowProps) => {
     }
     else if (!sender && initiator || (sender && initiator && initiator?.data.id !== sender.id)) {
       // update incorrect sender
-      api.linkWorkflow(workflow_id, "sender", initiator.data.id);
+      api.linkWorkflow(workflowId, "sender", initiator.data.id);
     }
 
 
@@ -210,13 +217,13 @@ const Workflow = (props: WorkflowProps) => {
       if (target) {
         if (!receiver || receiver && target.data.id !== receiver.id) {
           // link the receiver
-          api.linkWorkflow(workflow_id, "receiver", target.data.id);
+          api.linkWorkflow(workflowId, "receiver", target.data.id);
         }
       }
     }
     else {
       // delete receiver
-      api.unlinkWorkflow(workflow_id, "receiver", receiver.id);
+      api.unlinkWorkflow(workflowId, "receiver", receiver.id);
     }
   }
 
@@ -280,9 +287,9 @@ const Workflow = (props: WorkflowProps) => {
       <BuildLayout
         menu={<Library libraryItems={[{ label: "Agents", items: agents}]} addNode={addNode} user={api.user.email} />}
         properties={selectedNode !== null ? <NodeProperties agent={selectedNode} /> : null}
-        chat={showChat && isValidWorkflow ? <Chat workflow_id={workflow_id} close={() => setShowChat(false)} /> : null}
+        chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >
-        <BuildNavigation className="nav-over-canvas" id={workflow_id} category="workflow" editting={editting} handleEdit={handleEdit} />
+        <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />
         <WorkflowCanvas
           nodes={nodes}
           edges={edges}

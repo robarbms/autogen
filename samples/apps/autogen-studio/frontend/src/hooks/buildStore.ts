@@ -44,7 +44,7 @@ export const useBuildStore = create<IBuildState>()((set) => ({
     workflows: [],
     setWorkflows: (workflows: IWorkflow[]) => set({workflows}),
     editScreen: null,
-    setEditScreen: (editScreen: BuildSections) => set({editScreen}),
+    setEditScreen: (editScreen: BuildSections | null) => set({editScreen}),
     editId: null,
     setEditId: (editId: number | null) => set({editId}),
     workflowId: null,
