@@ -61,7 +61,7 @@ const GroupChatNode = memo((data, isConnectable) => {
   }, []);
 
   return (
-    <div className="node group_agent node-has-content" ref={container}>
+    <div data-id={data.id} className="node group_agent node-has-content drop-agents" ref={container}>
         <div className="node_title">
           <h2><AgentIcon />{data.data.config.name}</h2>
           {data.data.config.description}

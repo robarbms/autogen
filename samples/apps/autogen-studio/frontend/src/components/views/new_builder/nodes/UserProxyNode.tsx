@@ -10,7 +10,7 @@ type dataType = IAgentNode;
 
 const UserproxyNode = memo((data: IAgentNode, isConnectable) => {
   return (
-    <div className="node group_agent node-has-content">
+    <div data-id={data.id} className="node group_agent node-has-content drop-models drop-skills">
       {data.data.isInitiator &&
         <div className="node_tag">Initiator &gt;</div>
       }

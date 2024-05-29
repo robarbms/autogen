@@ -106,16 +106,16 @@ div.workflow-canvas {
   max-height: 65px;
 }
 
-.selected .node {
+.selected > .node {
   background: #D8D8FF;
 }
 
-.selected .node_title {
+.selected > .node > .node_title {
   background: #6464FD;
   color: #fff;
 }
 
-.selected .node_title svg path {
+.selected > .node > .node_title svg path {
   fill: #fff;
 }
 

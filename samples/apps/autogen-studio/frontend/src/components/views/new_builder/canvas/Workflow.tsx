@@ -104,7 +104,6 @@ const Workflow = (props: WorkflowProps) => {
     if (agentData) {
       api.getAgentModels(agentId, (models: IModelConfig[]) => {
         api.getAgentSkills(agentId, (skills: ISkill[]) => {
-          console.log({api});
           const node_id: number = getNodeId(curr_nodes);
           const nodeData: IAgentNode = {
             data: {...agentData,
@@ -253,30 +252,77 @@ const Workflow = (props: WorkflowProps) => {
   }) => {
     let data: string | { [key: string]: string | number} = e.dataTransfer.getData('text/plain');
     data = JSON.parse(data);
-    const { id } = data;
-    const position = {
-      x: e.clientX + data.offsetX - bounding.left,
-      y: e.clientY + data.offsetY - bounding.top,
-    };
-    let edge: Edge;
-    // Get the initiator, check if it has an edge already
-    const initiator = nodes.find(node => node.data.isInitiator);
-    if (initiator) {
-      if (edges.length === 0) {
-        edge = {
-          source: initiator.id,
-          target: id.toString(),
-          id: initiator.id,
-          selected: false,
-        } as Edge;
+    const {group} = data;
+
+    // handle dropping agents to the canvas
+    if (group === "agent") {
+      const { id } = data;
+      const position = {
+        x: e.clientX + data.offsetX - bounding.left,
+        y: e.clientY + data.offsetY - bounding.top,
+      };
+      let edge: Edge;
+      // Get the initiator, check if it has an edge already
+      const initiator = nodes.find(node => node.data.isInitiator);
+      if (initiator) {
+        if (edges.length === 0) {
+          edge = {
+            source: initiator.id,
+            target: id.toString(),
+            id: initiator.id,
+            selected: false,
+          } as Edge;
+        }
+      }
+  
+      addNode(id, position, () => {
+        if (edge) {
+          setEdges([edge]);
+        }
+      });
+    }
+    // handle dropping models and skills to agents
+    else {
+      // get the target node
+      let {target} = e;
+
+      while(target && target.parentNode && !target.classList.contains(`drop-${group}s`)) {
+        target = target.parentNode;
+      }
+
+      const targetId = parseInt(target.getAttribute("data-id"));
+
+      // updates 
+      const updateNodes = () => {
+        let updateNodes = JSON.parse(JSON.stringify(nodes));
+        updateNodes = updateNodes.map((node) => {
+          if (parseInt(node.id) === targetId) {
+            if (group === "model") {
+              const modelAdd = models.find(model => model.id === data.id);
+              if (modelAdd) {
+                node.data.models = node.data.models.concat([modelAdd]);
+              }
+            }
+            else if (group === "skill") {
+              const skillAdd = skills.find(skill => skill.id === data.id);
+
+              if (skillAdd) {
+                node.data.skills = node.data.skills.concat([skillAdd]);
+              }
+            }
+          }
+          return node;
+        });
+        setNodes(updateNodes);
+      }
+
+      if (group === "model") {
+        api.linkAgentModel(targetId, data.id, updateNodes);
+      }
+      else if (group === "skill") {
+        api.linkAgentSkill(targetId, data.id, updateNodes);
       }
     }
-
-    addNode(id, position, () => {
-      if (edge) {
-        setEdges([edge]);
-      }
-    });
   };
 
   // Updates the selected node when it changes
