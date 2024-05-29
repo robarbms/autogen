@@ -3,17 +3,14 @@ import BuildLayout from "./canvas/BuildLayout";
 import Library from "./library/Library";
 import { IAgent, IModelConfig, ISkill } from "../../types";
 import { LibraryGroup } from "./library/Library";
-import BuildNavigation from "./BuildNavigation";
 import AgentCanvas from "./AgentCanvas";
 import { Edge, Node, ReactFlowProvider, useNodesState, useEdgesState } from "reactflow";
+import { useBuildStore } from "../../../hooks/buildStore";
+import { API } from "./API";
 
 // Properties for EditAgent component
 type EditAgentProps = {
-    handleEdit: Function;
-    agents: IAgent[];
-    models: IModelConfig[];
-    skills: ISkill[];
-    user: string;
+    api: API;
 }
 
 /**
@@ -22,12 +19,18 @@ type EditAgentProps = {
  * @returns 
  */
 const EditAgent = (props: EditAgentProps) => {
-    const { agents, handleEdit, models, skills, user } = props;
+    const { agents, models, skills } = useBuildStore(({ agents, models, skills}) => ({
+        agents,
+        models,
+        skills
+    }))
+    const { api } = props;
     const [ libraryItems, setLibraryItems ] = useState<LibraryGroup[]>([]);
     const [ localAgent, setLocalAgent ] = useState<IAgent>();
     const [selectedNode, setSelectedNode] = useState<null | Object>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+    const user = api.user?.name || "Unknown";
   
     const addNode = (data: any) => {
 
