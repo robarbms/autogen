@@ -15,59 +15,19 @@ import { API } from '../API';
  * Node for rendering group chat manager
  */
 const GroupChatNode = memo((data, isConnectable) => {
-  const { agents, models, skills } = useBuildStore(({ agents, models, skills }) => ({
-    agents,
-    models,
-    skills
-  }));
-  const api:API = data.data.api;
+  const { id } = data;
+  const { config, linkedAgents } = data.data;
+  const { name, description } = config;
   const container = createRef();
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [targetAgents, setTargetAgents] = useState<IAgent[]>([]);
-  const serverUrl = getServerUrl();
-  const { user } = React.useContext(appContext);
-  const listAgentsUrl = `${serverUrl}/agents?user_id=${user?.email}`;
-  const agentId = data?.data?.id;
-  const listTargetAgentsUrl = `${serverUrl}/agents/link/agent/${agentId}`;
-  const [agentList, setAgentList] = useState([]);
-
-  const getLinkedAgents = () => {
-    api.getLinkedAgents(agentId, (linkedAgents) => {
-      let agentsLinked = [];
-      const addAgent = () => {
-        if (linkedAgents.length === 0) {
-          setAgentList(agentsLinked);
-        }
-        else {
-          const nextAgent = linkedAgents.pop();
-          api.getAgentModels(nextAgent.id, (agentModels) => {
-            api.getAgentSkills(nextAgent.id, (agentSkills) => {
-              nextAgent.models = agentModels;
-              nextAgent.skills = agentSkills;
-              agentsLinked.push(nextAgent);
-              addAgent();
-            })
-          })
-        }
-      }
-      addAgent();
-    });
-  }
-
-
-  useEffect(() => {
-    getLinkedAgents();
-  }, []);
 
   return (
-    <div data-id={data.id} className="node group_agent node-has-content drop-agents" ref={container}>
+    <div data-id={id} className="node group_agent node-has-content drop-agents" ref={container}>
         <div className="node_title">
-          <h2><AgentIcon />{data.data.config.name}</h2>
-          {data.data.config.description}
+          <h2><AgentIcon />{name}</h2>
+          {description}
         </div>
-        <div className="nodes_area">{agents && 
-            agentList.map((node, idx) => node.type === "assistant" ? <AssistantNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} /> : <UserproxyNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} />)
+        <div className="nodes_area">{linkedAgents && 
+            linkedAgents.map((node, idx) => node.type === "assistant" ? <AssistantNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} /> : <UserproxyNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} />)
         }</div>
         <Handle
             type="target"

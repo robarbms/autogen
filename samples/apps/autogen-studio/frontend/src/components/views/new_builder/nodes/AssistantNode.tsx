@@ -14,7 +14,7 @@ import AgentProperties from './AgentProperties';
 const AssistantNode = memo((data: Node & IAgentNode, isConnectable: boolean | undefined) => {
 
   return (
-    <div data-id={data.id} className="node group_agent node-has-content drop-models drop-skills">
+    <div data-id={data.data.id} className="node group_agent node-has-content drop-models drop-skills">
       <div className="node_title">
         <h2><AgentIcon />{data.data.config.name}</h2>
         {data.data.config.description}

@@ -54,8 +54,9 @@ type WorkflowProps = {
  */
 const Workflow = (props: WorkflowProps) => {
   const { api } = props;
-  const { agents, models, skills, workflowId, workflows } = useBuildStore(({ agents, models, skills, workflowId, workflows}) => ({
+  const { agents, setAgents, models, skills, workflowId, workflows } = useBuildStore(({ agents, setAgents, models, skills, workflowId, workflows}) => ({
     agents,
+    setAgents,
     models,
     skills,
     workflowId,
@@ -292,30 +293,6 @@ const Workflow = (props: WorkflowProps) => {
 
       const targetId = parseInt(target.getAttribute("data-id"));
 
-      // updates 
-      const updateNodes = () => {
-        let updateNodes = JSON.parse(JSON.stringify(nodes));
-        updateNodes = updateNodes.map((node) => {
-          if (parseInt(node.id) === targetId) {
-            if (group === "model") {
-              const modelAdd = models.find(model => model.id === data.id);
-              if (modelAdd) {
-                node.data.models = node.data.models.concat([modelAdd]);
-              }
-            }
-            else if (group === "skill") {
-              const skillAdd = skills.find(skill => skill.id === data.id);
-
-              if (skillAdd) {
-                node.data.skills = node.data.skills.concat([skillAdd]);
-              }
-            }
-          }
-          return node;
-        });
-        setNodes(updateNodes);
-      }
-
       if (group === "model") {
         api.linkAgentModel(targetId, data.id, updateNodes);
       }
@@ -341,49 +318,30 @@ const Workflow = (props: WorkflowProps) => {
     setShowChat(true);
   }
 
-  // When interacting with the node properties, updates the node view
-  const handleInteract = (event: MouseEvent) => {
-    const selectedNodeIndex = nodes.findIndex(node => node.selected);
-    if (selectedNodeIndex !== undefined) {
-      const selectedNode: IAgentNode = nodes[selectedNodeIndex];
-      const agentId = selectedNode.data.id;
-
-      // get the models and agents for this node
-      api.getAgentModels(agentId, (agentModels: IModelConfig[]) => {
-        api.getAgentSkills(agentId, (agentSkills: ISkill[]) => {
-          const newNodes: IAgentNode[] = JSON.parse(JSON.stringify(nodes));
-          let agentUpdated = false;
-          const compare = (existing: {id: number}, dbValues: {id: number}) => {
-            const toSortedId = (itms) => JSON.stringify(itms.map(itm => itm.id).sort());
-            return toSortedId(existing) === toSortedId(dbValues);
+  // Refreshes agents from the database and 
+  const updateNodes = () => {
+    api.getAgents((agentsFromDB) => {
+      setAgents(agentsFromDB);
+      const updatedNodes = nodes.map(node => {
+        const nodeCopy = JSON.parse(JSON.stringify(node));
+        const updatedAgent = agentsFromDB.find((agent) => agent.id === node.data.id);
+        const newNode = {
+          ...nodeCopy,
+          data: {
+            ...updatedAgent
           }
-          // Check length of agents and skills
-          if ((agentModels.length > 0 && !selectedNode.data.models) ||
-            (selectedNode.data.models && agentModels.length !== selectedNode.data.models.length) ||
-            !compare(selectedNode.data.models, agentModels)) {
-              newNodes[selectedNodeIndex].data.models = agentModels;
-              agentUpdated = true;
-          }
-          if ((agentSkills.length > 0 && !selectedNode.data.models) ||
-            (selectedNode.data.skills && agentSkills.length !== selectedNode.data.skills.length) ||
-            !compare(selectedNode.data.skills, agentSkills)) {
-              newNodes[selectedNodeIndex].data.skills = agentSkills;
-              agentUpdated = true;
-          }
-
-          if (agentUpdated) {
-            setNodes(newNodes);
-          }
-        });
+        }
+        return newNode;
       });
-    }
+      setNodes(updatedNodes);
+    }, true);
   }
 
   return (
     <ReactFlowProvider>
       <BuildLayout
         menu={<Library libraryItems={[{ label: "Agents", items: agents}, { label: "Models", items: models}, { label: "Skills", items: skills}]} addNode={addNode} user={api.user.email} />}
-        properties={selectedNode !== null ? <NodeProperties agent={selectedNode} handleInteract={handleInteract} /> : null}
+        properties={selectedNode !== null ? <NodeProperties agent={selectedNode} handleInteract={updateNodes} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >
         <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />

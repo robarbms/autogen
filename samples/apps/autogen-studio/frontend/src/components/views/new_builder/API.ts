@@ -196,6 +196,75 @@ export class API {
         }
     }
 
+    // Gets agents and their linked models and skills
+    public getAgents (callback: Function, refresh: boolean = false) {
+        if (this._agents.length === 0) {
+            refresh = true;
+        }
+        if (refresh === false) {
+            callback(this._agents);
+        }
+        else {
+            this.getItems("agents", (agents: IAgent[]) => {
+                const {length} = agents;
+                let updatedAgents: IAgent[] = [];
+                const addAgent = (agent) => {
+                    updatedAgents.push(agent);
+                    if (updatedAgents.length === length) {
+                        this._agents = updatedAgents;
+                        callback(updatedAgents);
+                    }
+                }
+                while (agents.length > 0) {
+                    const agent: IAgent = agents.pop();
+                    this.getAgentData(agent.id, agent.type, (data) => {
+                        const agentWithData = Object.assign({}, agent, data);
+                        addAgent(agentWithData);
+                    });
+                }
+            }, refresh);
+        }
+    }
+
+    // Gets models, skills and linked agents for an agent and returns them
+    public getAgentData(id: number, agentType: string, callback: Function) {
+        this.getAgentModels(id, (models) => {
+            this.getAgentSkills(id, (skills) => {
+                if (agentType === "groupchat") {
+                    this.getLinkedAgents(id, (linkedAgents) => {
+                        const {length} = linkedAgents;
+                        const updatedAgents = [];
+                        while(linkedAgents) {
+                            const agent = linkedAgents.pop();
+                            this.getAgentData(agent.id, agent.type, (agentData) => {
+                                const updatedAgent = Object.assign({}, agent, agentData);
+                                updatedAgents.push(updatedAgent);
+                                if (updatedAgents.length === length) {
+                                    callback({
+                                        models,
+                                        skills,
+                                        linkedAgents: updatedAgents
+                                    });
+                                }
+                            });
+                        }
+                        callback({
+                            models,
+                            skills,
+                            linkedAgents
+                        });
+                    });
+                }
+                else {
+                    callback({
+                        models,
+                        skills
+                    });
+                }
+            });
+        })
+    }
+
     // Gets models associated with an agent
     public getAgentModels (agent_id: number, callback: (data: IModelConfig[]) => void) {
         const url = `${this.serverUrl}/agents/link/model/${agent_id}`;

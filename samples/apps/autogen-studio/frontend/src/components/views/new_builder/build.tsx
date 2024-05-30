@@ -36,7 +36,7 @@ const BuildView = (props: BuildViewProps) => {
   // Load agents, models, skills and workflows on component mount
   useEffect(() => {
     api.getItems("workflows", setWorkflows);
-    api.getItems("agents", setAgents);
+    api.getAgents(setAgents);
     api.getItems("models", setModels);
     api.getItems("skills", setSkills);
   }, []);
