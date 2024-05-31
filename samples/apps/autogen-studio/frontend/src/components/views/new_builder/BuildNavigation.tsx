@@ -56,7 +56,6 @@ const BuildNavigation = (props: BuildNavigationProps) => {
                 { value: "model", label: "Build Models"},
                 { value: "skill", label: "Build Skills"}
             ]} />
-            <div className="build-nav-work">{icon}{editting && editting.id ? editting?.name : `Add ${category}`}</div>
         </div>
     )
 }

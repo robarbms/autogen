@@ -21,7 +21,7 @@ import "reactflow/dist/style.css";
 /**
  * Nodes used by the canvas
  */
-const NodeTypes = {
+export const NodeTypes = {
     userproxy: UserProxyNode,
     assistant: AssistantNode,
     groupchat: GroupChatNode,

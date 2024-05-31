@@ -18,7 +18,7 @@ import { useNavigationStore } from "../../../../hooks/navigationStore";
 import { API } from "../API";
 
 // Type for positioning of a node
-type NodePosition = {
+export type NodePosition = {
   x: number;
   y: number;
 }

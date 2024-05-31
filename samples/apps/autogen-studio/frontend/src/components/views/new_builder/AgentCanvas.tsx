@@ -12,8 +12,7 @@ import ReactFlow, {
     useKeyPress,
     useOnSelectionChange
 } from "reactflow";
-
-const NodeTypes = {}
+import { NodeTypes } from "./canvas/WorkflowCanvas";
 
 // Properties used for the AgentCanvas component
 type AgentCanvasProps = {
@@ -44,7 +43,9 @@ const AgentCanvas = (props: AgentCanvasProps) => {
         onDrop,
         onEdgesChange,
         onNodesChange,
+        setBounding,
         setEdges,
+        setNodes,
     } = props;
     const canvasWrap = createRef<HTMLDivElement>();
 
@@ -62,7 +63,22 @@ const AgentCanvas = (props: AgentCanvasProps) => {
         []
     );
 
-  
+    // Callback for letting the wrapper know the canvas size
+    useEffect(() => {
+        setBounding(canvasWrap.current?.getBoundingClientRect());
+    }, []);
+
+    // Handles deleteing nodes and edges
+    const deletePressed = useKeyPress('Delete');
+    useEffect(() => {
+      const removeNodes = nodes
+        .filter((node) => 'selected' in node && node.selected === true)
+        .map((node) => node.id);
+      const updatedNodes = nodes.filter(({ id }) => !removeNodes.includes(id));
+      setNodes(updatedNodes);
+    }, [deletePressed]);
+
+
     return (
         <ReactFlow
             ref={canvasWrap}

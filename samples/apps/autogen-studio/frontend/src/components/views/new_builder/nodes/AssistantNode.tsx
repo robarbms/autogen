@@ -28,7 +28,7 @@ const AssistantNode = memo((data: Node & IAgentNode, isConnectable: boolean | un
         {description}
       </div>
       <AgentProperties models={models} skills={skills} parent={data.data.id} />
-      {data.isConnectable &&
+      {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="target"
           position={Position.Left}

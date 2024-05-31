@@ -24,7 +24,7 @@ const UserproxyNode = memo((data: Node & IAgentNode, isConnectable) => {
         {description}
       </div>
       <AgentProperties {...{ models, skills }} parent={data.data.id} />
-      {data.isConnectable &&
+      {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="source"
           position={Position.Right}

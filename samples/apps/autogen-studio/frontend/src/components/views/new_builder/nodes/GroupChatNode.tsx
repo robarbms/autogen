@@ -47,11 +47,13 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
             )
           }
         </div>
-        <Handle
+        {!data.data.hideConnector &&
+          <Handle
             type="target"
             position={Position.Left}
             isConnectable={isConnectable}
-        />
+          />
+        }
     </div>
   );
 });
