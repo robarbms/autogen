@@ -98,6 +98,14 @@ export class API {
         return `${this.serverUrl}/workflows/link/agent/${workflow_id}/${agent_id ? agent_id + "/" : ""}${type}`;
     }
 
+    // Sorts a list of items by the oldest created to newest
+    private sortByDate (items: Array<T>) {
+        if (items.length > 0 && items[0] && "created_at" in items[0]) {
+            items = items.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        }
+        return items;
+    }
+
     // Method used for getting agents and workflows and passing them to a callback.
     // Refresh forces another call rather than calling from cache
     public getItems (type: "agents" | "workflows" | "models" | "skills", action: Function, refresh: Boolean = false) {
@@ -132,7 +140,8 @@ export class API {
             status: true
         });
         fetchJSON(this.getPath(type), this.GET_HEADERS, (data) => {
-            const items = data.data;
+            let items = data.data;
+            items = this.sortByDate(items);
             this[config.target] = items;
             this[config.loaded] = true;
 
@@ -172,8 +181,8 @@ export class API {
             this.loadLink(id, "sender", (sender: IAgent) => {
                 this.loadLink(id, "receiver", (receiver: IAgent) => {
                     action(sender, receiver);
-                })
-            })
+                });
+            });
         }
     }
 
@@ -211,6 +220,7 @@ export class API {
                 const addAgent = (agent) => {
                     updatedAgents.push(agent);
                     if (updatedAgents.length === length) {
+                        updatedAgents = this.sortByDate(updatedAgents);
                         this._agents = updatedAgents;
                         callback(updatedAgents);
                     }
@@ -230,16 +240,20 @@ export class API {
     public getAgentData(id: number, agentType: string, callback: Function) {
         this.getAgentModels(id, (models) => {
             this.getAgentSkills(id, (skills) => {
+                models = this.sortByDate(models);
+                skills = this.sortByDate(skills);
                 if (agentType === "groupchat") {
                     this.getLinkedAgents(id, (linkedAgents) => {
+                        linkedAgents = this.sortByDate(linkedAgents);
                         const {length} = linkedAgents;
-                        const updatedAgents = [];
+                        let updatedAgents = [];
                         while(linkedAgents) {
                             const agent = linkedAgents.pop();
                             this.getAgentData(agent.id, agent.type, (agentData) => {
                                 const updatedAgent = Object.assign({}, agent, agentData);
                                 updatedAgents.push(updatedAgent);
                                 if (updatedAgents.length === length) {
+                                    updatedAgents = this.sortByDate(updatedAgents);
                                     callback({
                                         models,
                                         skills,
@@ -328,7 +342,29 @@ export class API {
         const url = `${this.serverUrl}/agents/link/agent/${agentId}`;
         const headers = this.GET_HEADERS;
         fetchJSON(url, headers, (data) => {
+            const groupAgents = data.data.map((agent: IAgent) => {
+                agent.groupAgent = true;
+                return agent;
+            })
+            callback(groupAgents);
+        }, this._error);
+    }
+
+    // Links an agent to a group agent
+    public linkAgent(agentId: number, linkedAgent: number, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/agents/link/agent/${agentId}/${linkedAgent}`;
+        const headers = this.POST_HEADERS;
+        fetchJSON(url, headers, (data) => {
             callback(data.data);
+        }, this._error);
+    }
+
+    // Unlinks an agent from a group agent
+    public unlinkAgent(agentId: number, linkedAgent: number, callback: () => void) {
+        const url = `${this.serverUrl}/agents/link/agent/${agentId}/${linkedAgent}`;
+        const headers = this.DELETE_HEADERS;
+        fetchJSON(url, headers, () => {
+            callback();
         }, this._error);
     }
 
@@ -361,7 +397,6 @@ export class API {
 
     // Links a skill to an agent
     public unLinkAgentSkill(agentId: number, skillId: number, callback: (data: any) => void) {
-        console.log(this.serverUrl);
         const url = `${this.serverUrl}/agents/link/skill/${agentId}/${skillId}`;
         const headers = this.DELETE_HEADERS;
         fetchJSON(url, headers, (data) => {

@@ -11,12 +11,19 @@ import { IModelConfig, ISkill } from '../../../types';
  */
 const AssistantNode = memo((data: Node & IAgentNode, isConnectable: boolean | undefined) => {
   const { id }: { id: string } = data;
-  const { models, skills }: { models: IModelConfig[], skills: ISkill[] } = data.data;
+  const { models, skills, groupAgent }: { models: IModelConfig[], skills: ISkill[], groupAgent: boolean } = data.data;
   const { name, description }: { name: string, description: string } = data.data.config;
+  const dragStart = data.data.dragHandle ? (event: DragEvent) => {
+    const transferData = event.dataTransfer.getData('text/plain');
+    // Only add drag data if not dragging a model or skill
+    if (!transferData) {
+      data.data.dragHandle(event);
+    }
+  } : () => {};
 
   return (
-    <div data-id={data.data.id} className="node group_agent node-has-content drop-models drop-skills">
-      <div className="node_title drag-handle">
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className="node group_agent node-has-content drop-models drop-skills">
+      <div className={`node_title ${groupAgent ? "" : "drag-handle"}`}>
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>

@@ -15,11 +15,11 @@ const Skill = (props: ISkill & {dragHandle: (event: DragEvent) => boolean}) => {
 }
 
 // Rendering for an agent model
-const Model = (props: IModelConfig) => {
-    const { model }: { model: string} = props;
+const Model = (props: IModelConfig & {dragHandle: (event: DragEvent) => boolean}) => {
+    const { model, dragHandle }: { model: string, dragHandle: (event: DragEvent) => boolean} = props;
 
     return (
-        <div className="node-model">
+        <div className="node-model" draggable="true" onDragStart={dragHandle}>
             <ModelIcon />
             {model}
         </div>
@@ -58,7 +58,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
     return (
         <div className="node_properties">
             {models &&
-                models.map((model: IModelConfig, idx: number) => <Model {...model} key={idx} />)
+                models.map((model: IModelConfig, idx: number) => <Model dragHandle={dragHandle("model", model.id)} {...model} key={idx} />)
             }
             {!models || models.length === 0 &&
                 <div className="node-property-empty">Drag & drop to add a model</div>

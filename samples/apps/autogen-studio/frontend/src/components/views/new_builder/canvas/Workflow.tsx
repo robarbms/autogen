@@ -210,6 +210,7 @@ const Workflow = (props: WorkflowProps) => {
       }
     }, [agents, nodes, edges]);
 
+
   // Updates workflow agents sender and receiver based on canvas nodes and edges
   const updateWorkflow = (sender: IAgent, receiver: IAgent) => {
     if (!workflowLoaded) return;
@@ -258,11 +259,29 @@ const Workflow = (props: WorkflowProps) => {
   }) => {
     let data: string | { [key: string]: string | number} = e.dataTransfer.getData('text/plain');
     data = JSON.parse(data) as { [key: string]: string | number};
+    const getTargetId = (type: string) => {
+      let target = e.target as HTMLElement;
+      while(target && target.parentNode && !target.classList.contains(`drop-${type}s`)) {
+        target = target.parentNode;
+      }
 
+      // Gets the ID of the drop target or returns -1 if invalid drop
+      const targetId: number = target.getAttribute && target.classList && target.classList.contains(`drop-${type}s`) ? 
+        parseInt(target.getAttribute("data-id")) : -1;
+
+      return targetId;
+    }
     const { group } = data;
 
     // handle dropping agents to the canvas
     if (group === "agent") {
+      const targetId = getTargetId("agent");
+
+      if (targetId > 0) {
+        api.linkAgent(targetId, data.id, updateNodes);
+        return;
+      }
+
       const { id } = data;
       const position = {
         x: e.clientX + data.offsetX - bounding.left,
@@ -272,16 +291,14 @@ const Workflow = (props: WorkflowProps) => {
       // Get the initiator, check if it has an edge already
       const initiator = nodes.find(node => node.data.isInitiator);
       if (initiator) {
-        if (edges.length === 0) {
           edge = {
             source: initiator.id,
             target: id.toString(),
             id: initiator.id,
             selected: false,
           } as Edge;
-        }
       }
-  
+
       addNode(id, position, () => {
         if (edge) {
           setEdges([edge]);
@@ -292,17 +309,9 @@ const Workflow = (props: WorkflowProps) => {
     // handle dragging an agent property from an agent
     if (group === "agent-property") {
       const { id, parent, type }: { id: number, parent: number, type: "model" | "skill"} = data as  { id: number, parent: number, type: "model" | "skill "};
-      let target = e.target as HTMLElement;
-
-      // walk up the DOM to find the parent being dropped on
-      // either the node it's from, another node
-      while(target && target.parentNode && !target.classList.contains(`drop-${type}s`)) {
-        target = target.parentNode;
-      }
 
       // Gets the ID of the drop target or returns -1 if invalid drop
-      const targetId: number = target.getAttribute && target.classList && target.classList.contains(`drop-${data.type}s`) ? 
-        parseInt(target.getAttribute("data-id")) : -1;
+      const targetId: number = getTargetId(type);
 
       // if not dropping on the original node
       if (targetId !== parent) {
@@ -326,16 +335,20 @@ const Workflow = (props: WorkflowProps) => {
 
     }
 
+    // dragging an agent from a group_chat agent
+    else if (group === "group-agent") {
+      const { id, parent }: {id: number, parent: number} = data as { id: number, parent: number};
+      const targetId = getTargetId("agent");
+
+      if (targetId !== parent) {
+        api.unlinkAgent(parent, id, updateNodes);
+      }
+    }
+
     // handle dropping models and skills to agents
     else {
       // get the target node
-      let { target }: { target: HTMLElement} = e;
-
-      while(target && target.parentNode && !target.classList.contains(`drop-${group}s`)) {
-        target = target.parentNode;
-      }
-
-      const targetId = parseInt(target.getAttribute("data-id"));
+      const targetId = getTargetId(group);
 
       if (group === "model") {
         api.linkAgentModel(targetId, data.id, updateNodes);
@@ -373,9 +386,11 @@ const Workflow = (props: WorkflowProps) => {
         const newNode = {
           ...nodeCopy,
           data: {
+            ...nodeCopy.data,
             ...updatedAgent
           }
         }
+
         return newNode;
       });
       setNodes(updatedNodes);
