@@ -1,23 +1,17 @@
-import { Card } from 'antd';
-import React, { createRef, memo, useContext, useEffect, useState } from 'react';
-import { Handle, Position } from 'reactflow';
-import { message } from "antd";
-import { fetchJSON, getServerUrl } from "../../../utils";
-import { IAgent } from "../../../types";
-import { appContext } from "../../../../hooks/provider";
+import React, { createRef, memo } from 'react';
+import { Handle, Position, Node } from 'reactflow';
 import AssistantNode from './AssistantNode';
 import UserproxyNode from './UserProxyNode';
 import { AgentIcon } from '../Icons';
-import { useBuildStore } from '../../../../hooks/buildStore';
-import { API } from '../API';
+import { IAgentNode } from '../canvas/Workflow';
 
 /**
  * Node for rendering group chat manager
  */
-const GroupChatNode = memo((data, isConnectable) => {
-  const { id } = data;
-  const { config, linkedAgents } = data.data;
-  const { name, description } = config;
+const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
+  const { id }: { id: string} = data;
+  const { linkedAgents }: { linkedAgents: IAgentNode[] }  = data.data;
+  const { name, description }: { name: string, description: string} = data.data.config;
   const container = createRef();
 
   return (
@@ -27,7 +21,10 @@ const GroupChatNode = memo((data, isConnectable) => {
           {description}
         </div>
         <div className="nodes_area">{linkedAgents && 
-            linkedAgents.map((node, idx) => node.type === "assistant" ? <AssistantNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} /> : <UserproxyNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} />)
+            linkedAgents.map((node, idx) => node.type === "assistant" ? 
+              <AssistantNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} /> :
+              <UserproxyNode groupAgent={true} key={idx + 10} data={node} isConnectable={false} />
+            )
         }</div>
         <Handle
             type="target"

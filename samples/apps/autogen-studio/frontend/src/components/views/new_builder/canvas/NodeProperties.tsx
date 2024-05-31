@@ -4,7 +4,7 @@ import { AgentTypeSelector, SkillSelector, AgentSelector, ModelSelector } from "
 import { BugAntIcon, CpuChipIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { Collapse } from "antd";
 import { IAgent } from "../../../types";
-import { ItemType } from "antd/es/menu/hooks/useItems";
+import { ItemType } from "../../../../../node_modules/rc-collapse/es/interface";
 
 // Properties for the NodeProperties panel
 type NodePropertiesProps = {

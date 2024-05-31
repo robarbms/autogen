@@ -44,7 +44,7 @@ export interface IAgentNode {
  * Properties for the Workflow component
  */
 type WorkflowProps = {
-  api: any;
+  api: API;
 }
 
 /**
@@ -106,7 +106,7 @@ const Workflow = (props: WorkflowProps) => {
       api.getAgentModels(agentId, (models: IModelConfig[]) => {
         api.getAgentSkills(agentId, (skills: ISkill[]) => {
           const node_id: number = getNodeId(curr_nodes);
-          const nodeData: IAgentNode = {
+          const nodeData: Node & IAgentNode = {
             data: {...agentData,
               config: {...agentData.config},
               node_id,
@@ -116,10 +116,11 @@ const Workflow = (props: WorkflowProps) => {
               api
             },
             position,
+            dragHandle: '.drag-handle',
             id: node_id.toString(),
             type: agentData.type || "assistant",
           };
-          const newNodes: Array<Node & IAgent | IAgent> = curr_nodes.concat([nodeData]);
+          const newNodes: Array<Node & IAgent> = curr_nodes.concat([nodeData]);
           setNodes(newNodes);
           if (EDGE_ON_DROP) {
             // Add an edge to the initiator
@@ -229,12 +230,16 @@ const Workflow = (props: WorkflowProps) => {
       const target: Node | undefined = nodes.find(node => node.id === edge.target);
       if (target) {
         if (!receiver || receiver && target.data.id !== receiver.id) {
+          if (receiver) {
+            // delete previous receiver
+            api.unlinkWorkflow(workflowId, "receiver", receiver.id);
+          }
           // link the receiver
           api.linkWorkflow(workflowId, "receiver", target.data.id);
         }
       }
     }
-    else {
+    else if (receiver) {
       // delete receiver
       api.unlinkWorkflow(workflowId, "receiver", receiver.id);
     }
@@ -252,8 +257,9 @@ const Workflow = (props: WorkflowProps) => {
     }
   }) => {
     let data: string | { [key: string]: string | number} = e.dataTransfer.getData('text/plain');
-    data = JSON.parse(data);
-    const {group} = data;
+    data = JSON.parse(data) as { [key: string]: string | number};
+
+    const { group } = data;
 
     // handle dropping agents to the canvas
     if (group === "agent") {
@@ -282,10 +288,48 @@ const Workflow = (props: WorkflowProps) => {
         }
       });
     }
+
+    // handle dragging an agent property from an agent
+    if (group === "agent-property") {
+      const { id, parent, type }: { id: number, parent: number, type: "model" | "skill"} = data as  { id: number, parent: number, type: "model" | "skill "};
+      let target = e.target as HTMLElement;
+
+      // walk up the DOM to find the parent being dropped on
+      // either the node it's from, another node
+      while(target && target.parentNode && !target.classList.contains(`drop-${type}s`)) {
+        target = target.parentNode;
+      }
+
+      // Gets the ID of the drop target or returns -1 if invalid drop
+      const targetId: number = target.getAttribute && target.classList && target.classList.contains(`drop-${data.type}s`) ? 
+        parseInt(target.getAttribute("data-id")) : -1;
+
+      // if not dropping on the original node
+      if (targetId !== parent) {
+        if (type === "model") {
+          api.unLinkAgentModel(parent, id, updateNodes);
+        }
+        else if (type === "skill") {
+          api.unLinkAgentSkill(parent, id, updateNodes);
+        }
+
+        // if dropping to a valid target, add it to the agent
+        if (targetId >= 0) {
+          if (type === "model") {
+            api.linkAgentModel(targetId, id, updateNodes);
+          }
+          else if (type === "skill") {
+            api.linkAgentSkill(targetId, id, updateNodes);
+          }
+        }
+      }
+
+    }
+
     // handle dropping models and skills to agents
     else {
       // get the target node
-      let {target} = e;
+      let { target }: { target: HTMLElement} = e;
 
       while(target && target.parentNode && !target.classList.contains(`drop-${group}s`)) {
         target = target.parentNode;
@@ -304,6 +348,7 @@ const Workflow = (props: WorkflowProps) => {
 
   // Updates the selected node when it changes
   const handleSelection = (nodes: Array<Node & IAgent>) => {
+    // should only select when clicking on the title
     if (nodes.length > 0 && nodes[0] && nodes[0].data) {
       setSelectedNode(nodes[0].data);
     }

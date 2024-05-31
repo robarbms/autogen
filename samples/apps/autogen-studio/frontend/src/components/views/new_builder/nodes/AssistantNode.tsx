@@ -1,25 +1,26 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { AgentIcon } from '../Icons';
 import { IAgentNode } from '../canvas/Workflow';
 import { Node } from 'reactflow';
-import { IModelConfig, ISkill } from '../../../types';
-import Model from './ModelNode';
-import Skill from './SkillNode';
 import AgentProperties from './AgentProperties';
+import { IModelConfig, ISkill } from '../../../types';
 
 /**
  * Node for rendering assistant agents
  */
 const AssistantNode = memo((data: Node & IAgentNode, isConnectable: boolean | undefined) => {
+  const { id }: { id: string } = data;
+  const { models, skills }: { models: IModelConfig[], skills: ISkill[] } = data.data;
+  const { name, description }: { name: string, description: string } = data.data.config;
 
   return (
     <div data-id={data.data.id} className="node group_agent node-has-content drop-models drop-skills">
-      <div className="node_title">
-        <h2><AgentIcon />{data.data.config.name}</h2>
-        {data.data.config.description}
+      <div className="node_title drag-handle">
+        <h2><AgentIcon />{name}</h2>
+        {description}
       </div>
-      <AgentProperties data={data.data} />
+      <AgentProperties models={models} skills={skills} parent={data.data.id} />
       {data.isConnectable &&
         <Handle
           type="target"

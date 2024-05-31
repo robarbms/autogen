@@ -349,4 +349,25 @@ export class API {
             callback(data.data);
         }, this._error);
     }
+
+    // Links a model to an agent
+    public unLinkAgentModel(agentId: number, modelId: number, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/agents/link/model/${agentId}/${modelId}`;
+        const headers = this.DELETE_HEADERS;
+        fetchJSON(url, headers, (data) => {
+            callback(data.data);
+        }, this._error);
+    }
+
+    // Links a skill to an agent
+    public unLinkAgentSkill(agentId: number, skillId: number, callback: (data: any) => void) {
+        console.log(this.serverUrl);
+        const url = `${this.serverUrl}/agents/link/skill/${agentId}/${skillId}`;
+        const headers = this.DELETE_HEADERS;
+        fetchJSON(url, headers, (data) => {
+            callback(data.data);
+        }, this._error);
+    }
+
+
 }
