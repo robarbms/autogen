@@ -244,7 +244,7 @@ export class API {
                 skills = this.sortByDate(skills);
                 if (agentType === "groupchat") {
                     this.getLinkedAgents(id, (linkedAgents) => {
-                        linkedAgents = this.sortByDate(linkedAgents);
+                        // linkedAgents = this.sortByDate(linkedAgents);
                         const {length} = linkedAgents;
                         let updatedAgents = [];
                         while(linkedAgents) {
@@ -344,8 +344,9 @@ export class API {
         fetchJSON(url, headers, (data) => {
             const groupAgents = data.data.map((agent: IAgent) => {
                 agent.groupAgent = true;
+                console.log(agent);
                 return agent;
-            })
+            });
             callback(groupAgents);
         }, this._error);
     }

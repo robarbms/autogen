@@ -10,11 +10,10 @@ import { IModelConfig, ISkill } from '../../../types';
  * Node for rendering assistant agents
  */
 const AssistantNode = memo((data: Node & IAgentNode, isConnectable: boolean | undefined) => {
-  const { id }: { id: string } = data;
   const { models, skills, groupAgent }: { models: IModelConfig[], skills: ISkill[], groupAgent: boolean } = data.data;
   const { name, description }: { name: string, description: string } = data.data.config;
   const dragStart = data.data.dragHandle ? (event: DragEvent) => {
-    const transferData = event.dataTransfer.getData('text/plain');
+    const transferData = event.dataTransfer?.getData('text/plain');
     // Only add drag data if not dragging a model or skill
     if (!transferData) {
       data.data.dragHandle(event);
