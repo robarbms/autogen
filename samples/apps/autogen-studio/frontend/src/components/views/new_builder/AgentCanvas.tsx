@@ -5,8 +5,9 @@ import ReactFlow, {
     Node,
     OnNodesChange,
     useKeyPress,
+    useOnSelectionChange,
 } from "reactflow";
-import { NodeTypes } from "./canvas/Canvas";
+import { IAgentNode, NodeTypes } from "./canvas/Canvas";
 
 // Properties used for the AgentCanvas component
 type AgentCanvasProps = {
@@ -17,7 +18,7 @@ type AgentCanvasProps = {
     onNodesChange: OnNodesChange;
     setBounding: Function;
     setNodes: (nodes: Node[]) => void;
-    setSelection: (node: Node[]) => void;
+    setSelection: (node: Array<Node & IAgentNode>) => void;
 }
 
 /**
@@ -34,6 +35,7 @@ const AgentCanvas = (props: AgentCanvasProps) => {
         onNodesChange,
         setBounding,
         setNodes,
+        setSelection
     } = props;
     const canvasWrap = createRef<HTMLDivElement>();
 
@@ -51,6 +53,14 @@ const AgentCanvas = (props: AgentCanvasProps) => {
       const updatedNodes = nodes.filter(({ id }) => !removeNodes.includes(id));
       setNodes(updatedNodes);
     }, [deletePressed]);
+
+    
+    // Adds node highlighting when selected
+    useOnSelectionChange({
+        onChange: ({nodes} : {nodes: Node[]}): void => {
+            setSelection(nodes);
+        }
+    });
 
 
     return (

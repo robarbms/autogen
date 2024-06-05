@@ -68,7 +68,6 @@ const Workflow = (props: WorkflowProps) => {
   const [showChat, setShowChat] = useState<Boolean>(false);
   const [selectedNode, setSelectedNode] = useState<null | Object>(null);
   const [ isValidWorkflow, setIsValidWorkflow ] = useState<Boolean>(false);
-  const [ workflowLoaded, setWorkflowLoaded ] = useState<Boolean>(false);
   const [ editting, setEditting ] = useState<IWorkItem>();
   const [ initialized, setInitialized ] = useState<boolean>(false);
 
@@ -167,9 +166,10 @@ const Workflow = (props: WorkflowProps) => {
 
   // Updates workflow agents sender and receiver based on canvas nodes and edges
   const updateWorkflow = (sender: IAgent, receiver: IAgent) => {
-    if (!workflowLoaded) return;
+    if (!workflowId) return;
     // make sure the sender is correctly set or update it
     const initiator = nodes.find((node) => node.data.isInitiator);
+
 
     if (!initiator && sender) {
       // delete the existing sender
@@ -208,7 +208,7 @@ const Workflow = (props: WorkflowProps) => {
   const handleDragDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents);
 
   // Updates the selected node when it changes
-  const handleSelection = (nodes: Array<Node & IAgent>) => setSelectedNode(nodes && nodes.length > 0 ? nodes[0].data : null);
+  const handleSelection = (nodes: Array<Node & IAgentNode>) => setSelectedNode(nodes && nodes.length > 0 ? nodes[0].data : null);
 
   // Opens the chat pane to test the workflow if it is a valid workflow
   //  with a sender and receiver
@@ -237,11 +237,17 @@ const Workflow = (props: WorkflowProps) => {
     }, true);
   }
 
+  // Updates an agents info in DB when changed in the node properties panel
+  const setAgent = (agentInfo: IAgentNode) => {
+    // Update agent in DB with agentInfo
+    console.log(agentInfo);
+  }
+
   return (
     <ReactFlowProvider>
       <BuildLayout
         menu={<Library libraryItems={[{ label: "Agents", items: agents}, { label: "Models", items: models}, { label: "Skills", items: skills}]} addNode={addNode} user={api.user.email} />}
-        properties={selectedNode !== null ? <NodeProperties agent={selectedNode} handleInteract={updateNodes} /> : null}
+        properties={selectedNode !== null ? <NodeProperties agent={selectedNode} handleInteract={updateNodes} setAgent={setAgent} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >
         <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />
