@@ -186,6 +186,33 @@ export class API {
         }
     }
 
+    public getWorkflows(callback: (data: any) => void) {
+        const url = `${this.serverUrl}/workflows?user_id=${this.user?.email}`;
+        const headers = this.GET_HEADERS;
+        fetchJSON(url, headers, (data) => {
+            const workflows = data.data as Array<IWorkflow & {
+                sender: IAgent,
+                receiver: IAgent
+            }>;
+            const workflowCount = workflows.length;
+            const linkedWorkflows: any[] = [];
+            while(workflows.length > 0) {
+                const workflow = workflows.pop();
+                this.getWorkflowLinks(workflow.id, (sender, receiver) => {
+                    linkedWorkflows.push({
+                        ...workflow,
+                        sender,
+                        receiver
+                    });
+                    if (linkedWorkflows.length === workflowCount) {
+                        this._workflows === linkedWorkflows;
+                        callback(linkedWorkflows);
+                    }                    
+                })
+            }
+        });
+    }
+
     // Links workflows to either a sender or receiver agent
     public linkWorkflow (workflow_id: number, type: "sender" |  "receiver", agent_id: number) {
         const url = this.getLinkPath(workflow_id, type, agent_id);
@@ -279,18 +306,6 @@ export class API {
         })
     }
 
-    // Gets models associated with an agent
-    public getAgentModels (agent_id: number, callback: (data: IModelConfig[]) => void) {
-        const url = `${this.serverUrl}/agents/link/model/${agent_id}`;
-        fetchJSON(url, this.GET_HEADERS, (data) => callback(data.data), () => {});
-    }
-
-    // Gets skill associated with an agent
-    public getAgentSkills (agent_id: number, callback: (data: ISkill[]) => void) {
-        const url = `${this.serverUrl}/agents/link/skill/${agent_id}`;
-        fetchJSON(url, this.GET_HEADERS, (data) => callback(data.data), () => {});
-    }
-
     // Creates a new skill
     public addSkill (skill: ISkill, callback: Function) {
         // Load all skills in DB
@@ -327,16 +342,6 @@ export class API {
         }, true);
     }
 
-    // Creates a new model in the database
-    public addModel (model: IModelConfig, callback: Function) {
-
-    }
-
-    // Creates a new agent in the database
-    public addAgent(model: IAgent, callback: Function) {
-
-    }
-
     // Gets agents linked to a paticular agent id
     public getLinkedAgents(agentId: number, callback: (data: any) => void) {
         const url = `${this.serverUrl}/agents/link/agent/${agentId}`;
@@ -344,7 +349,6 @@ export class API {
         fetchJSON(url, headers, (data) => {
             const groupAgents = data.data.map((agent: IAgent) => {
                 agent.groupAgent = true;
-                console.log(agent);
                 return agent;
             });
             callback(groupAgents);
@@ -378,6 +382,12 @@ export class API {
         }, this._error);
     }
 
+    // Gets skill linked to an agent
+    public getAgentSkills (agent_id: number, callback: (data: ISkill[]) => void) {
+        const url = `${this.serverUrl}/agents/link/skill/${agent_id}`;
+        fetchJSON(url, this.GET_HEADERS, (data) => callback(data.data), () => {});
+    }
+
     // Links a skill to an agent
     public linkAgentSkill(agentId: number, skillId: number, callback: (data: any) => void) {
         const url = `${this.serverUrl}/agents/link/skill/${agentId}/${skillId}`;
@@ -385,6 +395,12 @@ export class API {
         fetchJSON(url, headers, (data) => {
             callback(data.data);
         }, this._error);
+    }
+
+    // Gets models linked to an agent
+    public getAgentModels (agent_id: number, callback: (data: IModelConfig[]) => void) {
+        const url = `${this.serverUrl}/agents/link/model/${agent_id}`;
+        fetchJSON(url, this.GET_HEADERS, (data) => callback(data.data), () => {});
     }
 
     // Links a model to an agent
@@ -404,6 +420,4 @@ export class API {
             callback(data.data);
         }, this._error);
     }
-
-
 }

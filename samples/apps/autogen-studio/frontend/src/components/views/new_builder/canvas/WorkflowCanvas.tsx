@@ -17,15 +17,7 @@ import ReactFlow, {
     useOnSelectionChange
 } from "reactflow";
 import "reactflow/dist/style.css";
-
-/**
- * Nodes used by the canvas
- */
-export const NodeTypes = {
-    userproxy: UserProxyNode,
-    assistant: AssistantNode,
-    groupchat: GroupChatNode,
-}
+import { NodeTypes } from './Canvas';
 
 /**
  * WorkflowCanvas component properties

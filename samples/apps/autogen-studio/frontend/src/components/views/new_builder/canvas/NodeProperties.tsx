@@ -13,12 +13,6 @@ type NodePropertiesProps = {
   handleInteract: MouseEventHandler<HTMLDivElement>;
 }
 
-type CollapsePanel = {
-  label: ReactNode;
-  key: string;
-  children: ReactNode | Element | Array<ReactNode | Element>;
-}
-
 /**
  * Panel for displaying an agent node's properties
  * @param props 
