@@ -18,9 +18,10 @@ type PageNavigationProps = {
  */
 const PageNavigation = (props: PageNavigationProps) => {
     const { buildNav, hasGallery, } = props;
-    const { setEditScreen, setEditId } = useBuildStore(({setEditScreen, setEditId}) => ({
+    const { setEditScreen, setEditId, setWorkflowId } = useBuildStore(({setEditScreen, setEditId, setWorkflowId}) => ({
         setEditScreen,
-        setEditId
+        setEditId,
+        setWorkflowId
     }));
     const { buildExpand, setBuildExpand, navigationExpand, setNavigationExpand, user } = useNavigationStore();
     const userAvatar = user?.avatar_url;
@@ -30,10 +31,16 @@ const PageNavigation = (props: PageNavigationProps) => {
         setEditScreen(category);
     }
 
+    const buildHome = () => {
+        setEditScreen(null);
+        setEditId(null);
+        setWorkflowId(null);
+    }
+
     const buildMenu = [
         {
             key: '1',
-            label: (<><BuildIcon /> <label>Build</label></>),
+            label: (<span onClick={buildHome}><BuildIcon /> <label>Build</label></span>),
             children: 
             <>
                 <div className="build-nav-item" onClick={create("workflow")}>Workflows</div>

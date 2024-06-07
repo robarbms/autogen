@@ -27,8 +27,8 @@ export interface IBuildState {
     nodePropertiesOpen: boolean;
     setNodePropertiesOpen: (nodePropertiesOpen: boolean) => void;
     chatProperties: boolean;
-    nodes: Node[],
-    edges: Edge[],
+    nodes: Node[];
+    edges: Edge[];
 }
 
 /**

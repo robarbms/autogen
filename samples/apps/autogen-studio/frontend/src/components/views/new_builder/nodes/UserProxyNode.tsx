@@ -1,17 +1,17 @@
 import { Card } from 'antd';
-import React, { memo, useEffect, createRef } from 'react';
+import React, { memo, useEffect, createRef, MouseEvent } from 'react';
 import { Handle, Position, Node } from 'reactflow';
 import { AgentIcon } from '../Icons';
 import AgentProperties from './AgentProperties';
-import { IAgentNode } from '../canvas/Workflow';
 import { IModelConfig, ISkill } from '../../../types';
+import { IAgentNode, AgentProperty } from "../canvas/Canvas";
 
 /**
  * A node representing a userproxy agent
  */
-const UserproxyNode = memo((data: Node & IAgentNode, isConnectable) => {
+const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void}, isConnectable) => {
   const { id }: { id: string } = data;
-  const { isInitiator, models, skills, groupAgent }: { isInitiator: boolean, models: IModelConfig[], skills: ISkill[], groupAgent: boolean } = data.data;
+  const { isInitiator, models, skills, groupAgent, selectedProp }: { isInitiator: boolean, models: IModelConfig[], skills: ISkill[], groupAgent: boolean, selectedProp: AgentProperty } = data.data;
   const { description, name }: { description: string, name: string } = data.data.config;
 
   return (
@@ -23,7 +23,7 @@ const UserproxyNode = memo((data: Node & IAgentNode, isConnectable) => {
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>
-      <AgentProperties {...{ models, skills }} parent={data.data.id} />
+      <AgentProperties setSelection={data.setSelection} {...{ models, skills }} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="source"

@@ -306,6 +306,16 @@ export class API {
         })
     }
 
+    public addAgent(agent: IAgent, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/agents`;
+        const headers = this.POST_HEADERS;
+        headers.body = JSON.stringify(agent);
+
+        fetchJSON(url, headers, (data) => {
+            callback(data.data);
+        }, this._error);
+    }
+
     // Creates a new skill
     public addSkill (skill: ISkill, callback: Function) {
         // Load all skills in DB
@@ -418,6 +428,37 @@ export class API {
         const headers = this.DELETE_HEADERS;
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+        }, this._error);
+    }
+
+    // Test a model
+    public testModel(model: IModelConfig, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/models/test`;
+        const headers = this.POST_HEADERS;
+        headers.body = JSON.stringify(model);
+
+        fetchJSON(url, headers, (data) => {
+            callback(data);
+        }, this._error);
+    }
+
+    public setModel(model: IModelConfig, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/models`;
+        const headers = this.POST_HEADERS;
+        headers.body = JSON.stringify(model);
+
+        fetchJSON(url, headers, (data) => {
+            callback(data);
+        }, this._error);
+    }
+
+    public setSkill(skill: ISkill, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/skills`;
+        const headers = this.POST_HEADERS;
+        headers.body = JSON.stringify(skill);
+
+        fetchJSON(url, headers, (data) => {
+            callback(data);
         }, this._error);
     }
 }

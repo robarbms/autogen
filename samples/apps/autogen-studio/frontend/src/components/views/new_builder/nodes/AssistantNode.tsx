@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { AgentIcon } from '../Icons';
-import { IAgentNode } from '../canvas/Workflow';
+import { AgentProperty, IAgentNode } from '../canvas/Canvas';
 import { Node } from 'reactflow';
 import AgentProperties from './AgentProperties';
 import { IModelConfig, ISkill } from '../../../types';
@@ -9,9 +9,23 @@ import { IModelConfig, ISkill } from '../../../types';
 /**
  * Node for rendering assistant agents
  */
-const AssistantNode = memo((data: Node & IAgentNode, isConnectable: boolean | undefined) => {
-  const { models, skills, groupAgent }: { models: IModelConfig[], skills: ISkill[], groupAgent: boolean } = data.data;
-  const { name, description }: { name: string, description: string } = data.data.config;
+const AssistantNode = memo(
+  (data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void},
+  isConnectable: boolean | undefined
+) => {
+  const {
+    models,
+    skills,
+    groupAgent,
+    selectedProp
+  }: { 
+    models: IModelConfig[],
+    skills: ISkill[],
+    groupAgent: boolean,
+    selectedProp: AgentProperty
+  } = data.data;
+  const { name, description }:
+    { name: string, description: string } = data.data.config;
   const dragStart = data.data.dragHandle ? (event: DragEvent) => {
     const transferData = event.dataTransfer?.getData('text/plain');
     // Only add drag data if not dragging a model or skill
@@ -26,7 +40,7 @@ const AssistantNode = memo((data: Node & IAgentNode, isConnectable: boolean | un
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>
-      <AgentProperties models={models} skills={skills} parent={data.data.id} />
+      <AgentProperties setSelection={data.setSelection} models={models} skills={skills} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="target"

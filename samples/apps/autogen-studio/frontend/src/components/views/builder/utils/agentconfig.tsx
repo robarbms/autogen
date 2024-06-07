@@ -71,7 +71,6 @@ export const AgentConfigView = ({
     setLoading(true);
     // const fetch;
 
-    console.log("agent", agent);
     agent.user_id = user?.email;
     const payLoad = {
       method: "POST",
@@ -85,7 +84,6 @@ export const AgentConfigView = ({
     const onSuccess = (data: any) => {
       if (data && data.status) {
         message.success(data.message);
-        console.log("agents", data.data);
         const newAgent = data.data;
         setAgent(newAgent);
       } else {

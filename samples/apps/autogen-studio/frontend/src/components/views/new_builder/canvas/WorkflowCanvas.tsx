@@ -1,4 +1,4 @@
-import React, { createRef, RefObject, useCallback, useEffect, useState, MouseEventHandler } from 'react';
+import React, { createElement, createRef, RefObject, useCallback, useEffect, useMemo, useState, MouseEventHandler } from 'react';
 import "../../../../styles/canvas.css";
 import UserProxyNode from "../nodes/UserProxyNode";
 import AssistantNode from "../nodes/AssistantNode";
@@ -17,7 +17,7 @@ import ReactFlow, {
     useOnSelectionChange
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { NodeTypes } from './Canvas';
+import { IAgentNode, TypesWithProps, AgentProperty, NodeTypes } from './Canvas';
 
 /**
  * WorkflowCanvas component properties
@@ -34,6 +34,7 @@ type WorfkflowCanvasProps = {
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
     setSelection: (node: Node[]) => void;
+    selectedNode: Node & IAgentNode | AgentProperty
 }
 
 /**
@@ -57,6 +58,17 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
     } = props;
     const canvasWrap: RefObject<HTMLDivElement> = createRef();
 
+    const nodesWithSelection = (nodesTypes) => {
+        const withSelection = {}
+        for (let key in nodesTypes) {
+            withSelection[key] = (props) => createElement(nodesTypes[key], {
+                setSelection,
+                ...props
+            });
+        }
+        return withSelection;
+    }
+
     // Call back for when edges have been changed
     const onEdgeUpdate = useCallback(
         (oldEdge: Edge, newConnection: Connection) => {
@@ -67,7 +79,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
     
     // Callback when nodes are connected
     const onConnect = useCallback(
-        (params) => setEdges((els) => addEdge(params, els)),
+        (params: Edge | Connection) => setEdges((els: Edge[]) => addEdge(params, els)),
         []
     );
 
@@ -100,6 +112,12 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
         }
     });
 
+    // Inject node types with setSelection handler
+    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: Node & IAgentNode | AgentProperty) => void}[]>(
+        () => TypesWithProps({setSelection}),
+        []
+    )
+
     return (
         <ReactFlow
             ref={canvasWrap}
@@ -112,7 +130,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
             onEdgesChange={onEdgesChange}
             onEdgeUpdate={onEdgeUpdate}
             onConnect={onConnect}
-            nodeTypes={NodeTypes}
+            nodeTypes={nodeTypes}
             elementsSelectable={true}
             onDrop={onDrop}
             onDragEnter={onDragEnter}

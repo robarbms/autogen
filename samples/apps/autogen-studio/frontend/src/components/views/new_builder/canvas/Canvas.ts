@@ -4,6 +4,7 @@ import UserProxyNode from "../nodes/UserProxyNode";
 import { Node } from "reactflow";
 import { IAgent, IModelConfig, ISkill } from "../../../types";
 import { API } from "../API";
+import React, { createElement } from "react";
 
 // Type for positioning of a node
 export type NodePosition = {
@@ -27,6 +28,17 @@ export interface IAgentNode {
     api: API;
     hideConnector?: boolean;
   },
+  setSelection?: (node: Array<Node & IAgentNode> | IModelConfig | ISkill) => void,
+  selectedProp?: boolean
+}
+
+/**
+ * Data for targeting a model or skill for an agent instance
+ */
+export type AgentProperty = {
+  id: number,
+  parent: string,
+  type: "model" | "skill"
 }
 
 /**
@@ -48,6 +60,23 @@ export const NodeTypes = {
   userproxy: UserProxyNode,
   assistant: AssistantNode,
   groupchat: GroupChatNode,
+}
+
+/**
+ * Injects additional props into nodes
+ * @param extraProps 
+ * @returns 
+ */
+export const TypesWithProps = (extraProps) => {
+  const typeWithProps = [];
+  for (let key in NodeTypes) {
+    const node = NodeTypes[key];
+    typeWithProps[key] = (props) => createElement(NodeTypes[key], {
+      ...extraProps,
+      ...props
+    });
+  }
+  return typeWithProps;
 }
 
 // Walks dom up looking for a valid drop element

@@ -1,13 +1,15 @@
 import React, { DragEvent } from "react";
 import { IModelConfig, ISkill } from "../../../types";
 import { ModelIcon, SkillIcon } from "../Icons";
+import { AgentProperty, IAgentNode } from "../canvas/Canvas";
+import { Node } from "reactflow";
 
 // Rendering for an agent skill
-const Skill = (props: ISkill & {dragHandle: (event: DragEvent) => boolean}) => {
-    const { name, dragHandle }: { name: string, dragHandle: (event: DragEvent) => boolean } = props;
+const Skill = (props: ISkill & {dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean}) => {
+    const { name, dragHandle, click, selected }: { name: string, dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean} = props;
 
     return (
-        <div className="node-skill" draggable="true" onDragStart={dragHandle}>
+        <div onClick={click} className={`node-skill ${selected ? "selected" : ""}`} draggable="true" onDragStart={dragHandle}>
             <SkillIcon />
             {name}
         </div>
@@ -15,11 +17,11 @@ const Skill = (props: ISkill & {dragHandle: (event: DragEvent) => boolean}) => {
 }
 
 // Rendering for an agent model
-const Model = (props: IModelConfig & {dragHandle: (event: DragEvent) => boolean}) => {
-    const { model, dragHandle }: { model: string, dragHandle: (event: DragEvent) => boolean} = props;
+const Model = (props: IModelConfig & {dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean}) => {
+    const { model, dragHandle, click, selected }: { model: string, dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean} = props;
 
     return (
-        <div className="node-model" draggable="true" onDragStart={dragHandle}>
+        <div onClick={click} className={`node-model ${selected ? "selected" : ""}`} draggable="true" onDragStart={dragHandle}>
             <ModelIcon />
             {model}
         </div>
@@ -30,7 +32,10 @@ const Model = (props: IModelConfig & {dragHandle: (event: DragEvent) => boolean}
 type AgentPropertiesProps = {
     models: IModelConfig[],
     skills: ISkill[],
-    parent: number
+    parent: number,
+    instance: string,
+    setSelection: (node: Array<Node & IAgentNode> | IModelConfig | ISkill) => void,
+    selectedProp: AgentProperty,
 }
 
 /**
@@ -39,7 +44,7 @@ type AgentPropertiesProps = {
  * @returns 
  */
 const AgentProperties = (props: AgentPropertiesProps) => {
-    const { models, skills, parent }: { models: IModelConfig[], skills: ISkill[], parent: number } = props;
+    const { models, skills, parent, instance, setSelection, selectedProp }: { models: IModelConfig[], skills: ISkill[], parent: number, instance: string, setSelection: (node: Array<Node & IAgentNode> | IModelConfig | ISkill) => void, selectedProp: AgentProperty } = props;
 
     const dragHandle = (type: "model" | "skill", id?: number) => {
         return (event: DragEvent) => {
@@ -54,17 +59,34 @@ const AgentProperties = (props: AgentPropertiesProps) => {
             event.dataTransfer.setData('text/plain', nodeInfo);
         }
     }
+
+    const clickHandler = (data) => {
+        data.parent = instance;
+        return (event) => setSelection(data);
+    }
   
     return (
         <div className="node_properties">
             {models &&
-                models.map((model: IModelConfig, idx: number) => <Model dragHandle={dragHandle("model", model.id)} {...model} key={idx} />)
+                models.map((model: IModelConfig, idx: number) => <Model
+                        selected={selectedProp && selectedProp.type == "model" && selectedProp.id === model.id}
+                        click={clickHandler(model)}
+                        dragHandle={dragHandle("model", model.id)}
+                        {...model}
+                        key={idx}
+                    />)
             }
             {!models || models.length === 0 &&
                 <div className="node-property-empty">Drag & drop to add a model</div>
             }
             {skills &&
-                skills.map((skill: ISkill, idx: number) => <Skill dragHandle={dragHandle("skill", skill.id)} {...skill} key={idx} />)
+                skills.map((skill: ISkill, idx: number) => <Skill
+                        selected={selectedProp && selectedProp.type == "skill" && selectedProp.id === skill.id}
+                        click={clickHandler(skill)}
+                        dragHandle={dragHandle("skill", skill.id)}
+                        {...skill}
+                        key={idx}
+                    />)
             }
             {!skills || skills.length === 0 &&
                 <div className="node-property-empty">Drag & drop to add a skill</div>

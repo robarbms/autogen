@@ -61,10 +61,21 @@ div.workflow-canvas {
   align-self: start;
 }
 
+.node-model.selected,
+.node-skill.selected {
+  background: #464FEB;
+  color: #fff;
+}
+
 .node-model svg,
 .node-skill svg {
   display: inline-block;
   margin: 0 6px 0 0;
+}
+
+.node-model.selected svg path,
+.node-skill.selected svg path {
+  fill: #fff;
 }
 
 .node-skill {

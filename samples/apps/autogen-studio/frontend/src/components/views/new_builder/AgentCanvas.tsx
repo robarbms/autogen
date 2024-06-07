@@ -1,4 +1,4 @@
-import React, { createRef, MouseEventHandler, useCallback, useEffect, useState } from "react";
+import React, { createRef, MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, {
     Background,
     Controls,
@@ -8,6 +8,7 @@ import ReactFlow, {
     useOnSelectionChange,
 } from "reactflow";
 import { IAgentNode, NodeTypes } from "./canvas/Canvas";
+import { TypesWithProps } from "./canvas/Canvas";
 
 // Properties used for the AgentCanvas component
 type AgentCanvasProps = {
@@ -62,6 +63,14 @@ const AgentCanvas = (props: AgentCanvasProps) => {
         }
     });
 
+    
+    // Inject node types with setSelection handler
+    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: Node & IAgentNode | AgentProperty) => void}[]>(
+        () => TypesWithProps({setSelection}),
+        []
+    )
+
+
 
     return (
         <ReactFlow
@@ -71,7 +80,7 @@ const AgentCanvas = (props: AgentCanvasProps) => {
             attributionPosition="bottom-right"
             defaultViewport={{ x: 0, y: 0, zoom: 1 }}
             onNodesChange={onNodesChange}
-            nodeTypes={NodeTypes}
+            nodeTypes={nodeTypes}
             elementsSelectable={true}
             onDrop={onDrop}
             onDragEnter={onDragEnter}

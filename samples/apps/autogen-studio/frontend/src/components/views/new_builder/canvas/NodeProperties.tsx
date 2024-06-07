@@ -1,16 +1,24 @@
-import React, {ReactNode, MouseEventHandler } from "react";
+import React, {ReactNode, MouseEventHandler, useEffect, useState } from "react";
 import { AgentConfigView, AgentViewer } from "../../builder/utils/agentconfig";
 import { AgentTypeSelector, SkillSelector, AgentSelector, ModelSelector } from "../../builder/utils/selectors";
 import { BugAntIcon, CpuChipIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { Collapse } from "antd";
 import { IAgent } from "../../../types";
 import { ItemType } from "../../../../../node_modules/rc-collapse/es/interface";
+import { Node } from "reactflow";
+import { IAgentNode, AgentProperty } from "./Canvas";
+import AgentProperties from "./AgentProperties";
+import ModelProperties from "./ModelProperties";
+import SkillProperties from "./SkillProperties";
+import { useBuildStore } from "../../../../hooks/buildStore";
+import { API } from "../API";
 
 // Properties for the NodeProperties panel
 type NodePropertiesProps = {
-  agent: IAgent;
-  setAgent: (agents: IAgent) => void;
+  api: API,
+  selected: Node & IAgentNode | AgentProperty;
   handleInteract: MouseEventHandler<HTMLDivElement>;
+  setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
 }
 
 /**
@@ -19,80 +27,40 @@ type NodePropertiesProps = {
  * @returns 
  */
 const NodeProperties = (props: NodePropertiesProps) => {
-    const { agent, setAgent, handleInteract } = props;
-    let items: ItemType[] = [
-        {
-          label: (
-            <div className="w-full  ">
-              {" "}
-              <BugAntIcon className="h-4 w-4 inline-block mr-1" />
-              Agent Configuration
-            </div>
-          ),
-          key: "0",
-          children: (
-            <div>
-              {!agent?.type && (
-                <AgentTypeSelector agent={agent} setAgent={setAgent} />
-              )}
-    
-              {agent?.type && agent && (
-                <AgentConfigView agent={agent} setAgent={setAgent} close={()=>{alert('hi')}} />
-              )}
-            </div>
-          ),
-        },
-      ];
-      if (agent) {
-        if (agent?.id) {
-          if (agent.type && agent.type === "groupchat") {
-            items.push({
-              label: (
-                <div className="w-full  ">
-                  {" "}
-                  <UserGroupIcon className="h-4 w-4 inline-block mr-1" />
-                  Agents
-                </div>
-              ),
-              key: "1",
-              children: <AgentSelector agentId={agent?.id} />,
-            });
-          }
-    
-          items.push({
-            label: (
-              <div className="w-full  ">
-                {" "}
-                <CpuChipIcon className="h-4 w-4 inline-block mr-1" />
-                Models
-              </div>
-            ),
-            key: "2",
-            children: <ModelSelector agentId={agent?.id} />,
-          });
-    
-          items.push({
-            label: (
-              <>
-                <BugAntIcon className="h-4 w-4 inline-block mr-1" />
-                Skills
-              </>
-            ),
-            key: "3",
-            children: <SkillSelector agentId={agent?.id} />,
-          });
-        }
-      }
+  const { api, selected, handleInteract, setSelectedNode } = props;
+  let type = selected ? "agent" : null;
+  if (selected?.parent && selected.type) {
+    type = selected.type;
+  } 
+  const { models, skills } = useBuildStore(({ models, skills}) => ({models, skills}));
+
+  const cleanAgent = () => (selected ? {
+    config: {...selected.config},
+    id: selected.id,
+    type: selected.type,
+    updated_at: selected.updated_at,
+    created_at: selected.created_at,
+    user_id: selected.user_id
+  }: null);
+
+  const getData = (props: AgentProperty) => {
+    if (props.type === "model") {
+      return models.find(model => model.id === props.id);
+    }
+    return skills.find(skill => skill.id === props.id);
+  }
     
     return (
         <div className="node-properties h-full" onMouseUp={handleInteract}>
-            <h2>Agent: {agent.config.name}</h2>
-            <Collapse
-                className="node-prop-collapse"
-                bordered={false}
-                items={items}
-                defaultActiveKey={["0", "1"]}
-            />
+          {type === "agent" && 
+            <AgentProperties api={api} agent={cleanAgent()} handleInteract={handleInteract} setSelectedNode={setSelectedNode} />
+          }
+          {type === "model" &&
+            <ModelProperties api={api} model={getData(selected)} handleInteract={handleInteract} setSelectedNode={setSelectedNode} />
+          }
+          {type === "skill" &&
+            <SkillProperties api={api} skill={getData(selected)} handleInteract={handleInteract} setSelectedNode={setSelectedNode} />
+          }
         </div>
     )
 }

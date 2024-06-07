@@ -12,30 +12,7 @@ import { IWorkItem, dataToWorkItem } from "../utils";
 import { useBuildStore } from "../../../../hooks/buildStore";
 import { useNavigationStore } from "../../../../hooks/navigationStore";
 import { API } from "../API";
-import { addNode, getDropHandler, nodeUpdater } from "./Canvas";
-
-// Type for positioning of a node
-export type NodePosition = {
-  x: number;
-  y: number;
-}
-
-/**
- * Encapsulating IAgent config and node information
- */
-export interface IAgentNode {
-  position: NodePosition;
-  id: string;
-  type: "userproxy" | "assistant" | "groupchat";
-  isConnectable?: Boolean;
-  data: IAgent & {
-    isInitiator?: Boolean;
-    node_id: number;
-    models?: IModelConfig[];
-    skills?: ISkill[];
-    api: API,
-  },
-}
+import { addNode, getDropHandler, nodeUpdater, IAgentNode, AgentProperty } from "./Canvas";
 
 /**
  * Properties for the Workflow component
@@ -57,7 +34,7 @@ const Workflow = (props: WorkflowProps) => {
     models,
     skills,
     workflowId,
-    workflows
+    workflows,
   }));
   const { setNavigationExpand } = useNavigationStore(({setNavigationExpand}) => ({
     setNavigationExpand
@@ -208,7 +185,35 @@ const Workflow = (props: WorkflowProps) => {
   const handleDragDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents);
 
   // Updates the selected node when it changes
-  const handleSelection = (nodes: Array<Node & IAgentNode>) => setSelectedNode(nodes && nodes.length > 0 ? nodes[0].data : null);
+  const handleSelection = (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string }) => {
+    if (selected) {
+      if (Array.isArray(selected)) {
+        setSelectedNode(selected.length > 0 ? selected[0].data : null);
+      }
+      else {
+        const selectedData: AgentProperty = {
+          id: selected.id || 0,
+          parent: selected.parent,
+          type: "model" in selected ? "model" : "skill"
+        }
+        setSelectedNode(selectedData);
+      }
+    }
+    else {
+      setSelectedNode(null);
+    }
+  }
+
+  // Update selected agent properties when selectedNode changes
+  useEffect(() => {
+    if (nodes && nodes.length > 0) {
+      const updatedNodes = JSON.parse(JSON.stringify(nodes)).map(node => {
+        node.data.selectedProp = selectedNode && "parent" in selectedNode && selectedNode.parent === node.id ? selectedNode : null;
+        return node;
+      });
+      setNodes(updatedNodes);
+    }
+  }, [selectedNode]);
 
   // Opens the chat pane to test the workflow if it is a valid workflow
   //  with a sender and receiver
@@ -237,17 +242,11 @@ const Workflow = (props: WorkflowProps) => {
     }, true);
   }
 
-  // Updates an agents info in DB when changed in the node properties panel
-  const setAgent = (agentInfo: IAgentNode) => {
-    // Update agent in DB with agentInfo
-    console.log(agentInfo);
-  }
-
   return (
     <ReactFlowProvider>
       <BuildLayout
         menu={<Library libraryItems={[{ label: "Agents", items: agents}, { label: "Models", items: models}, { label: "Skills", items: skills}]} addNode={addNode} user={api.user.email} />}
-        properties={selectedNode !== null ? <NodeProperties agent={selectedNode} handleInteract={updateNodes} setAgent={setAgent} /> : null}
+        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >
         <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />
