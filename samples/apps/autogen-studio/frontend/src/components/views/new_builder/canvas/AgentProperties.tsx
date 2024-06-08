@@ -26,7 +26,6 @@ const AgentProperties = (props: AgentPropertiesProps) => {
     }, [agent]);
 
     const updateAgent = (agent) => {
-        console.log(agent);
         setAgentEdit(JSON.parse(JSON.stringify(agent)));
     }
 

@@ -28,13 +28,15 @@ type WorkflowProps = {
  */
 const Workflow = (props: WorkflowProps) => {
   const { api } = props;
-  const { agents, setAgents, models, skills, workflowId, workflows } = useBuildStore(({ agents, setAgents, models, skills, workflowId, workflows}) => ({
+  const { agents, setAgents, models, skills, workflowId, workflows, setSkills, setModels } = useBuildStore(({ agents, setAgents, models, skills, workflowId, workflows, setSkills, setModels}) => ({
     agents,
     setAgents,
     models,
     skills,
     workflowId,
     workflows,
+    setSkills,
+    setModels
   }));
   const { setNavigationExpand } = useNavigationStore(({setNavigationExpand}) => ({
     setNavigationExpand
@@ -182,8 +184,6 @@ const Workflow = (props: WorkflowProps) => {
       event.preventDefault();
   };
 
-  const handleDragDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents);
-
   // Updates the selected node when it changes
   const handleSelection = (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string }) => {
     if (selected) {
@@ -203,6 +203,9 @@ const Workflow = (props: WorkflowProps) => {
       setSelectedNode(null);
     }
   }
+
+  // Drag and drop handler for items dragged onto the canvas or agents
+  const handleDragDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents, setModels, setSkills, handleSelection);
 
   // Update selected agent properties when selectedNode changes
   useEffect(() => {
@@ -241,11 +244,30 @@ const Workflow = (props: WorkflowProps) => {
       setNodes(updatedNodes);
     }, true);
   }
-
+  
+  // Items to show in the library
+  const libraryItems = [
+    { label: "Agents", items: [{
+      id: 0,
+      config: {
+        name: "New Agent"
+      }
+    }].concat(agents)},
+    { label: "Models", items: [{
+      id: 0,
+      model: "New Model"
+    }].concat(models)},
+    { label: "Skills", items: [{
+      id: 0,
+      name: "New Skill",
+      content: " ",
+    }].concat(skills)}
+  ];
+  
   return (
     <ReactFlowProvider>
       <BuildLayout
-        menu={<Library libraryItems={[{ label: "Agents", items: agents}, { label: "Models", items: models}, { label: "Skills", items: skills}]} addNode={addNode} user={api.user.email} />}
+        menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} />}
         properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >

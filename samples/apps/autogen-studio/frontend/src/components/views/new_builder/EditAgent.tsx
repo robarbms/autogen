@@ -21,11 +21,13 @@ type EditAgentProps = {
  * @returns 
  */
 const EditAgent = (props: EditAgentProps) => {
-    const { agents, setAgents, models, skills } = useBuildStore(({ agents, setAgents, models, skills}) => ({
+    const { agents, setAgents, models, skills, setModels, setSkills } = useBuildStore(({ agents, setAgents, models, skills, setModels, setSkills}) => ({
         agents,
         setAgents,
         models,
-        skills
+        skills,
+        setModels,
+        setSkills
     }))
     const { api } = props;
     const [selectedNode, setSelectedNode] = useState<Node & IAgentNode | AgentProperty | null>(null);
@@ -57,19 +59,46 @@ const EditAgent = (props: EditAgentProps) => {
         event.preventDefault();
     };
 
-    // Refreshes agents from the database and 
-    const handleDrop = getDropHandler(bounding, api, setNodes, nodes as Array<Node & IAgentNode>, agents, setAgents, true);
+  // Drag and drop handler for items dragged onto the canvas or agents
+  const handleDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents, setModels, setSkills, handleSelection, true);
 
+  // Update selected agent properties when selectedNode changes
+  useEffect(() => {
+    if (nodes && nodes.length > 0) {
+      const updatedNodes = JSON.parse(JSON.stringify(nodes)).map(node => {
+        node.data.selectedProp = selectedNode && "parent" in selectedNode && selectedNode.parent === node.id ? selectedNode : null;
+        return node;
+      });
+      setNodes(updatedNodes);
+    }
+  }, [selectedNode]);
+
+    // Updates nodes on the canvas when there are changes made
     const updateNodes = nodeUpdater.bind(this, api, setAgents, setNodes, nodes)
-
-    useEffect(() => {
-        console.log({selectedNode});
-    }, [ selectedNode ]);
+  
+  // Items to show in the library
+  const libraryItems = [
+    { label: "Agents", items: [{
+      id: 0,
+      config: {
+        name: "New Agent"
+      }
+    }].concat(agents)},
+    { label: "Models", items: [{
+      id: 0,
+      model: "New Model"
+    }].concat(models)},
+    { label: "Skills", items: [{
+      id: 0,
+      name: "New Skill",
+      content: " ",
+    }].concat(skills)}
+  ];
 
     return (
         <ReactFlowProvider>
             <BuildLayout
-                menu={<Library libraryItems={[{ label: "Agents", items: agents}, { label: "Models", items: models}, { label: "Skills", items: skills}]} addNode={addNode} />}
+                menu={<Library libraryItems={libraryItems} addNode={addNode} />}
                 properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} /> : null}
             >
                 <BuildNavigation className="nav-over-canvas"  category="agent" handleEdit={() => {}} />

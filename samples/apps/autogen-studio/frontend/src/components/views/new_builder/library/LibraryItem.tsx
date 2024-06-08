@@ -23,7 +23,7 @@ const LibraryItem = (props: LibraryItemProps) => {
     const classNames = ['library_item', 'group_' + category];
     // Special styling for New item options
     // TODO: The ability to push additional classNames?
-    if (description && description.toLowerCase().indexOf('blank') > 0) {
+    if (id === 0) {
         classNames.push('item_emph');
     }
 

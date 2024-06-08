@@ -172,6 +172,9 @@ export const getDropHandler = (
   nodes: Array<Node & IAgentNode>,
   agents: Array<IAgent>,
   setAgents: (agents: Array<IAgent>) => void,
+  setModels: (models: Array<IModelConfig>) => void,
+  setSkills: (skills: Array<ISkill>) => void,
+  handleSelection: Function,
   hideConnector: boolean = false
 ) =>
   (event: MouseEvent & {
@@ -194,23 +197,29 @@ export const getDropHandler = (
     const { group, id, offsetX, offsetY, parent, type } = data;
 
     const eventTargetId = getTargetId.bind(this, event); // Finds the parent drop zone based on the event
+    const position = {
+      x: event.clientX + (offsetX || 0) - left,
+      y: event.clientY + (offsetY || 0) - top,
+    };
+
 
     switch (group) {
       // If dragging and dropping an agent
       case "agent":
           const agentTarget = eventTargetId("drop-agents");
 
+          // Creating a new agent
+          if (!id) {
+            console.log("Creating a new agent!");
+          }
+
           // If dropping the agent onto a group agent
-          if (agentTarget > 0) {
+          else if (agentTarget > 0) {
               api.linkAgent(agentTarget, id, callback);
           }
 
           // Otherwise create a position on the canvas to render
           else {
-              const position = {
-                  x: event.clientX + (offsetX || 0) - left,
-                  y: event.clientY + (offsetY || 0) - top,
-                };
               addNode(nodes, api, agents, setNodes, id, position, hideConnector);
           }
 
@@ -242,14 +251,87 @@ export const getDropHandler = (
       case "skill":
           const skillTarget = eventTargetId("drop-skills");
           if(skillTarget >= 0) {
+            if (id) {
               api.linkAgentSkill(skillTarget, id, callback);
+            }
+            else {
+              // Adding a new skill
+              const now = new Date().toISOString();
+              const name = "Skill name";
+              const skillData = {
+                id: 0,
+                created_at: now,
+                updated_at: now,
+                user_id: api.user?.email,
+                name,
+                content: "// Content goes here",
+                description: " ",
+                secrets: {},
+                libraries: {},
+              }
+              api.addSkill(skillData, (data) => {
+                setSkills(data);
+                let targetIndex = data.length - 1;
+                while (targetIndex > 0 && data[targetIndex].name !== name) {
+                  targetIndex -= 1;
+                }
+                if (targetIndex > 0 && data[targetIndex].name === name) {
+                  api.linkAgentSkill(skillTarget, data[targetIndex].id, (agentSkillResp) => {
+                    callback(agentSkillResp);
+                    setTimeout(() => {
+                      const nodeParent = nodes.find(node => node.data.id === skillTarget);
+                      handleSelection({
+                        group: "agent-property",
+                        parent: nodeParent.id || skillTarget,
+                        id: data[targetIndex].id,
+                        type: "skill"
+                      });
+                    }, 100);
+                  });
+                }
+              });
+            }
           }
           break;
       // Dragging a model from the library
       case "model":
           const modelTarget = eventTargetId("drop-models");
           if (modelTarget >= 0) {
-              api.linkAgentModel(modelTarget, id, callback);
+              if (id) {
+                api.linkAgentModel(modelTarget, id, callback);
+              }
+              else {
+                // Creating a new model
+                const now = new Date().toISOString();
+                const name = "Model name";
+                const modelData = {
+                  created_at: now,
+                  updated_at: now,
+                  model: name,
+                  user_id: api.user?.email,
+                }
+
+                api.setModel(modelData, (data: any) => {
+                  const {id} = data.data;
+                  api.linkAgentModel(modelTarget, id, (resp) => {
+                    callback(resp);
+                    api.getItems("models", (models) => {
+                      setModels(models);
+                      setTimeout(() => {
+                        const nodeParent = nodes.find(node => node.data.id === modelTarget);
+                        console.log({resp, id, data, nodeParent});
+                        handleSelection({
+                          group: "agent-property",
+                          parent: nodeParent.id || modelTarget,
+                          id,
+                          type: "model",
+                          model: true
+                        });
+                      }, 100);
+                    }, true);
+                  });
+                });
+              }
           }
           break;
       // Dragging an agent from a group-chat agent
