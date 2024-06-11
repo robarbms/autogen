@@ -1,5 +1,4 @@
-import { Card } from 'antd';
-import React, { memo, useEffect, createRef, MouseEvent } from 'react';
+import React, { memo, MouseEvent } from 'react';
 import { Handle, Position, Node } from 'reactflow';
 import { AgentIcon } from '../Icons';
 import AgentProperties from './AgentProperties';

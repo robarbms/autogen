@@ -22,13 +22,12 @@ import {
     
 type SkillPropertiesProps = {
     api: API;
-    handleInteract: MouseEventHandler<HTMLDivElement>;
     setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
     skill: ISkill;
 }
 
 const SkillProperties = (props: SkillPropertiesProps) => {
-    const { api, handleInteract, setSelectedNode, skill } = props;
+    const { api, setSelectedNode, skill } = props;
     const [ skillEdit, setSkillEdit ] = useState<ISkill>();
     const editorRef = useRef<any | null>(null);
     const [ loading, setLoading ] = useState(false);

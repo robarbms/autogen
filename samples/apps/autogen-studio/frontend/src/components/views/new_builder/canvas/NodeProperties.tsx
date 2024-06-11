@@ -19,6 +19,8 @@ type NodePropertiesProps = {
   selected: Node & IAgentNode | AgentProperty;
   handleInteract: MouseEventHandler<HTMLDivElement>;
   setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
+  setNodes: (nodes: Array<Node & IAgentNode> | undefined) => void;
+  nodes: Array<Node & IAgentNode>;
 }
 
 /**
@@ -27,12 +29,12 @@ type NodePropertiesProps = {
  * @returns 
  */
 const NodeProperties = (props: NodePropertiesProps) => {
-  const { api, selected, handleInteract, setSelectedNode } = props;
+  const { api, selected, handleInteract, setSelectedNode, setNodes, nodes } = props;
   let type = selected ? "agent" : null;
   if (selected?.parent && selected.type) {
     type = selected.type;
   } 
-  const { models, skills } = useBuildStore(({ models, skills}) => ({models, skills}));
+  const { models, skills, agents, setAgents } = useBuildStore(({ models, skills, agents, setAgents }) => ({models, skills, agents, setAgents}));
 
   const cleanAgent = () => (selected ? {
     config: {...selected.config},
@@ -49,20 +51,20 @@ const NodeProperties = (props: NodePropertiesProps) => {
     }
     return skills.find(skill => skill.id === props.id);
   }
-    
-    return (
-        <div className="node-properties h-full" onMouseUp={handleInteract}>
-          {type === "agent" && 
-            <AgentProperties api={api} agent={cleanAgent()} handleInteract={handleInteract} setSelectedNode={setSelectedNode} />
-          }
-          {type === "model" &&
-            <ModelProperties api={api} model={getData(selected)} handleInteract={handleInteract} setSelectedNode={setSelectedNode} />
-          }
-          {type === "skill" &&
-            <SkillProperties api={api} skill={getData(selected)} handleInteract={handleInteract} setSelectedNode={setSelectedNode} />
-          }
-        </div>
-    )
+
+  return (
+      <div className="node-properties h-full" onMouseUp={handleInteract}>
+        {type === "agent" && 
+          <AgentProperties api={api} agent={cleanAgent()} setSelectedNode={setSelectedNode} setNodes={setNodes} agents={agents} nodes={nodes} setNodes={setNodes} />
+        }
+        {type === "model" &&
+          <ModelProperties api={api} model={getData(selected)} setSelectedNode={setSelectedNode} />
+        }
+        {type === "skill" &&
+          <SkillProperties api={api} skill={getData(selected)} setSelectedNode={setSelectedNode} />
+        }
+      </div>
+  )
 }
 
 export default NodeProperties;

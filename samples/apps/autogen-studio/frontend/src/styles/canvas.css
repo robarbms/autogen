@@ -249,3 +249,9 @@ div.workflow-canvas {
     z-index: 1;
     padding: 4px 10px;
 }
+
+.vertical-flex .inline-flex {
+  flex-direction: column;
+}
+
+

@@ -268,7 +268,7 @@ const Workflow = (props: WorkflowProps) => {
     <ReactFlowProvider>
       <BuildLayout
         menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} />}
-        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} /> : null}
+        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} nodes={nodes} setNodes={setNodes} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >
         <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />

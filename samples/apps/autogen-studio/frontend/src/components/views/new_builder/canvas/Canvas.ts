@@ -1,6 +1,7 @@
 import AssistantNode from "../nodes/AssistantNode";
 import GroupChatNode from "../nodes/GroupChatNode";
 import UserProxyNode from "../nodes/UserProxyNode";
+import AgentSelectNode from "../nodes/AgentSelectNode";
 import { Node } from "reactflow";
 import { IAgent, IModelConfig, ISkill } from "../../../types";
 import { API } from "../API";
@@ -18,7 +19,7 @@ export type NodePosition = {
 export interface IAgentNode {
   position: NodePosition;
   id: string;
-  type: "userproxy" | "assistant" | "groupchat";
+  type: "userproxy" | "assistant" | "groupchat" | "agentselect";
   isConnectable?: Boolean;
   dragHandle?: string;
   data: IAgent & {
@@ -60,6 +61,7 @@ export const NodeTypes = {
   userproxy: UserProxyNode,
   assistant: AssistantNode,
   groupchat: GroupChatNode,
+  agentselect: AgentSelectNode
 }
 
 /**
@@ -210,7 +212,43 @@ export const getDropHandler = (
 
           // Creating a new agent
           if (!id) {
-            console.log("Creating a new agent!");
+            // Push an empty agent node into the nodes stack
+            const now = new Date().toISOString();
+            const agentPlusEmpty = agents.concat([
+              {
+                id: -1,
+                user_id: api.user?.email,
+                created_at: now,
+                updated_at: now,
+                type: "agentselect",
+                config: {
+                  name: "create_agent",
+                  human_input_mode: "NEVER",
+                  max_consecutive_auto_reply: 10,
+                  system_message: "",
+                  is_termination_msg: true,
+                  code_execution_config: "local",
+                  default_auto_reply: "",
+                  description: "",
+                  llm_config: false,
+                  admin_name: "Admin",
+                  messages: [],
+                  max_round: 100,
+                  speaker_selection_method: "auto",
+                  allow_repeat_speaker: true
+                }
+              }
+            ])
+            addNode(nodes, api, agentPlusEmpty, (updatedNodes) => {
+              const selected = updatedNodes.map(node => {
+                if (node.data.id === -1) {
+                  node.selected = true;
+                }
+                return node;
+              });
+              setNodes(selected);
+              const emptyNode = updatedNodes.find((node) => node.data.id === -1);
+            }, -1, position, true);
           }
 
           // If dropping the agent onto a group agent

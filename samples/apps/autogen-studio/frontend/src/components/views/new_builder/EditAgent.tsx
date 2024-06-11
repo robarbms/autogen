@@ -59,6 +59,14 @@ const EditAgent = (props: EditAgentProps) => {
         event.preventDefault();
     };
 
+  const agentSetNodes = (nodes) => {
+    const noConnectorNodes = nodes.map(node => {
+      node.data.hideConnector = true;
+      return node;
+    });
+    setNodes(noConnectorNodes);
+  }
+
   // Drag and drop handler for items dragged onto the canvas or agents
   const handleDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents, setModels, setSkills, handleSelection, true);
 
@@ -99,7 +107,7 @@ const EditAgent = (props: EditAgentProps) => {
         <ReactFlowProvider>
             <BuildLayout
                 menu={<Library libraryItems={libraryItems} addNode={addNode} />}
-                properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} /> : null}
+                properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} setNodes={agentSetNodes} nodes={nodes} /> : null}
             >
                 <BuildNavigation className="nav-over-canvas"  category="agent" handleEdit={() => {}} />
                 <AgentCanvas

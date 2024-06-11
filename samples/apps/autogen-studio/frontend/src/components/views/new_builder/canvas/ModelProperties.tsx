@@ -14,12 +14,11 @@ import { useBuildStore } from "../../../../hooks/buildStore";
 type ModelPropertiesProps = {
     api: API;
     model: IModelConfig;
-    handleInteract: MouseEventHandler<HTMLDivElement>;
     setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
 }
 
 const ModelProperties = (props: ModelPropertiesProps) => {
-    const { api, model, handleInteract, setSelectedNode } = props;
+    const { api, model, setSelectedNode } = props;
     const [ modelStatus, setModelStatus ] = useState();
     const [ loading, setLoading ] = useState(false);
     const [ editModel, setEditModel ] = useState<IModelConfig>();

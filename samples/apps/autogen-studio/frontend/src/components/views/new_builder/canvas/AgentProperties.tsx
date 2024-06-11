@@ -14,10 +14,13 @@ type AgentPropertiesProps = {
     agent: IAgent;
     api: API;
     setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
+    agents: Array<IAgent>;
+    nodes: Array<Node & IAgentNode>;
+    setNodes: (nodes: Array<Node & IAgentNode>) => void;
 }
 
 const AgentProperties = (props: AgentPropertiesProps) => {
-    const { agent, api, setSelectedNode } = props;
+    let { agent, api, setSelectedNode, agents, nodes, setNodes } = props;
     const [ agentEdit, setAgentEdit ] = useState<IAgent | null>(null);
     const { setAgents } = useBuildStore(({setAgents}) => ({setAgents}));
 
@@ -33,6 +36,44 @@ const AgentProperties = (props: AgentPropertiesProps) => {
         setSelectedNode(null);
     }
 
+    const addAgent = (data) => {
+      const maxId = Math.max(...agents.map(agent => agent.id));
+      const id = maxId + 1;
+      const agentData = {
+        ...agent,
+        config: {
+          ...data.config,
+        },
+        id,
+        type: data.type
+      }
+
+      api.addAgent(agentData, (resp) => {
+        // Update agents when new agent is added
+        api.getAgents((updatedAgents) => {
+          setAgents(updatedAgents);
+          // get selected node and update it
+          const tempNodeIndex = nodes.findIndex(node => node.selected);
+          const tempNode = nodes[tempNodeIndex];
+          if (tempNode) {
+            // create a new node
+            const newNode = {
+              ...tempNode,
+              data: {
+                ...agentData,
+                models: [],
+                skills: []
+              },
+              type: agentData.type
+            }
+            const updatedNodes = nodes.map((node) => node.selected ? newNode : node);
+            setNodes(updatedNodes);
+            setSelectedNode(newNode.data);
+          }
+        });
+      })
+    }
+
     // Items to show in the collapse menu for agent edit
     let items: ItemType[] = [
         {
@@ -46,11 +87,11 @@ const AgentProperties = (props: AgentPropertiesProps) => {
           key: "0",
           children: (
             <div>
-              {!agentEdit?.type && (
-                <AgentTypeSelector agent={agentEdit} setAgent={updateAgent} />
+              {!agentEdit?.type || agentEdit?.type === "agentselect" && (
+                <AgentTypeSelector agent={agentEdit} setAgent={addAgent} />
               )}
     
-              {agentEdit?.type && agent && (
+              {agentEdit?.type && agentEdit?.type !== "agentselect" && agent && (
                 <AgentConfigView agent={agentEdit} setAgent={updateAgent} close={close} />
               )}
             </div>
@@ -58,7 +99,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
         },
       ];
       if (agentEdit) {
-        if (agentEdit.id) {
+        if (agentEdit.id >= 0) {
           if (agentEdit.type && agentEdit.type === "groupchat") {
             items.push({
               label: (
@@ -102,7 +143,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
         <>
             <h2>Agent: {agentEdit?.config.name}</h2>
             <Collapse
-                className="node-prop-collapse"
+                className="node-prop-collapse vertical-flex"
                 bordered={false}
                 items={items}
                 defaultActiveKey={["0", "1"]}
