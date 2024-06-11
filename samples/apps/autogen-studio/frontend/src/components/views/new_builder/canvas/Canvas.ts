@@ -118,7 +118,6 @@ export const addNode = (
   hideConnector: boolean = false
 ) => {
   if(!agentId) return;
-  console.log({nodes, agents, agentId, position});
   const agentData: IAgent | undefined = agents.find((agent:IAgent) => agent.id === agentId);
   const isInitiator: Boolean = nodes?.length === 0;
   if (agentData) {
@@ -151,6 +150,7 @@ export const nodeUpdater = (
 ) => {
   api.getAgents((agentsFromDB: Array<IAgent>) => {
     setAgents(agentsFromDB);
+    console.log({agentsFromDB, nodes});
     const updatedNodes = nodes.map(node => {
       const nodeCopy = JSON.parse(JSON.stringify(node));
       const updatedAgent = agentsFromDB.find((agent) => agent.id === node.data.id);

@@ -12,13 +12,25 @@ const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: Mo
   const { id }: { id: string } = data;
   const { isInitiator, models, skills, groupAgent, selectedProp }: { isInitiator: boolean, models: IModelConfig[], skills: ISkill[], groupAgent: boolean, selectedProp: AgentProperty } = data.data;
   const { description, name }: { description: string, name: string } = data.data.config;
+  const dragStart = data.data.dragHandle ? (event: DragEvent) => {
+    const transferData = event.dataTransfer?.getData('text/plain');
+    // Only add drag data if not dragging a model or skill
+    if (!transferData) {
+      data.data.dragHandle(event);
+    }
+  } : () => {};
+
+  const click = groupAgent ? (e) => {
+    e.preventDefault();
+    data.setSelection([data]);
+  } : () => {};
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} className="node group_agent node-has-content drop-models drop-skills">
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className="node group_agent node-has-content drop-models drop-skills">
       {isInitiator &&
         <div className="node_tag">Initiator &gt;</div>
       }
-      <div className={`node_title ${groupAgent ? "" : "drag-handle"}`}>
+      <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click}>
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>

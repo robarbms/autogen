@@ -1,4 +1,4 @@
-import React, {ReactNode} from "react";
+import React, {ReactNode, useEffect, useState} from "react";
 import "../../../../styles/build.css";
 
 /**
@@ -18,6 +18,7 @@ type BuildLayoutProps = {
  * @returns 
  */
 const BuildLayout = (props: BuildLayoutProps) => {
+    const [ menuOpen, setMenuOpen ] = useState(false);
     const {menu, children, properties, chat, className} = props;
     let cn = "build-layout h-full";
     if (properties) {
@@ -29,6 +30,18 @@ const BuildLayout = (props: BuildLayoutProps) => {
     if (className) {
         cn += " " + className;
     }
+    if (menuOpen) {
+        cn += " menu-open";
+    }
+
+    const toggleMenu = (e) => {
+        setMenuOpen(menuOpen === false);
+    }
+
+    // Resets the menu locked open when properties or chat state are changed
+    useEffect(() => {
+        setMenuOpen(false);
+    }, [ properties, chat ])
 
     return (
         <div className={cn}>
@@ -37,6 +50,7 @@ const BuildLayout = (props: BuildLayoutProps) => {
             </div>
             <div className="build-layout-content">
                 {children}
+                <div className="library-button" onClick={toggleMenu}>Library</div>
             </div>
             <div className="build-layout-props">
                 {properties}

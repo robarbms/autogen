@@ -9,7 +9,7 @@ import { IAgentNode } from '../canvas/Workflow';
  * Node for rendering group chat manager
  */
 const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
-  const { id }: { id: string} = data;
+  const { id, setSelection }: { id: string, setSelection: (node: Node & IAgentNode) => void} = data;
   let { linkedAgents }: { linkedAgents: Array<IAgentNode & {dragHandle?: (event: DragEvent) => void }> }  = data.data;
   const { name, description }: { name: string, description: string} = data.data.config;
   const container = createRef();
@@ -28,10 +28,10 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
     }
   }
 
-  linkedAgents = linkedAgents.map((agent) => {
+  linkedAgents = linkedAgents ? linkedAgents.map((agent) => {
     agent.dragHandle = dragHandle(agent.id, agent.type);
     return agent;
-  })
+  }) : linkedAgents;
 
   return (
     <div data-id={data.data.id} className="node group_agent node-has-content drop-agents" ref={container}>
@@ -42,9 +42,12 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
         <div className="nodes_area">
           {linkedAgents && 
             linkedAgents.map((node, idx) => node.type === "assistant" ? 
-              <AssistantNode key={idx + 10} data={node} isConnectable={false} /> :
-              <UserproxyNode key={idx + 10} data={node} isConnectable={false} />
+              <AssistantNode key={idx + 10} data={node} isConnectable={false} setSelection={setSelection} /> :
+              <UserproxyNode key={idx + 10} data={node} isConnectable={false} setSelection={setSelection} />
             )
+          }
+          {!linkedAgents &&
+            <div className="node-property-empty">Drag &amp; drop to add an agent</div>
           }
         </div>
         {!data.data.hideConnector &&

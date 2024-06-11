@@ -15,6 +15,26 @@ nav + .flex-1 {
     transition: all .3s ease-out;
 }
 
+.library-button {
+    position: absolute;
+    bottom: 20px;
+    left: 60px;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    background: #fff;
+    padding: 6px 12px;
+    display: none;
+}
+
+.build-layout-properties .library-button,
+.build-layout-chat .library-button {
+    display: block;
+}
+
+.menu-open .library-button {
+    display: none;
+}
+
 .build-layout-content {
     position: relative;
     margin-left: var(--spacing);
@@ -24,12 +44,24 @@ nav + .flex-1 {
     grid-template-columns: 0 1fr 340px 0;
 }
 
+.build-layout-properties.menu-open {
+    grid-template-columns: 270px 1fr 340px 0;
+}
+
 .build-layout-chat {
     grid-template-columns: 0 1fr 0 340px;
 }
 
+.build-layout-chat.menu-open {
+    grid-template-columns: 270px 1fr 0 340px;
+}
+
 .build-layout-properties.build-layout-chat {
     grid-template-columns: 0 1fr 340px 340px;
+}
+
+.build-layout-properties.build-layout-chat.menu-open {
+    grid-template-columns: 270px 1fr 340px 340px;
 }
 
 .build-layout-properties .build-layout-content {

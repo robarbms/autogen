@@ -215,14 +215,12 @@ export class API {
 
     // Links workflows to either a sender or receiver agent
     public linkWorkflow (workflow_id: number, type: "sender" |  "receiver", agent_id: number) {
-        console.log("LINKING WORKFLOW", {workflow_id, type, agent_id});
         const url = this.getLinkPath(workflow_id, type, agent_id);
         fetchJSON(url, this.POST_HEADERS, (data) => {}, () => {});
     }
 
     // Unlinks workflows from either a sender or receiver agent
     public unlinkWorkflow (workflow_id: number, type: "sender" | "receiver", agent_id?: number) {
-        console.log("UNLINKING WORKFLOW", {workflow_id, type, agent_id});
         if (agent_id === undefined) {
             this.getWorkflowLinks(workflow_id, (sender: IAgent, receiver: IAgent) => {
                 this.unlinkWorkflow(workflow_id, type, type === "sender" ? sender.id : receiver.id);
@@ -273,20 +271,24 @@ export class API {
                 skills = this.sortByDate(skills);
                 if (agentType === "groupchat") {
                     this.getLinkedAgents(id, (linkedAgents) => {
-                        // linkedAgents = this.sortByDate(linkedAgents);
                         const {length} = linkedAgents;
+                        const order = linkedAgents.map(({id}) => id);
                         let updatedAgents = [];
-                        while(linkedAgents) {
+                        while(updatedAgents.length < length) {
                             const agent = linkedAgents.pop();
                             this.getAgentData(agent.id, agent.type, (agentData) => {
                                 const updatedAgent = Object.assign({}, agent, agentData);
                                 updatedAgents.push(updatedAgent);
                                 if (updatedAgents.length === length) {
-                                    updatedAgents = this.sortByDate(updatedAgents);
+                                    // Sort agents so they are in the same order as returned by the DB
+                                    const sortedAgents = new Array(length).fill(null).map((_, idx) => {
+                                        const id = order[idx];
+                                        return updatedAgents.find(agent => agent.id === id);
+                                    })
                                     callback({
                                         models,
                                         skills,
-                                        linkedAgents: updatedAgents
+                                        linkedAgents: sortedAgents || []
                                     });
                                 }
                             });
@@ -294,7 +296,7 @@ export class API {
                         callback({
                             models,
                             skills,
-                            linkedAgents
+                            linkedAgents: updatedAgents
                         });
                     });
                 }

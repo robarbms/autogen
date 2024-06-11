@@ -50,7 +50,6 @@ const Workflow = (props: WorkflowProps) => {
   const [ isValidWorkflow, setIsValidWorkflow ] = useState<Boolean>(false);
   const [ editting, setEditting ] = useState<IWorkItem>();
   const [ initialized, setInitialized ] = useState<boolean>(false);
-  console.log(workflows);
 
   // Load and set Agents and workflows
   // TODO: Load all first, then set all in a single object so there are fewer rerenders.
@@ -103,7 +102,6 @@ const Workflow = (props: WorkflowProps) => {
     // Should have an initiator
     const initiator: Node & IAgentNode | undefined = getInitiator();
 
-    console.log("Creating edge", {initialized, initiator, nodes});
     // Check if initialized and nodes loaded
     if (!initialized && initiator && nodes.length > 1) {
       // Add edges to sender and receiver once nodes have loaded

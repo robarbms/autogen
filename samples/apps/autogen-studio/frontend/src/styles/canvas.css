@@ -160,13 +160,14 @@ div.workflow-canvas {
 .nodes_area {
   display: flex;
   flex-wrap: wrap;
+  padding: 10px;
+  gap: 10px;
 }
 
 .nodes_area .node {
   width: 198px;
   min-width: 120px;
   display: inline-block;
-  margin: 10px;
 }
 
 .node-properties h2 {
