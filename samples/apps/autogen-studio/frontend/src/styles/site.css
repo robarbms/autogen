@@ -135,10 +135,21 @@ body {
     cursor: pointer;
 }
 
+.build-nav-item {
+    cursor: pointer;
+    margin: 0 0 0 26px;
+    transition: opacity linear .2s .3s;
+}
+
 .nav-narrow .nav-minimize,
-.nav-wide .nav-expand {
+.nav-wide .nav-expand,
+.nav-narrow .build-nav-item {
     opacity: 0;
     pointer-events: none;
+}
+
+.nav-narrow .build-nav-item {
+    transition: opacity linear .3s;
 }
 
 .nav-narrow .page-navigation label {
@@ -153,9 +164,4 @@ body {
 .nav-narrow .page-navigation .ant-collapse-expand-icon {
     opacity: 0;
     transition: opacity linear .2s;
-}
-
-.build-nav-item {
-    cursor: pointer;
-    margin: 0 0 0 26px;
 }

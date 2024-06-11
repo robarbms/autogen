@@ -59,7 +59,7 @@ const PageNavigation = (props: PageNavigationProps) => {
             <nav>
                 <section>
                     <a href="/"><PlaygroundIcon /><label>Playground</label></a>
-                    <Collapse onChange={(value) => setBuildExpand(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildExpand && navigationExpand ? ['1'] : []} />
+                    <Collapse onChange={(value) => setBuildExpand(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildExpand ? ['1'] : []} />
                 </section>
                 {hasGallery &&
                     <section>
