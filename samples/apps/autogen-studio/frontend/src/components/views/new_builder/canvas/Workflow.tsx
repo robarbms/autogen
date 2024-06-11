@@ -28,7 +28,7 @@ type WorkflowProps = {
  */
 const Workflow = (props: WorkflowProps) => {
   const { api } = props;
-  const { agents, setAgents, models, skills, workflowId, workflows, setSkills, setModels } = useBuildStore(({ agents, setAgents, models, skills, workflowId, workflows, setSkills, setModels}) => ({
+  const { agents, setAgents, models, skills, workflowId, workflows, setSkills, setModels, setWorkflows } = useBuildStore(({ agents, setAgents, models, skills, workflowId, workflows, setSkills, setModels, setWorkflows}) => ({
     agents,
     setAgents,
     models,
@@ -36,7 +36,8 @@ const Workflow = (props: WorkflowProps) => {
     workflowId,
     workflows,
     setSkills,
-    setModels
+    setModels,
+    setWorkflows
   }));
   const { setNavigationExpand } = useNavigationStore(({setNavigationExpand}) => ({
     setNavigationExpand
@@ -49,6 +50,7 @@ const Workflow = (props: WorkflowProps) => {
   const [ isValidWorkflow, setIsValidWorkflow ] = useState<Boolean>(false);
   const [ editting, setEditting ] = useState<IWorkItem>();
   const [ initialized, setInitialized ] = useState<boolean>(false);
+  console.log(workflows);
 
   // Load and set Agents and workflows
   // TODO: Load all first, then set all in a single object so there are fewer rerenders.
@@ -57,34 +59,41 @@ const Workflow = (props: WorkflowProps) => {
     setNavigationExpand(false);
       
     if (!initialized) {
-      const curr_work = workflows.find(work => work.id == workflowId)
-      if (curr_work) {
-        const { sender, receiver } = curr_work;
-        const workflowNodes: Array<Node & {data: IWorkflow} & {data: {sender: IAgent, receiver: IAgent}}> = [];
-        const nodeToWorkflow = (node) => {
-          const data = node[0];
-          data.id = `${workflowNodes.length + 1}`
-          workflowNodes.push(node[0]);
-          if (!sender || !receiver || workflowNodes.length === 2) {
-            setNodes(workflowNodes);
-          }
-        }
-        // Add nodes for an existing workflow
-        if (sender) {
-          const sender_pos: NodePosition = { x: 100, y: 100};
-          addNode(nodes, api, agents, nodeToWorkflow, sender.id, sender_pos);
-        }
-        if (receiver) {
-          const receiver_pos: NodePosition = {x: 500, y: 100};
-          addNode(nodes, api, agents, nodeToWorkflow, receiver.id, receiver_pos);
-        }
-        if (!sender || !receiver) {
-          setInitialized(true);
-        }
+      // Refresh workflows before rendering the current workflow
+      api.getWorkflows((updatedWorkflows) => {
+        setWorkflows(updatedWorkflows);
 
-        const ed_work = dataToWorkItem(api.user?.email, curr_work);
-        setEditting(ed_work);
-      }
+        // Find the current active workflow data by it's id
+        const curr_work = updatedWorkflows.find(work => work.id == workflowId)
+        if (curr_work) {
+          const { sender, receiver } = curr_work;
+          const workflowNodes: Array<Node & {data: IWorkflow} & {data: {sender: IAgent, receiver: IAgent}}> = [];
+          const nodeToWorkflow = (node) => {
+            const data = node[0];
+            data.id = `${workflowNodes.length + 1}`
+            workflowNodes.push(node[0]);
+            if (!sender || !receiver || workflowNodes.length === 2) {
+              setNodes(workflowNodes);
+            }
+          }
+          // Add nodes for an existing workflow
+          if (sender) {
+            const sender_pos: NodePosition = { x: 100, y: 100};
+            addNode(nodes, api, agents, nodeToWorkflow, sender.id, sender_pos);
+          }
+          if (receiver) {
+            const receiver_pos: NodePosition = {x: 500, y: 100};
+            addNode(nodes, api, agents, nodeToWorkflow, receiver.id, receiver_pos);
+          }
+          // If missing a sender or receiver, set initialized as there won't be any edges
+          if (sender === null || receiver === null) {
+            setInitialized(true);
+          }
+  
+          const ed_work = dataToWorkItem(api.user?.email, curr_work);
+          setEditting(ed_work);
+        }
+      });
     }
   }, []);
 
@@ -94,6 +103,7 @@ const Workflow = (props: WorkflowProps) => {
     // Should have an initiator
     const initiator: Node & IAgentNode | undefined = getInitiator();
 
+    console.log("Creating edge", {initialized, initiator, nodes});
     // Check if initialized and nodes loaded
     if (!initialized && initiator && nodes.length > 1) {
       // Add edges to sender and receiver once nodes have loaded
@@ -105,10 +115,12 @@ const Workflow = (props: WorkflowProps) => {
           selected: false,
           target: target.id,
           markerStart: {
-            type: MarkerType.ArrowClosed
+            type: MarkerType.ArrowClosed,
+            color: "var(--agent-color)"
           },
           markerEnd: {
-            type: MarkerType.ArrowClosed
+            type: MarkerType.ArrowClosed,
+            color: "var(--agent-color)"
           }
         }]);
       }
@@ -139,7 +151,7 @@ const Workflow = (props: WorkflowProps) => {
     setIsValidWorkflow(isValid);
 
     // update the workflows sender and receiver
-    api.getWorkflowLinks(workflowId, updateWorkflow, true);
+    if(initialized) api.getWorkflowLinks(workflowId, updateWorkflow, true);
 
     // Should only ever have 1 edge
     if (edges && edges.length > 1) {

@@ -215,12 +215,14 @@ export class API {
 
     // Links workflows to either a sender or receiver agent
     public linkWorkflow (workflow_id: number, type: "sender" |  "receiver", agent_id: number) {
+        console.log("LINKING WORKFLOW", {workflow_id, type, agent_id});
         const url = this.getLinkPath(workflow_id, type, agent_id);
         fetchJSON(url, this.POST_HEADERS, (data) => {}, () => {});
     }
 
     // Unlinks workflows from either a sender or receiver agent
     public unlinkWorkflow (workflow_id: number, type: "sender" | "receiver", agent_id?: number) {
+        console.log("UNLINKING WORKFLOW", {workflow_id, type, agent_id});
         if (agent_id === undefined) {
             this.getWorkflowLinks(workflow_id, (sender: IAgent, receiver: IAgent) => {
                 this.unlinkWorkflow(workflow_id, type, type === "sender" ? sender.id : receiver.id);
