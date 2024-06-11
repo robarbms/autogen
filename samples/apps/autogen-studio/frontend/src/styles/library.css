@@ -2,7 +2,7 @@
     min-height: 100%;
     padding: 10px;
     display: grid;
-    grid-template-rows: 136px 1fr;
+    grid-template-rows: 100px 1fr;
     background: #fff;
     border-radius: 8px;
 }
@@ -38,6 +38,14 @@
     min-height: 42px;
     cursor: pointer;
     background: #fff;
+}
+
+.library-item-title {
+    display: -webkit-box;
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .item_emph {

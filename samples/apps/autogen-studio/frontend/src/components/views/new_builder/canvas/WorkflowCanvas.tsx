@@ -1,14 +1,12 @@
 import React, { createElement, createRef, RefObject, useCallback, useEffect, useMemo, useState, MouseEventHandler } from 'react';
 import "../../../../styles/canvas.css";
-import UserProxyNode from "../nodes/UserProxyNode";
-import AssistantNode from "../nodes/AssistantNode";
-import GroupChatNode from "../nodes/GroupChatNode";
 import ReactFlow, {
     addEdge,
     Background,
     Connection,
     Controls,
     Edge,
+    MarkerType,
     Node,
     OnEdgesChange,
     OnNodesChange,
@@ -58,17 +56,6 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
     } = props;
     const canvasWrap: RefObject<HTMLDivElement> = createRef();
 
-    const nodesWithSelection = (nodesTypes) => {
-        const withSelection = {}
-        for (let key in nodesTypes) {
-            withSelection[key] = (props) => createElement(nodesTypes[key], {
-                setSelection,
-                ...props
-            });
-        }
-        return withSelection;
-    }
-
     // Call back for when edges have been changed
     const onEdgeUpdate = useCallback(
         (oldEdge: Edge, newConnection: Connection) => {
@@ -79,7 +66,19 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
     
     // Callback when nodes are connected
     const onConnect = useCallback(
-        (params: Edge | Connection) => setEdges((els: Edge[]) => addEdge(params, els)),
+        (params: Edge | Connection) => setEdges((els: Edge[]) => {
+            return addEdge({
+                ...params,
+                markerStart: {
+                    type: MarkerType.ArrowClosed,
+                    color: "var(--agent-color)"
+                },
+                markerEnd: {
+                    type: MarkerType.ArrowClosed,
+                    color: "var(--agent-color)"
+                }
+            }, els);
+        }),
         []
     );
 

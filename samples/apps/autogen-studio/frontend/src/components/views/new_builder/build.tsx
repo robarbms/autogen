@@ -21,48 +21,50 @@ type BuildViewProps = {
  * @returns 
  */
 const BuildView = (props: BuildViewProps) => {
-  const { setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId } = useBuildStore(({setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId}) => ({
+  const { setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId, agents, workflows, skills, models } = useBuildStore(({setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId, agents, workflows, skills, models}) => ({
     setAgents,
     setModels,
     setSkills,
     setWorkflows,
     editScreen,
     editId,
-    workflowId
+    workflowId,
+    agents,
+    workflows,
+    skills,
+    models
   }));
-  const [workflow, setWorkflow] = useState<null | number>(null);
+  const [previousWork, setPreviousWork] = useState(false);
   const api = new API();
 
   // Load agents, models, skills and workflows on component mount
   useEffect(() => {
+    // Load workflows, agents, models and skills and push them to the store
     api.getWorkflows(setWorkflows);
     api.getAgents(setAgents);
     api.getItems("models", setModels);
     api.getItems("skills", setSkills);
   }, []);
 
-  // Handles edits to the workflow linked agents
-  const handleWorkflowEdit = (wid: number) => {
-    setEditMode(null);
-    // Make sure the new workflow has an initiator
-    api.getWorkflowLinks(wid, (sender: IAgent, receiver: IAgent) => {
-      if (!sender) {
-        // if there isn't a sender, find the initiator and link it to the workflow
-        const initiator: IAgent | undefined = agents.find(agent => agent?.type === "userproxy");
-
-        if (initiator && initiator.id !== undefined) {
-          api.linkWorkflow(wid, "sender", initiator.id);
-        }
-        setWorkflow(wid);
-      }
-    })
-  }
-
+  // If there are any workflows, agents, models or skill, set the previousWork to true
+  useEffect(() => {
+    if (
+      (workflows && workflows.length > 0) ||
+      (agents && agents.length > 0) ||
+      (models && models.length > 0) ||
+      (skills && skills.length > 0)
+    ) {
+        setPreviousWork(true);
+    }
+    else {
+      setPreviousWork(false);
+    }
+  }, [workflows, agents, models, skills]);
 
   return (
     <div className="build h-full">
       {workflowId === null && editScreen === null &&
-        <Home />
+        <Home hasPreviousWork={previousWork} />
       }
       {editScreen === "workflow" &&
         <EditWorkflow api={api} />

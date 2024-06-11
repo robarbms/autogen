@@ -3,7 +3,7 @@ import Library from "../library/Library";
 import BuildLayout from "./BuildLayout";
 import WorkflowCanvas from "./WorkflowCanvas";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
-import ReactFlow, { Edge, Node, NodeChange, ReactFlowProvider, useNodesState, useEdgesState } from "reactflow";
+import ReactFlow, { Edge, Node, NodeChange, ReactFlowProvider, useNodesState, useEdgesState, MarkerType } from "reactflow";
 import NodeProperties from "./NodeProperties";
 import TestWorkflow from "./TestWorkflow";
 import Chat from "./Chat";
@@ -103,7 +103,13 @@ const Workflow = (props: WorkflowProps) => {
           source: initiator.id,
           id: "1",
           selected: false,
-          target: target.id
+          target: target.id,
+          markerStart: {
+            type: MarkerType.ArrowClosed
+          },
+          markerEnd: {
+            type: MarkerType.ArrowClosed
+          }
         }]);
       }
 
@@ -119,10 +125,10 @@ const Workflow = (props: WorkflowProps) => {
     // Should have an initiator
     const initiator: Node & IAgentNode | undefined = getInitiator();
 
-    if (initiator) {
+    if (initiator && edges) {
       // should be connected to an agent
       const edge: Edge | undefined = edges.find(edge => edge.source === initiator.id);
-      if (edge) {
+      if (edge && nodes) {
           const target: Node | undefined = nodes.find(node => node.id === edge.target);
           if (target) {
             isValid = true;
@@ -136,7 +142,7 @@ const Workflow = (props: WorkflowProps) => {
     api.getWorkflowLinks(workflowId, updateWorkflow, true);
 
     // Should only ever have 1 edge
-    if (edges.length > 1) {
+    if (edges && edges.length > 1) {
       // Use only the last added edge
       setEdges([edges[edges.length -1]]);
     }

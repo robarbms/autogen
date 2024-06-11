@@ -35,6 +35,7 @@ const BuildTile = (props: BuildTileProps) => {
 
 // Properties for the Home component
 type HomeProps = {
+    hasPreviousWork: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ type HomeProps = {
  * @returns 
  */
 const Home = (props: HomeProps) => {
+    const { hasPreviousWork }: { showRecent: boolean} = props;
     const {setEditScreen, setEditId} = useBuildStore((state: IBuildState) => ({
         setEditScreen: state.setEditScreen,
         setEditId: state.setEditId,
@@ -51,7 +53,7 @@ const Home = (props: HomeProps) => {
     const editNew = (category: BuildSections) => {
         setEditScreen(category);
         setEditId(null);
-    }  
+    }
 
     return (
         <div className="build-home h-full">
@@ -64,7 +66,9 @@ const Home = (props: HomeProps) => {
                     <BuildTile category="model" label="Add Models" action={editNew.bind(this, "model")} />
                     <BuildTile category="skill" label="Add Skills" action={editNew.bind(this, "skill")} />
                 </div>
-                <RecentWork />
+                {hasPreviousWork &&
+                    <RecentWork />
+                }
             </div>
         </div>
     )

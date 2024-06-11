@@ -254,4 +254,17 @@ div.workflow-canvas {
   flex-direction: column;
 }
 
+path.react-flow__edge-path,
+.react-flow__edge.selected path.react-flow__edge-path {
+  stroke: var(--agent-color);
+}
 
+.react-flow__edge.selected path.react-flow__edge-path {
+  stroke-width: 2px;
+}
+
+div.react-flow__handle {
+  background: var(--agent-color);
+  width: 10px;
+  height: 10px;
+}

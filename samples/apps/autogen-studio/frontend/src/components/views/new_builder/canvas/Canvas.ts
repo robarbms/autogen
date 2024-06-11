@@ -117,6 +117,8 @@ export const addNode = (
   position: NodePosition,
   hideConnector: boolean = false
 ) => {
+  if(!agentId) return;
+  console.log({nodes, agents, agentId, position});
   const agentData: IAgent | undefined = agents.find((agent:IAgent) => agent.id === agentId);
   const isInitiator: Boolean = nodes?.length === 0;
   if (agentData) {
