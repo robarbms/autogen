@@ -20,13 +20,21 @@ const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: Mo
     }
   } : () => {};
 
+
   const click = groupAgent ? (e) => {
     e.preventDefault();
-    data.setSelection([data]);
+    data.setSelection(
+      [{
+        ...data,
+        data: {
+          ...data.data,
+          parent:  data.parent
+        }
+      }]);
   } : () => {};
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className="node group_agent node-has-content drop-models drop-skills">
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""}`}>
       {isInitiator &&
         <div className="node_tag">Initiator &gt;</div>
       }
@@ -34,7 +42,7 @@ const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: Mo
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>
-      <AgentProperties setSelection={data.setSelection} {...{ models, skills }} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
+      <AgentProperties setSelection={data.setSelection} {...{ models, skills }} group={groupAgent ? data.parent : null} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="source"

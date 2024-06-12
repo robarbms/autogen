@@ -17,7 +17,7 @@ const AssistantNode = memo(
     models,
     skills,
     groupAgent,
-    selectedProp
+    selectedProp,
   }: { 
     models: IModelConfig[],
     skills: ISkill[],
@@ -36,16 +36,23 @@ const AssistantNode = memo(
 
   const click = groupAgent ? (e) => {
     e.preventDefault();
-    data.setSelection([data]);
+    data.setSelection(
+      [{
+        ...data,
+        data: {
+          ...data.data,
+          parent: data.parent
+        }
+      }]);
   } : () => {};
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className="node group_agent node-has-content drop-models drop-skills">
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""}`}>
       <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click}>
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>
-      <AgentProperties setSelection={data.setSelection} models={models} skills={skills} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
+      <AgentProperties setSelection={data.setSelection} models={models} skills={skills} group={groupAgent ? data.parent : null} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="target"

@@ -42,8 +42,8 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
         <div className="nodes_area">
           {linkedAgents && 
             linkedAgents.map((node, idx) => node.type === "assistant" ? 
-              <AssistantNode key={idx + 10} data={node} isConnectable={false} setSelection={setSelection} /> :
-              <UserproxyNode key={idx + 10} data={node} isConnectable={false} setSelection={setSelection} />
+              <AssistantNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} /> :
+              <UserproxyNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} />
             )
           }
           {!linkedAgents &&

@@ -37,9 +37,10 @@ export interface IAgentNode {
  * Data for targeting a model or skill for an agent instance
  */
 export type AgentProperty = {
-  id: number,
-  parent: string,
-  type: "model" | "skill"
+  id: number;
+  parent: string;
+  type: "model" | "skill";
+  group?: string;
 }
 
 /**
@@ -322,7 +323,7 @@ export const getDropHandler = (
                       const nodeParent = nodes.find(node => node.data.id === skillTarget);
                       handleSelection({
                         group: "agent-property",
-                        parent: nodeParent.id || skillTarget,
+                        parent: nodeParent?.id ?? skillTarget,
                         id: data[targetIndex].id,
                         type: "skill"
                       });

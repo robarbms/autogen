@@ -31,7 +31,7 @@ type NodePropertiesProps = {
 const NodeProperties = (props: NodePropertiesProps) => {
   const { api, selected, handleInteract, setSelectedNode, setNodes, nodes } = props;
   let type = selected ? "agent" : null;
-  if (selected?.parent && selected.type) {
+  if (selected?.parent && (selected.type === "model" || selected.type === "skill")) {
     type = selected.type;
   } 
   const { models, skills, agents, setAgents } = useBuildStore(({ models, skills, agents, setAgents }) => ({models, skills, agents, setAgents}));

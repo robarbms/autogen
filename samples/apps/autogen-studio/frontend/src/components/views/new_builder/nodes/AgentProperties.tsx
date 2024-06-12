@@ -62,6 +62,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
 
     const clickHandler = (data) => {
         data.parent = instance;
+        data.group = props.group;
         return (event) => setSelection(data);
     }
   

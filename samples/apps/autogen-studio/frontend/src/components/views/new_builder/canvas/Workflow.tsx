@@ -3,7 +3,7 @@ import Library from "../library/Library";
 import BuildLayout from "./BuildLayout";
 import WorkflowCanvas from "./WorkflowCanvas";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
-import ReactFlow, { Edge, Node, NodeChange, ReactFlowProvider, useNodesState, useEdgesState, MarkerType } from "reactflow";
+import ReactFlow, { Edge, Node, NodeChange, ReactFlowProvider, useNodesState, useEdgesState, MarkerType, useStoreApi } from "reactflow";
 import NodeProperties from "./NodeProperties";
 import TestWorkflow from "./TestWorkflow";
 import Chat from "./Chat";
@@ -210,7 +210,10 @@ const Workflow = (props: WorkflowProps) => {
         const selectedData: AgentProperty = {
           id: selected.id || 0,
           parent: selected.parent,
-          type: "model" in selected ? "model" : "skill"
+          type: "model" in selected ? "model" : "skill",
+        }
+        if (selected.group) {
+          selectedData.group = selected.group;
         }
         setSelectedNode(selectedData);
       }
@@ -227,7 +230,28 @@ const Workflow = (props: WorkflowProps) => {
   useEffect(() => {
     if (nodes && nodes.length > 0) {
       const updatedNodes = JSON.parse(JSON.stringify(nodes)).map(node => {
-        node.data.selectedProp = selectedNode && "parent" in selectedNode && selectedNode.parent === node.id ? selectedNode : null;
+        if (selectedNode && "parent" in selectedNode && !("group" in selectedNode) && selectedNode.parent === node.id) {
+          node.data.selectedProp = selectedNode;
+        }
+        else {
+          delete node.data.selectedProp;
+        }
+        if (node.type === "groupchat" && "linkedAgents" in node.data) {
+          node.data.linkedAgents = node.data.linkedAgents.map((agent, idx) => {
+            if (selectedNode && "group" in selectedNode && selectedNode.group === node.id) {
+              if (idx === parseInt(selectedNode.parent)) {
+                agent.selectedProp = selectedNode;
+              }
+              else {
+                delete agent.selectedProp;
+              }
+            }
+            else {
+              delete agent.selectedProp;
+            }
+            return agent;
+          })
+        }
         return node;
       });
       setNodes(updatedNodes);
