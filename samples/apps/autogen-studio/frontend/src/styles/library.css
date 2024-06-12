@@ -67,7 +67,24 @@
     border-color: var(--skill-color);
 }
 
+.library_item {
+    border-top-color: #d1d1d1;
+    border-right-color: #d1d1d1;
+    border-bottom-color: #d1d1d1;
+}
+
 div.library-groups {
     background: transparent;
 }
-  
+
+.library-close {
+    font-size: 14px;
+    margin: 20px 15px 20px 80px;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.library-close svg {
+    display: inline-block;
+}

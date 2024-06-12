@@ -42,14 +42,15 @@ const Workflow = (props: WorkflowProps) => {
   const { setNavigationExpand } = useNavigationStore(({setNavigationExpand}) => ({
     setNavigationExpand
   }));
-  const [bounding, setBounding] = useState<DOMRect>();
-  const [nodes, setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode | IAgent>>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [showChat, setShowChat] = useState<Boolean>(false);
-  const [selectedNode, setSelectedNode] = useState<null | Object>(null);
+  const [ bounding, setBounding ] = useState<DOMRect>();
+  const [ nodes, setNodes, onNodesChange ] = useNodesState<Array<Node & IAgentNode | IAgent>>([]);
+  const [ edges, setEdges, onEdgesChange ] = useEdgesState<Edge>([]);
+  const [ showChat, setShowChat ] = useState<Boolean>(false);
+  const [ selectedNode, setSelectedNode ] = useState<null | Object>(null);
   const [ isValidWorkflow, setIsValidWorkflow ] = useState<Boolean>(false);
   const [ editting, setEditting ] = useState<IWorkItem>();
   const [ initialized, setInitialized ] = useState<boolean>(false);
+  const [ showMenu, setShowMenu ] = useState(true);
 
   // Load and set Agents and workflows
   // TODO: Load all first, then set all in a single object so there are fewer rerenders.
@@ -307,7 +308,9 @@ const Workflow = (props: WorkflowProps) => {
   return (
     <ReactFlowProvider>
       <BuildLayout
-        menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} />}
+        showMenu={showMenu}
+        setShowMenu={setShowMenu}
+        menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} setShowMenu={setShowMenu} />}
         properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} nodes={nodes} setNodes={setNodes} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >

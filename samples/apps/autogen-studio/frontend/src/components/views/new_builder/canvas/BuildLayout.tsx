@@ -1,5 +1,6 @@
 import React, {ReactNode, useEffect, useState} from "react";
 import "../../../../styles/build.css";
+import { ExpandMenuIcon } from "../Icons";
 
 /**
  * Build Layout component properties
@@ -10,6 +11,8 @@ type BuildLayoutProps = {
     properties?: ReactNode;           // A right menu area used for node properties
     chat?: ReactNode;           // A furthermost right menu used for workflow testing
     className?: string;
+    showMenu: boolean;
+    setShowMenu: (showMenu: boolean) => void;
 }
 
 /**
@@ -18,39 +21,38 @@ type BuildLayoutProps = {
  * @returns 
  */
 const BuildLayout = (props: BuildLayoutProps) => {
-    const [ menuOpen, setMenuOpen ] = useState(false);
-    const {menu, children, properties, chat, className} = props;
-    let cn = "build-layout h-full";
-    if (properties) {
-        cn += " build-layout-properties"
-    }
-    if (chat) {
-        cn += " build-layout-chat";
-    }
-    if (className) {
-        cn += " " + className;
-    }
-    if (menuOpen) {
-        cn += " menu-open";
-    }
+    const {menu, children, properties, chat, className, showMenu, setShowMenu} = props;
+    const [ structure, setStructure ] = useState("");
 
-    const toggleMenu = (e) => {
-        setMenuOpen(menuOpen === false);
-    }
-
-    // Resets the menu locked open when properties or chat state are changed
     useEffect(() => {
-        setMenuOpen(false);
-    }, [ properties, chat ])
+        let cn = "build-layout h-full";
+        if (properties) {
+            cn += " build-layout-properties"
+        }
+        if (chat) {
+            cn += " build-layout-chat";
+        }
+        if (className) {
+            cn += " " + className;
+        }
+        if (showMenu === false) {
+            cn += " menu-closed";
+        }
+
+        setStructure(cn);
+    }, [ properties, chat, showMenu, menu]);
+    const openMenu = (e) => {
+        setShowMenu(true);
+    }
 
     return (
-        <div className={cn}>
+        <div className={structure}>
             <div className="build-layout-menu">
                 {menu}
             </div>
             <div className="build-layout-content">
                 {children}
-                <div className="library-button" onClick={toggleMenu}>Library</div>
+                <div className="library-button" onClick={openMenu}><ExpandMenuIcon /> Open library</div>
             </div>
             <div className="build-layout-props">
                 {properties}

@@ -15,6 +15,10 @@ nav + .flex-1 {
     transition: all .3s ease-out;
 }
 
+.build-layout.menu-closed {
+    grid-template-columns: 0 1fr 0 0;
+}
+
 .library-button {
     position: absolute;
     bottom: 20px;
@@ -25,15 +29,19 @@ nav + .flex-1 {
     padding: 6px 12px;
     display: none;
     cursor: pointer;
+    font-size: 14px;
 }
 
-.build-layout-properties .library-button,
-.build-layout-chat .library-button {
+.menu-closed .library-button {
     display: block;
 }
 
 .menu-open .library-button {
     display: none;
+}
+
+.library-button svg {
+    display: inline-block;
 }
 
 .build-layout-content {
@@ -42,35 +50,31 @@ nav + .flex-1 {
 }
 
 .build-layout-properties {
-    grid-template-columns: 0 1fr 340px 0;
-}
-
-.build-layout-properties.menu-open {
     grid-template-columns: 270px 1fr 340px 0;
 }
 
-.build-layout-chat {
-    grid-template-columns: 0 1fr 0 340px;
+.build-layout-properties.menu-closed {
+    grid-template-columns: 0 1fr 340px 0;
 }
 
-.build-layout-chat.menu-open {
+.build-layout-chat {
     grid-template-columns: 270px 1fr 0 340px;
 }
 
-.build-layout-properties.build-layout-chat {
-    grid-template-columns: 0 1fr 340px 340px;
+.build-layout-chat.menu-closed {
+    grid-template-columns: 0 1fr 0 340px;
 }
 
-.build-layout-properties.build-layout-chat.menu-open {
+.build-layout-properties.build-layout-chat {
     grid-template-columns: 270px 1fr 340px 340px;
 }
 
-.build-layout-properties .build-layout-content {
-    margin-left: 0;
+.build-layout-properties.build-layout-chat.menu-closed {
+    grid-template-columns: 0 1fr 340px 340px;
 }
 
-.menu-open .build-layout-content {
-    margin-left: var(--spacing);
+.menu-closed .build-layout-content {
+    margin-left: 0;
 }
 
 .build-layout-properties .build-layout-props,

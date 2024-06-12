@@ -2,7 +2,6 @@ import React, { ReactElement, useEffect, useState } from "react";
 import { appContext } from "../hooks/provider";
 import PageNavigation from "./PageNavigation";
 import "../styles/site.css";
-import "../styles/layout.css";
 import { useNavigationStore } from "../hooks/navigationStore";
 
 // Properties used by the PageLayout component

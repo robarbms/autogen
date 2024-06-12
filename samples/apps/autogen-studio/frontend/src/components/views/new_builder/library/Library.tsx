@@ -5,6 +5,7 @@ import "../../../../styles/library.css";
 import { LibraryGroups, Group } from "./LibraryGroups";
 import { IWorkItem, dataToWorkItem } from "../utils";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
+import { CollapseMenuIcon } from "../Icons";
 
 export type LibraryGroup = {
     items: Array<IAgent | ISkill | IModelConfig | IWorkflow>;
@@ -19,6 +20,7 @@ type LibraryProps = {
     addNode: (node: any) => void;
     libraryItems: LibraryGroup[];
     user: string;
+    setShowMenu: (showMenu: boolean) => void;
 };
 
 /**
@@ -27,7 +29,7 @@ type LibraryProps = {
  * @returns 
  */
 const Library = (props: LibraryProps) => {
-    const { libraryItems, user, addNode } = props;
+    const { libraryItems, user, addNode, setShowMenu } = props;
     const [search, setSearch] = useState('');
     const [items, setItems] = useState<Group[]>([]);
 
@@ -71,6 +73,7 @@ const Library = (props: LibraryProps) => {
                     addNode={addNode}
                 />
             </div>
+            <div className="library-close" onClick={() => setShowMenu(false)}><CollapseMenuIcon /> Close library</div>
         </div>
     )
 }
