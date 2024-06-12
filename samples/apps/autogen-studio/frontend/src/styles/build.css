@@ -24,6 +24,7 @@ nav + .flex-1 {
     background: #fff;
     padding: 6px 12px;
     display: none;
+    cursor: pointer;
 }
 
 .build-layout-properties .library-button,
@@ -66,6 +67,10 @@ nav + .flex-1 {
 
 .build-layout-properties .build-layout-content {
     margin-left: 0;
+}
+
+.menu-open .build-layout-content {
+    margin-left: var(--spacing);
 }
 
 .build-layout-properties .build-layout-props,
