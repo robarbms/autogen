@@ -37,7 +37,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
     }
 
     const addAgent = (data) => {
-      const maxId = Math.max(...agents.map(agent => agent.id));
+      const maxId = agents && agents.length > 0 ? Math.max(...agents.map(agent => agent.id)) : 0;
       const id = maxId + 1;
       const agentData = {
         ...agent,
@@ -50,28 +50,29 @@ const AgentProperties = (props: AgentPropertiesProps) => {
 
       api.addAgent(agentData, (resp) => {
         // Update agents when new agent is added
-        api.getAgents((updatedAgents) => {
-          setAgents(updatedAgents);
-          // get selected node and update it
-          const tempNodeIndex = nodes.findIndex(node => node.selected);
-          const tempNode = nodes[tempNodeIndex];
-          if (tempNode) {
-            // create a new node
-            const newNode = {
-              ...tempNode,
-              data: {
-                ...agentData,
-                models: [],
-                skills: []
-              },
-              type: agentData.type
-            }
-            const updatedNodes = nodes.map((node) => node.selected ? newNode : node);
-            setNodes(updatedNodes);
-            setSelectedNode(newNode.data);
+        const updatedAgents = agents.concat([agentData]);
+        setAgents(updatedAgents);
+        // get selected node and update it
+        const tempNodeIndex = nodes.findIndex(node => node.data.id === -1);
+        const tempNode = nodes[tempNodeIndex];
+        if (tempNode) {
+          // create a new node
+          const newNode = {
+            ...tempNode,
+            data: {
+              ...agentData,
+              models: [],
+              skills: [],
+              isInitiator: nodes.length === 1
+            },
+            type: agentData.type,
           }
-        });
-      })
+          const updatedNodes = nodes;
+          updatedNodes[tempNodeIndex] = newNode;
+          setNodes(updatedNodes);
+          setSelectedNode([newNode]);
+        }
+      });
     }
 
     // Items to show in the collapse menu for agent edit

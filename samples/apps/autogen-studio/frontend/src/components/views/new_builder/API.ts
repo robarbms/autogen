@@ -311,6 +311,20 @@ export class API {
     }
 
     public addAgent(agent: IAgent, callback: (data: any) => void) {
+        let error_msg = "";
+        if (!agent.id || agent.id < 1) {
+            error_msg += ` Invalid agent id: ${agent.id}; `;
+        }
+        if (agent.type !==  "assistant" && agent.type !== "userproxy" && agent.type !== "groupchat") {
+            error_msg += ` Invalid agent type: ${agent.type}; `;
+        }
+        if (error_msg !== "") {
+            callback({
+                message: error_msg,
+                status: false
+            });
+            return;
+        }
         const url = `${this.serverUrl}/agents`;
         const headers = this.POST_HEADERS;
         headers.body = JSON.stringify(agent);

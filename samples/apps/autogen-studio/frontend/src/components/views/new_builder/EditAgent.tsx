@@ -109,7 +109,6 @@ const EditAgent = (props: EditAgentProps) => {
                 menu={<Library libraryItems={libraryItems} addNode={addNode} />}
                 properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} setNodes={agentSetNodes} nodes={nodes} /> : null}
             >
-                <BuildNavigation className="nav-over-canvas"  category="agent" handleEdit={() => {}} />
                 <AgentCanvas
                     nodes={nodes}
                     onNodesChange={onNodesChange}

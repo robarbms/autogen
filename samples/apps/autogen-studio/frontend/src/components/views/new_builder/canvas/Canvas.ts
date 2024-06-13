@@ -66,12 +66,12 @@ export const NodeTypes = {
 }
 
 /**
- * Injects additional props into nodes
+ * Injects additional props into node components
  * @param extraProps 
  * @returns 
  */
-export const TypesWithProps = (extraProps) => {
-  const typeWithProps = [];
+export const TypesWithProps = (extraProps: {[key: string]: any}) => {
+  const typeWithProps:  {[key: string]: any} = {};
   for (let key in NodeTypes) {
     const node = NodeTypes[key];
     typeWithProps[key] = (props) => createElement(NodeTypes[key], {
@@ -151,7 +151,6 @@ export const nodeUpdater = (
 ) => {
   api.getAgents((agentsFromDB: Array<IAgent>) => {
     setAgents(agentsFromDB);
-    console.log({agentsFromDB, nodes});
     const updatedNodes = nodes.map(node => {
       const nodeCopy = JSON.parse(JSON.stringify(node));
       const updatedAgent = agentsFromDB.find((agent) => agent.id === node.data.id);
@@ -188,9 +187,9 @@ export const getDropHandler = (
     }
   }
   ) => {
-    const { left, top } = canvasArea || {
-      left: 0,
-      top: 0
+    const { left, top } = {
+      left: 388,
+      top: 16
     };
 
     // Update agents and refresh nodes once a database edit has been made
@@ -217,7 +216,7 @@ export const getDropHandler = (
           if (!id) {
             // Push an empty agent node into the nodes stack
             const now = new Date().toISOString();
-            const agentPlusEmpty = agents.concat([
+            const agentsPlusEmpty = agents.concat([
               {
                 id: -1,
                 user_id: api.user?.email,
@@ -241,17 +240,24 @@ export const getDropHandler = (
                   allow_repeat_speaker: true
                 }
               }
-            ])
-            addNode(nodes, api, agentPlusEmpty, (updatedNodes) => {
-              const selected = updatedNodes.map(node => {
-                if (node.data.id === -1) {
-                  node.selected = true;
-                }
-                return node;
-              });
-              setNodes(selected);
-              const emptyNode = updatedNodes.find((node) => node.data.id === -1);
-            }, -1, position, true);
+            ]);
+          
+            // Adding a new agent to a group agent
+            if (agentTarget > 0) {
+
+            }
+            else {
+              addNode(nodes, api, agentsPlusEmpty, (updatedNodes) => {
+                const selected = updatedNodes.map(node => {
+                  if (node.data.id === -1) {
+                    node.selected = true;
+                  }
+                  return node;
+                });
+                setNodes(selected);
+                // const emptyNode = updatedNodes.find((node) => node.data.id === -1);
+              }, -1, position, true);
+            }
           }
 
           // If dropping the agent onto a group agent
@@ -316,7 +322,7 @@ export const getDropHandler = (
                 while (targetIndex > 0 && data[targetIndex].name !== name) {
                   targetIndex -= 1;
                 }
-                if (targetIndex > 0 && data[targetIndex].name === name) {
+                if (targetIndex >= 0 && data[targetIndex].name === name) {
                   api.linkAgentSkill(skillTarget, data[targetIndex].id, (agentSkillResp) => {
                     callback(agentSkillResp);
                     setTimeout(() => {
@@ -360,7 +366,6 @@ export const getDropHandler = (
                       setModels(models);
                       setTimeout(() => {
                         const nodeParent = nodes.find(node => node.data.id === modelTarget);
-                        console.log({resp, id, data, nodeParent});
                         handleSelection({
                           group: "agent-property",
                           parent: nodeParent.id || modelTarget,

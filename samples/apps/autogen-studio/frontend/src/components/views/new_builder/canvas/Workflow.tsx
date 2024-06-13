@@ -52,12 +52,8 @@ const Workflow = (props: WorkflowProps) => {
   const [ initialized, setInitialized ] = useState<boolean>(false);
   const [ showMenu, setShowMenu ] = useState(true);
 
-  // Load and set Agents and workflows
-  // TODO: Load all first, then set all in a single object so there are fewer rerenders.
-  useEffect(() => {
-    // Collapse page left navigation
-    setNavigationExpand(false);
-      
+
+  const loadWorkflow = () => {
     if (!initialized) {
       // Refresh workflows before rendering the current workflow
       api.getWorkflows((updatedWorkflows) => {
@@ -89,42 +85,67 @@ const Workflow = (props: WorkflowProps) => {
           if (sender === null || receiver === null) {
             setInitialized(true);
           }
-  
+
           const ed_work = dataToWorkItem(api.user?.email, curr_work);
           setEditting(ed_work);
         }
       });
     }
+  }
+
+  // Load and set Agents and workflows
+  // TODO: Load all first, then set all in a single object so there are fewer rerenders.
+  useEffect(() => {
+    // Collapse page left navigation
+    setNavigationExpand(false);
+    loadWorkflow();
   }, []);
+
+  /*
+  useEffect(() => {
+    setInitialized(false);
+    setEdges([]);
+    setNodes([]);
+    setTimeout(loadWorkflow, 100);
+  }, [workflowId]);
+  */
 
   const getInitiator = (): Node & IAgentNode | undefined => (nodes as Array<Node & IAgentNode>).find((node) => node.data.isInitiator)
 
   useEffect(() => {
-    // Should have an initiator
-    const initiator: Node & IAgentNode | undefined = getInitiator();
+    if (!initialized) {
+      // Determine the current workflow and the number of nodes it should have
+      const curr_work = workflows.find(workflow => workflow.id === workflowId);
+      let nodeCount = 0;
+      if (curr_work && curr_work.sender) nodeCount += 1;
+      if (curr_work && curr_work.receiver) nodeCount += 1;
 
-    // Check if initialized and nodes loaded
-    if (!initialized && initiator && nodes.length > 1) {
-      // Add edges to sender and receiver once nodes have loaded
-      const target = (nodes as Array<Node & IAgentNode>).find(node => node !== initiator);
-      if (target) {
-        setEdges([{
-          source: initiator.id,
-          id: "1",
-          selected: false,
-          target: target.id,
-          markerStart: {
-            type: MarkerType.ArrowClosed,
-            color: "var(--agent-color)"
-          },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: "var(--agent-color)"
-          }
-        }]);
+      // Once nodes are loaded, add edges and set initialized
+      if (nodeCount === nodes.length) {
+        // Should have an initiator
+        const initiator: Node & IAgentNode | undefined = getInitiator();
+        // Add edges to sender and receiver once nodes have loaded
+        const target = (nodes as Array<Node & IAgentNode>).find(node => node !== initiator);
+
+        if (target) {
+          setEdges([{
+            source: initiator.id,
+            id: "1",
+            selected: false,
+            target: target.id,
+            markerStart: {
+              type: MarkerType.ArrowClosed,
+              color: "var(--agent-color)"
+            },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: "var(--agent-color)"
+            }
+          }]);
+        }
+
+        setInitialized(true);
       }
-
-      setInitialized(true);
     }
 
   }, [nodes]);
@@ -198,6 +219,7 @@ const Workflow = (props: WorkflowProps) => {
 
     // suppresses event bubbling for drag events
     const handleDrag: MouseEventHandler = (event: MouseEvent) => {
+      handleSelection(null);
       event.preventDefault();
   };
 
@@ -205,7 +227,7 @@ const Workflow = (props: WorkflowProps) => {
   const handleSelection = (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string }) => {
     if (selected) {
       if (Array.isArray(selected)) {
-        setSelectedNode(selected.length > 0 ? selected[0].data : null);
+        setSelectedNode(selected.length > 0 ? selected[selected.length - 1].data : null);
       }
       else {
         const selectedData: AgentProperty = {
@@ -221,6 +243,11 @@ const Workflow = (props: WorkflowProps) => {
     }
     else {
       setSelectedNode(null);
+    }
+    // remove any empty agents that are not selected
+    const removedEmpty = nodes.filter(node => node.data.id !== -1 || node.selected);
+    if (nodes.length > removedEmpty.length) {
+      setNodes(removedEmpty);
     }
   }
 
@@ -311,7 +338,7 @@ const Workflow = (props: WorkflowProps) => {
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} setShowMenu={setShowMenu} />}
-        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} nodes={nodes} setNodes={setNodes} /> : null}
+        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={handleSelection} nodes={nodes} setNodes={setNodes} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
       >
         <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />

@@ -36,9 +36,10 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     if (editId) {
         editWorkflow = workflows.find((workflow) => workflow.id === editId);
     }
-    const [localWorkflow, setLocalWorkflow] = useState(editWorkflow || sampleWorkflow);
+    const [localWorkflow, setLocalWorkflow] = useState(sampleWorkflow);
 
     const update = (workflow: IWorkflow) => {
+        setLocalWorkflow(workflow);
         // Handle workflow created
         if (workflow.id !== undefined) {
             // Add an initiator
@@ -46,11 +47,13 @@ const EditWorkflow = (props: EditWorkflowProps) => {
             if (userproxy && !!userproxy.id) {
                 api.linkWorkflow(workflow.id, "sender", userproxy?.id);
             }
-            setWorkflowId(workflow.id); 
             // refresh workflows
-            api.getItems("workflows", setWorkflows);
-            setEditScreen(null);
-            setEditId(null);
+            api.getItems("workflows", (workflows) => {
+                setWorkflows(workflows);
+                setWorkflowId(workflow.id); 
+                setEditScreen(null);
+                setEditId(null);
+            });
         }
     }
 

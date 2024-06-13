@@ -42,7 +42,6 @@ const SkillProperties = (props: SkillPropertiesProps) => {
     }, [skill]);
 
     const setSkill = (updatedSkill: ISkill) => {
-        console.log(updatedSkill);
         setLoading(true);
         api.setSkill(updatedSkill, (resp) => {
             api.getItems("skills", (skills) => {
@@ -92,6 +91,7 @@ const SkillProperties = (props: SkillPropertiesProps) => {
                 const value = editorRef.current.getValue();
                 const updatedSkill = { ...skillEdit, content: value };
                 setSkill(updatedSkill);
+                close();
               }
             }}
           >
