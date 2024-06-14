@@ -25,7 +25,6 @@ const Chat = (props: ChatProps) => {
       };
     return (
         <div className="build-chat h-full">
-            <button className="build-chat-close" onClick={close} >X</button>
             <ChatBox
               initMessages={[]}
               session={dummySession}

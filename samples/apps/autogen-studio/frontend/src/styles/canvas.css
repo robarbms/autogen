@@ -190,15 +190,10 @@ div.workflow-canvas {
 
 /* Chat and properties panels */
 
-.node-properties,
-.build-chat {
+.node-properties {
     border: 1px solid #e8e8e8;
     border-radius: 8px;
     overflow-x: hidden;
-}
-
-.node-properties > div {
-    width: 300px;
 }
 
 .node-property-empty {
@@ -211,27 +206,17 @@ div.workflow-canvas {
   flex-basis: auto;
 }
 
-.build-chat > div {
-    width: 325 px;
-}
-
 .node-properties {
-    padding: 10px;
-    background: #fff;
-}
-
-.build-chat {
-    padding: 60px 0 30px;
-    position: relative;
-    background: #fff;
+  padding: 10px;
+  background: #fff;
 }
 
 .build-chat > .text-primary {
-    height: 100%!important;
+  height: 100%!important;
 }
 
 .build-chat .text-primary .scroll {
-    height: calc(100% - 200px)!important;
+  height: calc(100% - 150px)!important;
 }
 
 .build-chat > .text-primary > .text-secondary {
@@ -246,12 +231,12 @@ div.workflow-canvas {
 }
 
 .build-chat-close {
-    position: absolute;
-    display: inline-block;
-    right: 10px;
-    top: 10px;
-    z-index: 1;
-    padding: 4px 10px;
+  position: absolute;
+  display: inline-block;
+  right: 10px;
+  top: 10px;
+  z-index: 1;
+  padding: 4px 10px;
 }
 
 .vertical-flex .inline-flex {

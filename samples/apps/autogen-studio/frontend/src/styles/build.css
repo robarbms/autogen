@@ -11,12 +11,12 @@ nav + .flex-1 {
 
 .build-layout {
     display: grid;
-    grid-template-columns: 270px 1fr 0 0;
+    grid-template-columns: 270px 1fr 0;
     transition: all .3s ease-out;
 }
 
 .build-layout.menu-closed {
-    grid-template-columns: 0 1fr 0 0;
+    grid-template-columns: 0 1fr 0;
 }
 
 .library-button {
@@ -50,27 +50,15 @@ nav + .flex-1 {
 }
 
 .build-layout-properties {
-    grid-template-columns: 270px 1fr 340px 0;
+    grid-template-columns: 270px 1fr 540px;
 }
 
 .build-layout-properties.menu-closed {
-    grid-template-columns: 0 1fr 340px 0;
-}
-
-.build-layout-chat {
-    grid-template-columns: 270px 1fr 0 340px;
+    grid-template-columns: 0 1fr 540px;
 }
 
 .build-layout-chat.menu-closed {
-    grid-template-columns: 0 1fr 0 340px;
-}
-
-.build-layout-properties.build-layout-chat {
-    grid-template-columns: 270px 1fr 340px 340px;
-}
-
-.build-layout-properties.build-layout-chat.menu-closed {
-    grid-template-columns: 0 1fr 340px 340px;
+    grid-template-columns: 0 1fr 0 540px;
 }
 
 .menu-closed .build-layout-content {

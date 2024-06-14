@@ -10,6 +10,7 @@ type LibraryItemProps = {
     description?: string;
     category: string;
     addNode: Function;
+    addLibraryItem: Function;
 }
 
 /**
@@ -18,7 +19,7 @@ type LibraryItemProps = {
  * @returns 
  */
 const LibraryItem = (props: LibraryItemProps) => {
-    const { id, name, description, category } = props;
+    const { id, name, description, category, addLibraryItem } = props;
 
     const classNames = ['library_item', 'group_' + category];
     // Special styling for New item options
@@ -47,7 +48,10 @@ const LibraryItem = (props: LibraryItemProps) => {
             className={classNames.join(' ')}
             draggable
             onDragStart={dragHandle}
-            onClick={props.addNode.bind(null, props)}
+            onClick={() => addLibraryItem({
+                id,
+                type: category
+            })}
         >
             <div className="library-item-title">{name}</div>
         </div>

@@ -21,6 +21,7 @@ type LibraryProps = {
     libraryItems: LibraryGroup[];
     user: string;
     setShowMenu: (showMenu: boolean) => void;
+    addLibraryItem: Function;
 };
 
 /**
@@ -29,7 +30,7 @@ type LibraryProps = {
  * @returns 
  */
 const Library = (props: LibraryProps) => {
-    const { libraryItems, user, addNode, setShowMenu } = props;
+    const { libraryItems, user, addNode, setShowMenu, addLibraryItem } = props;
     const [search, setSearch] = useState('');
     const [items, setItems] = useState<Group[]>([]);
 
@@ -71,6 +72,7 @@ const Library = (props: LibraryProps) => {
                 <LibraryGroups
                     groups={items}
                     addNode={addNode}
+                    addLibraryItem={addLibraryItem}
                 />
             </div>
             <div className="library-close" onClick={() => setShowMenu(false)}><CollapseMenuIcon /> Close library</div>

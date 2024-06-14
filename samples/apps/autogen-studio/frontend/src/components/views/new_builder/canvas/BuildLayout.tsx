@@ -1,6 +1,7 @@
 import React, {ReactNode, useEffect, useState} from "react";
 import "../../../../styles/build.css";
 import { ExpandMenuIcon } from "../Icons";
+import { Drawer } from "antd";
 
 /**
  * Build Layout component properties
@@ -13,6 +14,8 @@ type BuildLayoutProps = {
     className?: string;
     showMenu: boolean;
     setShowMenu: (showMenu: boolean) => void;
+    closeChat: () => void;
+    chatTitle: string;
 }
 
 /**
@@ -21,7 +24,7 @@ type BuildLayoutProps = {
  * @returns 
  */
 const BuildLayout = (props: BuildLayoutProps) => {
-    const {menu, children, properties, chat, className, showMenu, setShowMenu} = props;
+    const {menu, children, properties, chat, className, showMenu, setShowMenu, closeChat, chatTitle} = props;
     const [ structure, setStructure ] = useState("");
 
     useEffect(() => {
@@ -57,9 +60,9 @@ const BuildLayout = (props: BuildLayoutProps) => {
             <div className="build-layout-props">
                 {properties}
             </div>
-            <div className="build-layout-actions">
-                {chat}
-            </div>
+            <Drawer title={chatTitle} open={chat ? true : false} onClose={closeChat} size="large">
+                {chat}               
+            </Drawer>
         </div>
     )
 }

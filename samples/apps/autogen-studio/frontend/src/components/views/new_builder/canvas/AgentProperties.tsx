@@ -17,10 +17,11 @@ type AgentPropertiesProps = {
     agents: Array<IAgent>;
     nodes: Array<Node & IAgentNode>;
     setNodes: (nodes: Array<Node & IAgentNode>) => void;
+    addEdge: (id: string) => void;
 }
 
 const AgentProperties = (props: AgentPropertiesProps) => {
-    let { agent, api, setSelectedNode, agents, nodes, setNodes } = props;
+    let { agent, api, setSelectedNode, agents, nodes, setNodes, addEdge } = props;
     const [ agentEdit, setAgentEdit ] = useState<IAgent | null>(null);
     const { setAgents } = useBuildStore(({setAgents}) => ({setAgents}));
 
@@ -70,6 +71,9 @@ const AgentProperties = (props: AgentPropertiesProps) => {
           const updatedNodes = nodes;
           updatedNodes[tempNodeIndex] = newNode;
           setNodes(updatedNodes);
+          if (newNode.type !== "userproxy") {
+            addEdge(newNode.id);
+          }
           setSelectedNode([newNode]);
         }
       });

@@ -46,7 +46,7 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
               <UserproxyNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} />
             )
           }
-          {!linkedAgents &&
+          {!linkedAgents || linkedAgents.length < 1 &&
             <div className="node-property-empty">Drag &amp; drop to add an agent</div>
           }
         </div>

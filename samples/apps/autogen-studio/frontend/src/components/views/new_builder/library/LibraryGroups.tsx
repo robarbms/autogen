@@ -33,6 +33,7 @@ const GroupTitle = ({title, icon}: {title: string, icon: string | undefined}) =>
 type LibraryGroupsProps = {
     groups: Group[];
     addNode: (node: any) => void;
+    addLibraryItem: Function;
 }
 
 /**
@@ -45,7 +46,7 @@ const LibraryGroups = (props: LibraryGroupsProps) => {
  const groups = props.groups ? props.groups.map(({title, icon, items, key}) => ({
     key,
     label: <GroupTitle {...{title, icon}} />,
-    children: items ? items.map((item, idx) => <LibraryItem key={idx} {...item} addNode={props.addNode} />) : []
+    children: items ? items.map((item, idx) => <LibraryItem key={idx} {...item} addNode={props.addNode} addLibraryItem={props.addLibraryItem} />) : []
  }))
   : [];
 

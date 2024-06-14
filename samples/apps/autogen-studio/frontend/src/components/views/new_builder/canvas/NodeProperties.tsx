@@ -21,6 +21,7 @@ type NodePropertiesProps = {
   setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
   setNodes: (nodes: Array<Node & IAgentNode> | undefined) => void;
   nodes: Array<Node & IAgentNode>;
+  addEdge: (id: string) => void;
 }
 
 /**
@@ -29,7 +30,7 @@ type NodePropertiesProps = {
  * @returns 
  */
 const NodeProperties = (props: NodePropertiesProps) => {
-  const { api, selected, handleInteract, setSelectedNode, setNodes, nodes } = props;
+  const { api, selected, handleInteract, setSelectedNode, setNodes, nodes, addEdge } = props;
   let type = selected ? "agent" : null;
   if (selected?.parent && (selected.type === "model" || selected.type === "skill")) {
     type = selected.type;
@@ -55,7 +56,7 @@ const NodeProperties = (props: NodePropertiesProps) => {
   return (
       <div className="node-properties h-full" onMouseUp={handleInteract}>
         {type === "agent" && 
-          <AgentProperties api={api} agent={cleanAgent()} setSelectedNode={setSelectedNode} setNodes={setNodes} agents={agents} nodes={nodes} setNodes={setNodes} />
+          <AgentProperties api={api} agent={cleanAgent()} setSelectedNode={setSelectedNode} setNodes={setNodes} agents={agents} nodes={nodes} addEdge={addEdge} />
         }
         {type === "model" &&
           <ModelProperties api={api} model={getData(selected)} setSelectedNode={setSelectedNode} />

@@ -12,7 +12,7 @@ import { IWorkItem, dataToWorkItem } from "../utils";
 import { useBuildStore } from "../../../../hooks/buildStore";
 import { useNavigationStore } from "../../../../hooks/navigationStore";
 import { API } from "../API";
-import { addNode, getDropHandler, nodeUpdater, IAgentNode, AgentProperty } from "./Canvas";
+import { addNode, getDropHandler, nodeUpdater, IAgentNode, AgentProperty, emptyAgent, createModel, createSkill } from "./Canvas";
 
 /**
  * Properties for the Workflow component
@@ -51,6 +51,26 @@ const Workflow = (props: WorkflowProps) => {
   const [ editting, setEditting ] = useState<IWorkItem>();
   const [ initialized, setInitialized ] = useState<boolean>(false);
   const [ showMenu, setShowMenu ] = useState(true);
+  const getInitiator = (): Node & IAgentNode | undefined => (nodes as Array<Node & IAgentNode>).find((node) => node.data.isInitiator)
+  const addEdge = (id: string) => {
+    const initiator = getInitiator();
+    if (initiator) {
+      setEdges([{
+        source: initiator.id,
+        id: "1",
+        selected: false,
+        target: id,
+        markerStart: {
+          type: MarkerType.ArrowClosed,
+          color: "var(--agent-color)"
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: "var(--agent-color)"
+        }
+      }]);
+    }
+  }
 
 
   const loadWorkflow = () => {
@@ -75,11 +95,11 @@ const Workflow = (props: WorkflowProps) => {
           // Add nodes for an existing workflow
           if (sender) {
             const sender_pos: NodePosition = { x: 100, y: 100};
-            addNode(nodes, api, agents, nodeToWorkflow, sender.id, sender_pos);
+            addNode(nodes, api, agents, nodeToWorkflow, edges, () => {}, sender.id, sender_pos);
           }
           if (receiver) {
             const receiver_pos: NodePosition = {x: 500, y: 100};
-            addNode(nodes, api, agents, nodeToWorkflow, receiver.id, receiver_pos);
+            addNode(nodes, api, agents, nodeToWorkflow, edges, () => {}, receiver.id, receiver_pos);
           }
           // If missing a sender or receiver, set initialized as there won't be any edges
           if (sender === null || receiver === null) {
@@ -109,8 +129,6 @@ const Workflow = (props: WorkflowProps) => {
     setTimeout(loadWorkflow, 100);
   }, [workflowId]);
   */
-
-  const getInitiator = (): Node & IAgentNode | undefined => (nodes as Array<Node & IAgentNode>).find((node) => node.data.isInitiator)
 
   useEffect(() => {
     if (!initialized) {
@@ -185,7 +203,7 @@ const Workflow = (props: WorkflowProps) => {
   const updateWorkflow = (sender: IAgent, receiver: IAgent) => {
     if (!workflowId) return;
     // make sure the sender is correctly set or update it
-    const initiator = nodes.find((node) => node.data.isInitiator);
+    const initiator = getInitiator();
 
 
     if (!initiator && sender) {
@@ -252,7 +270,7 @@ const Workflow = (props: WorkflowProps) => {
   }
 
   // Drag and drop handler for items dragged onto the canvas or agents
-  const handleDragDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents, setModels, setSkills, handleSelection);
+  const handleDragDrop = getDropHandler(bounding, api, setNodes, nodes, edges, setEdges, agents, setAgents, setModels, setSkills, handleSelection);
 
   // Update selected agent properties when selectedNode changes
   useEffect(() => {
@@ -331,15 +349,111 @@ const Workflow = (props: WorkflowProps) => {
       content: " ",
     }].concat(skills)}
   ];
+
+  // Creates or attaches Agents, models and skills
+  const addLibraryItem = (data) => {
+    console.log(data);
+    const rightPos = nodes && nodes.length > 0 ? Math.max(...nodes.map(node => node.position.x)) + 300 : 100;
+    const addAgent = (id: number) => addNode(nodes, api, agents, setNodes, edges, setEdges, id, {
+      x: rightPos,
+      y: 100
+    });
+    const createEmptyAgent = () => {
+      const agentsWithEmpty = agents.concat([emptyAgent(api.user?.email)]);
+      addNode(nodes, api, agentsWithEmpty, (newNodes) => {
+        const selected = newNodes.map(node => {
+          if (node.data.id === -1) {
+            node.selected = true;
+          }
+          else {
+            node.selected = false;
+          }
+          return node;
+        });
+        setNodes(selected);
+      }, edges, setEdges, -1, {x: rightPos, y: 100});
+      setSelectedNode(nodes[nodes.length - 1]);
+  }
+    // Logic for attaching to a selected item
+    if (selectedNode) {
+      switch (data.type) {
+        case "model":
+          // Link model to selected node
+          if (data.id > 0) {
+            api.linkAgentModel(selectedNode.id, data.id, (data) => {
+              updateNodes();
+            });
+          }
+          else {
+            createModel(api, nodes, setModels, handleSelection, updateNodes, selectedNode.id);
+          }
+          break;
+        case "skill":
+          // Link skill to selected node
+          if (data.id > 0) {
+            api.linkAgentSkill(selectedNode.id, data.id, (data) => {
+              updateNodes();
+            });
+          }
+          else {
+            // create a new skill and link it to the model
+            createSkill(api, nodes, setSkills, handleSelection, updateNodes, selectedNode.id);
+          }
+          break;
+        case "agent":
+          if (selectedNode.type !== "groupchat") {
+            if (data.id > 0) {
+              addNode(nodes, api, agents, (updatedNodes) => {
+                const selected = updatedNodes.map((node, idx) => {
+                  node.selected = idx === updatedNodes.length - 1;
+                  return node;
+                });
+                setNodes(selected);
+              }, edges, setEdges, data.id, {x: rightPos, y: 100});
+            }
+            else {
+              createEmptyAgent();
+            }
+          }
+          else {
+            // link an agent to group chat agent
+            if (data.id > 0) {
+              api.linkAgent(selectedNode.id, data.id, updateNodes);
+            }
+            else {
+              // add an empty agent
+            }
+          }
+      }
+    }
+    // Only agents can be added to the canvas when an agent isn't selected
+    else {
+      if (data.type === "agent") {
+        // Adding an existing agent to the canvas
+        if (data.id > 0) {
+          const newNode = agents.find(agent => agent.id === data.id);
+          if (newNode) {
+            addAgent(data.id);
+          }
+        }
+        else {
+          createEmptyAgent();
+        }
+      }
+    }
+    console.log({data, selectedNode, nodes});
+  }
   
   return (
     <ReactFlowProvider>
       <BuildLayout
         showMenu={showMenu}
         setShowMenu={setShowMenu}
-        menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} setShowMenu={setShowMenu} />}
-        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={handleSelection} nodes={nodes} setNodes={setNodes} /> : null}
+        closeChat={() => setShowChat(false)}
+        menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} setShowMenu={setShowMenu} addLibraryItem={addLibraryItem} />}
+        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={handleSelection} nodes={nodes} setNodes={setNodes} addEdge={addEdge} /> : null}
         chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
+        chatTitle={editting?.name}
       >
         <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />
         <WorkflowCanvas
