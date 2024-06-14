@@ -352,7 +352,6 @@ const Workflow = (props: WorkflowProps) => {
 
   // Creates or attaches Agents, models and skills
   const addLibraryItem = (data) => {
-    console.log(data);
     const rightPos = nodes && nodes.length > 0 ? Math.max(...nodes.map(node => node.position.x)) + 300 : 100;
     const addAgent = (id: number) => addNode(nodes, api, agents, setNodes, edges, setEdges, id, {
       x: rightPos,
@@ -441,7 +440,6 @@ const Workflow = (props: WorkflowProps) => {
         }
       }
     }
-    console.log({data, selectedNode, nodes});
   }
   
   return (

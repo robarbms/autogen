@@ -125,47 +125,46 @@ export const addNode = (
   const initiator = nodes.find(node => node.data.isInitiator);
   const isInitiator: Boolean = !!(!initiator && agentData && agentData.type === "userproxy");
   if (agentData) {
-      const node_id: number = getNodeId(nodes);
-      const nodeData: Node & IAgentNode = {
-        data: {...agentData,
-          config: {...agentData.config},
-          isInitiator,
-          api,
-          hideConnector
-        },
-        position,
-        dragHandle: '.drag-handle',
-        id: node_id.toString(),
-        type: agentData.type || "assistant",
-      };
-      if (!initiator && nodeData.type === "userproxy") {
-        nodeData.data.isInitiator = true;
-      }
-      const newNodes: Array<Node & IAgentNode> = nodes.concat([nodeData]);
-      if (setNodes){
-        setNodes(newNodes);
+    const node_id: number = getNodeId(nodes);
+    const nodeData: Node & IAgentNode = {
+      data: {...agentData,
+        config: {...agentData.config},
+        isInitiator,
+        api,
+        hideConnector
+      },
+      position,
+      dragHandle: '.drag-handle',
+      id: node_id.toString(),
+      type: agentData.type || "assistant",
+    };
+    if (!initiator && nodeData.type === "userproxy") {
+      nodeData.data.isInitiator = true;
+    }
+    const newNodes: Array<Node & IAgentNode> = nodes.concat([nodeData]);
+    if (setNodes){
+      setNodes(newNodes);
 
-        console.log(nodeData);
-        // Create a new edge from the initiator to the newly created node
-        if (nodeData.type === "assistant" || nodeData.type === "groupchat") {
-          if (initiator) {
-            setEdges([{
-              source: initiator.id,
-              id: `${edges.length + 2}`,
-              selected: false,
-              target: node_id.toString(),
-              markerStart: {
-                type: MarkerType.ArrowClosed,
-                color: "var(--agent-color)"
-              },
-              markerEnd: {
-                type: MarkerType.ArrowClosed,
-                color: "var(--agent-color)"
-              }
-            }]);
-          }
+      // Create a new edge from the initiator to the newly created node
+      if (nodeData.type === "assistant" || nodeData.type === "groupchat") {
+        if (initiator) {
+          setEdges([{
+            source: initiator.id,
+            id: `${edges.length + 2}`,
+            selected: false,
+            target: node_id.toString(),
+            markerStart: {
+              type: MarkerType.ArrowClosed,
+              color: "var(--agent-color)"
+            },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: "var(--agent-color)"
+            }
+          }]);
         }
       }
+    }
   }
 }
 
@@ -227,38 +226,35 @@ export const createModel = (
   callback: Function,
   modelTarget: number
 ) => {
-    // Creating a new model
-    const now = new Date().toISOString();
-    const name = "Model name";
-    const modelData = {
-      created_at: now,
-      updated_at: now,
-      model: name,
-      user_id: api.user?.email,
-    }
+  // Creating a new model
+  const now = new Date().toISOString();
+  const name = "Model name";
+  const modelData = {
+    created_at: now,
+    updated_at: now,
+    model: name,
+    user_id: api.user?.email,
+  }
 
-    console.log({modelData});
-
-    api.setModel(modelData, (data: any) => {
-      const {id} = data.data;
-      api.linkAgentModel(modelTarget, id, (resp) => {
-        callback(resp);
-        api.getItems("models", (models: Array<IModelConfig>) => {
-          setModels(models);
-          setTimeout(() => {
-            const nodeParent = nodes.find(node => node.data.id === modelTarget);
-            handleSelection({
-              group: "agent-property",
-              parent: nodeParent?.id || modelTarget,
-              id,
-              type: "model",
-              model: true
-            });
-          }, 100);
-        }, true);
-      });
+  api.setModel(modelData, (data: any) => {
+    const {id} = data.data;
+    api.linkAgentModel(modelTarget, id, (resp) => {
+      callback(resp);
+      api.getItems("models", (models: Array<IModelConfig>) => {
+        setModels(models);
+        setTimeout(() => {
+          const nodeParent = nodes.find(node => node.data.id === modelTarget);
+          handleSelection({
+            group: "agent-property",
+            parent: nodeParent?.id || modelTarget,
+            id,
+            type: "model",
+            model: true
+          });
+        }, 100);
+      }, true);
     });
-
+  });
 }
 
 export const createSkill = (
