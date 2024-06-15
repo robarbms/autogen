@@ -43,7 +43,7 @@ const Workflow = (props: WorkflowProps) => {
     setNavigationExpand
   }));
   const [ bounding, setBounding ] = useState<DOMRect>();
-  const [ nodes, setNodes, onNodesChange ] = useNodesState<Array<Node & IAgentNode | IAgent>>([]);
+  const [ nodes, setNodes, onNodesChange ] = useNodesState<Array<Node & IAgentNode>>([]);
   const [ edges, setEdges, onEdgesChange ] = useEdgesState<Edge>([]);
   const [ showChat, setShowChat ] = useState<boolean>(false);
   const [ selectedNode, setSelectedNode ] = useState<Node & IAgentNode | AgentProperty | null>(null);
@@ -381,25 +381,29 @@ const Workflow = (props: WorkflowProps) => {
       switch (data.type) {
         case "model":
           // Link model to selected node
-          if (data.id !== undefined && data.id > 0) {
-            api.linkAgentModel(id, data.id, (data) => {
-              updateNodes();
-            });
-          }
-          else {
-            createModel(api, nodes as Array<Node & IAgentNode>, setModels, handleSelection, updateNodes, id);
+          if (id !== undefined) {
+            if (data.id !== undefined && data.id > 0) {
+              api.linkAgentModel(id, data.id, (data) => {
+                updateNodes();
+              });
+            }
+            else {
+              createModel(api, nodes as Array<Node & IAgentNode>, setModels, handleSelection, updateNodes, id);
+            }
           }
           break;
         case "skill":
           // Link skill to selected node
-          if (data.id !== undefined && data.id > 0) {
-            api.linkAgentSkill(id, data.id, (data: Array<ISkill>) => {
-              updateNodes();
-            });
-          }
-          else {
-            // create a new skill and link it to the model
-            createSkill(api, nodes as Array<Node & IAgentNode>, setSkills, handleSelection, updateNodes, id);
+          if (id !== undefined) {
+            if ( data.id !== undefined && data.id > 0) {
+              api.linkAgentSkill(id, data.id, (data: Array<ISkill>) => {
+                updateNodes();
+              });
+            }
+            else {
+              // create a new skill and link it to the model
+              createSkill(api, nodes as Array<Node & IAgentNode>, setSkills, handleSelection, updateNodes, id);
+            }
           }
           break;
         case "agent":
@@ -419,7 +423,7 @@ const Workflow = (props: WorkflowProps) => {
           }
           else {
             // link an agent to group chat agent
-            if (data.id !== undefined && data.id > 0) {
+            if (id !== undefined && data.id !== undefined && data.id > 0) {
               api.linkAgent(id, data.id, updateNodes);
             }
             else {
@@ -478,7 +482,7 @@ const Workflow = (props: WorkflowProps) => {
           setBounding={setBounding}
           setEdges={setEdges}
           setNodes={setNodes}
-          setSelection={handleSelection as any}
+          setSelection={handleSelection}
         />
         {!showChat &&
           <TestWorkflow validWorkflow={isValidWorkflow} click={testWorkflow} />

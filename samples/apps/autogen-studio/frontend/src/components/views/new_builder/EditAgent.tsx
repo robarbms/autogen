@@ -5,7 +5,7 @@ import AgentCanvas from "./AgentCanvas";
 import { Node, useNodesState, ReactFlowProvider } from "reactflow";
 import { useBuildStore } from "../../../hooks/buildStore";
 import { API } from "./API";
-import { AgentProperty, getDropHandler, IAgentNode, nodeUpdater } from "./canvas/Canvas";
+import { AgentProperty, getDropHandler, IAgentNode, NodeSelection, nodeUpdater } from "./canvas/Canvas";
 import NodeProperties from "./canvas/NodeProperties";
 import { IAgent, IModelConfig, ISkill } from "../../types";
 
@@ -35,7 +35,7 @@ const EditAgent = (props: EditAgentProps) => {
     const [ showMenu, setShowMenu ] = useState(true);
 
     // On clicking of a node sets it as selected
-    const handleSelection = (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string }) => {
+    const handleSelection = (selected: NodeSelection) => {
         if (selected) {
           if (Array.isArray(selected)) {
             setSelectedNode(selected.length > 0 ? selected[0].data : null);

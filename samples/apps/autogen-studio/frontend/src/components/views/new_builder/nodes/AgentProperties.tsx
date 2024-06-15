@@ -1,7 +1,7 @@
 import React, { DragEvent, MouseEvent } from "react";
 import { IModelConfig, ISkill } from "../../../types";
 import { ModelIcon, SkillIcon } from "../Icons";
-import { AgentProperty, IAgentNode } from "../canvas/Canvas";
+import { AgentProperty, IAgentNode, NodeSelection } from "../canvas/Canvas";
 import { Node } from "reactflow";
 
 // Rendering for an agent skill
@@ -34,7 +34,7 @@ type AgentPropertiesProps = {
     skills: ISkill[],
     parent: number,
     instance: string,
-    setSelection: (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } | null) => void,
+    setSelection: (selected: NodeSelection) => void,
     selectedProp: AgentProperty,
     group?: string
 }
@@ -51,7 +51,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
             skills: ISkill[],
             parent: number,
             instance: string,
-            setSelection: (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string } | null) => void,
+            setSelection: (selected: NodeSelection) => void,
             selectedProp: AgentProperty
         } = props;
 
@@ -70,10 +70,14 @@ const AgentProperties = (props: AgentPropertiesProps) => {
         }
     }
 
-    const clickHandler = (data: (IModelConfig | ISkill) & { parent?: string, group?: string }) => {
-        data.parent = instance;
-        data.group = props.group;
-        return (event: MouseEvent) => setSelection(data);
+    const clickHandler = (clickData: IModelConfig | ISkill, type: "model" | "skill") => {
+        const propertyData: (IModelConfig | ISkill) & AgentProperty = {
+            ...clickData,
+            parent: instance,
+            group: props.group,
+            type
+        }
+        return (event: MouseEvent) => setSelection(propertyData);
     }
   
     return (
@@ -81,7 +85,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
             {models &&
                 models.map((model: IModelConfig, idx: number) => <Model
                         selected={selectedProp && selectedProp.type == "model" && selectedProp.id === model.id}
-                        click={clickHandler(model)}
+                        click={clickHandler(model, "model")}
                         dragHandle={dragHandle("model", model.id)}
                         {...model}
                         key={idx}
@@ -93,7 +97,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
             {skills &&
                 skills.map((skill: ISkill, idx: number) => <Skill
                         selected={selectedProp && selectedProp.type == "skill" && selectedProp.id === skill.id}
-                        click={clickHandler(skill)}
+                        click={clickHandler(skill, "skill")}
                         dragHandle={dragHandle("skill", skill.id)}
                         {...skill}
                         key={idx}

@@ -28,7 +28,7 @@ export type LibraryGroup = {
 type LibraryProps = {
     libraryItems: LibraryGroup[];
     user: string;
-    setShowMenu: (showMenu: boolean) => void;
+    setShowMenu?: (showMenu: boolean) => void;
     addLibraryItem: Function;
 };
 
@@ -46,7 +46,7 @@ const Library = (props: LibraryProps) => {
     useEffect(() => {
         // Creates Group[] objects from what's in the libraryItems (agents, models, skills, and workflows)
         const userDataToWorkItem = dataToWorkItem.bind(this, user);
-        let groups: Group[] = libraryItems.map((libGroup, idx) => ({
+        let groups: Group[] = libraryItems.map((libGroup: any, idx: number) => ({
             title: libGroup.label,
             items: libGroup.items.map(userDataToWorkItem),
             collapsed: false,
@@ -82,7 +82,9 @@ const Library = (props: LibraryProps) => {
                     addLibraryItem={addLibraryItem}
                 />
             </div>
-            <div className="library-close" onClick={() => setShowMenu(false)}><CollapseMenuIcon /> Close library</div>
+            {setShowMenu &&
+                <div className="library-close" onClick={() => setShowMenu(false)}><CollapseMenuIcon /> Close library</div>
+            }
         </div>
     )
 }

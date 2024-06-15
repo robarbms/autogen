@@ -6,7 +6,7 @@ import { Collapse } from "antd";
 import { IAgent, IModelConfig, ISkill } from "../../../types";
 import { ItemType } from "../../../../../node_modules/rc-collapse/es/interface";
 import { Node } from "reactflow";
-import { IAgentNode, AgentProperty } from "./Canvas";
+import { IAgentNode, AgentProperty, NodeSelection } from "./Canvas";
 import AgentProperties from "./AgentProperties";
 import ModelProperties from "./ModelProperties";
 import SkillProperties from "./SkillProperties";
@@ -16,10 +16,10 @@ import { API } from "../API";
 // Properties for the NodeProperties panel
 type NodePropertiesProps = {
   api: API,
-  selected: Node & IAgentNode | AgentProperty;
+  selected: Node & IAgentNode | AgentProperty | null;
   handleInteract: MouseEventHandler<HTMLDivElement>;
-  setSelectedNode: (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } | null)  => void;
-  setNodes: (nodes: Array<Node & IAgentNode> | undefined) => void;
+  setSelectedNode: (selected: NodeSelection)  => void;
+  setNodes: (nodes: Array<Node & IAgentNode>) => void;
   nodes: Array<Node & IAgentNode>;
   addEdge?: (id: string) => void;
 }
@@ -32,14 +32,14 @@ type NodePropertiesProps = {
 const NodeProperties = (props: NodePropertiesProps) => {
   const { api, selected, handleInteract, setSelectedNode, setNodes, nodes, addEdge } = props;
   let type = selected ? "agent" : null;
-  if ("parent" in selected && (selected.type === "model" || selected.type === "skill")) {
+  if (selected && "parent" in selected && (selected.type === "model" || selected.type === "skill")) {
     type = selected.type;
   } 
   const { models, skills, agents, setAgents } = useBuildStore(({ models, skills, agents, setAgents }) => ({models, skills, agents, setAgents}));
-  const config: Object = "config" in selected ? selected.config as Object : {};
+  const config: Object = selected && "config" in selected ? selected.config as Object : {};
   const cleanAgent = () => (selected ? {
     config: {...config},
-    id: selected.id,
+    id: selected ? selected?.id : -1,
     type: selected.type,
     updated_at: "updated_at" in selected ? selected.updated_at : "",
     created_at: "created_at" in selected ? selected.created_at : "",

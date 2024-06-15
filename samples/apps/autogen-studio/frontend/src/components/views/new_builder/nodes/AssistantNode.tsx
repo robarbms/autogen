@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { AgentIcon } from '../Icons';
-import { AgentProperty, IAgentNode } from '../canvas/Canvas';
+import { AgentProperty, IAgentNode, NodeSelection } from '../canvas/Canvas';
 import { Node } from 'reactflow';
 import AgentProperties from './AgentProperties';
 import { IAgent, IModelConfig, ISkill } from '../../../types';
@@ -10,7 +10,7 @@ import { IAgent, IModelConfig, ISkill } from '../../../types';
  * Node for rendering assistant agents
  */
 const AssistantNode = memo(
-  (data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void, parent: string},
+  (data: Node & IAgentNode & { setSelection: (node: NodeSelection) => void, parent: string},
   isConnectable: boolean | undefined
 ) => {
   const {

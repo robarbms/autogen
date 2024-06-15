@@ -43,6 +43,7 @@ const EditModel = (props: EditModelProps) => {
         }
     }
     const [ localModel, setLocalModel ] = useState<IModelConfig>(model);
+    const [ showMenu, setShowMenu ] = useState<boolean>(true);
     const close = () => {
         setEditScreen(null);
         setEditId(null);
@@ -53,13 +54,17 @@ const EditModel = (props: EditModelProps) => {
         api.getItems("models", setModels, true);
     }
 
+    const addLibraryItem = () => {
+
+    }
+
     return (
         <BuildLayout className="edit-model" menu={<Library libraryItems={[{
                 label: "Models",
                 items: models
             }]}
             user={user}
-            addNode={() => {}}
+            addLibraryItem={addLibraryItem}
             />}
         >
             <ModelConfigView model={localModel} setModel={updateModel} close={close}/>

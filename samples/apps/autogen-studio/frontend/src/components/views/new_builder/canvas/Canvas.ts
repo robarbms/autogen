@@ -13,6 +13,8 @@ export type NodePosition = {
   y: number;
 }
 
+export type NodeSelection = Array<Node & IAgentNode> | AgentProperty | IModelConfig & AgentProperty | ISkill & AgentProperty | null;
+
 /**
  * Encapsulating IAgent config and node information
  */
@@ -28,16 +30,18 @@ export interface IAgentNode {
     skills?: ISkill[];
     api: API;
     hideConnector?: boolean;
+    linkedAgents?: Array<IAgent & {dragHandle?: Function, isSelected?: boolean}>;
   },
-  setSelection?: (node: Array<Node & IAgentNode> | AgentProperty) => void,
-  selectedProp?: boolean
+  setSelection?: (node: NodeSelection) => void,
+  selectedProp?: boolean,
+  selected?: boolean
 }
 
 /**
  * Data for targeting a model or skill for an agent instance
  */
 export type AgentProperty = {
-  id: number;
+  id?: number;
   parent: string;
   type: "model" | "skill";
   group?: string;
@@ -74,7 +78,7 @@ export const NodeTypes: INodeTypes = {
  * @param extraProps 
  * @returns 
  */
-export const TypesWithProps = (extraProps: {[key: string]: any}) => {
+export const TypesWithProps = (extraProps: {[key: string]: any | Function}) => {
   const typeWithProps:  {[key: string]: any} = {};
   for (let key in NodeTypes) {
     const node = NodeTypes[key];

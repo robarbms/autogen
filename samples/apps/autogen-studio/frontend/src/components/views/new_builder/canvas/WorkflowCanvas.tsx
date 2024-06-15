@@ -15,7 +15,7 @@ import ReactFlow, {
     useOnSelectionChange
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { IAgentNode, TypesWithProps, AgentProperty, NodeTypes } from './Canvas';
+import { IAgentNode, TypesWithProps, AgentProperty, NodeTypes, NodeSelection } from './Canvas';
 
 /**
  * WorkflowCanvas component properties
@@ -29,9 +29,9 @@ type WorfkflowCanvasProps = {
     onDragEnter: MouseEventHandler;
     onDragOver: MouseEventHandler;
     setBounding: Function;
-    setEdges: (edges: Edge[]) => void;
+    setEdges: (edges: Edge[] | ((els: Edge[]) => Edge[])) => void;
     setNodes: (nodes: Node[]) => void;
-    setSelection: (node: Node[]) => void;
+    setSelection: (node: NodeSelection) => void;
     selectedNode?: Array<Node & IAgentNode> | AgentProperty | null
 }
 
@@ -107,12 +107,12 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
     // Adds node highlighting when selected
     useOnSelectionChange({
         onChange: ({nodes, edges} : {nodes: Node[], edges: Edge[]}): void => {
-            setSelection(nodes);
+            setSelection(nodes as Array<Node & IAgentNode>);
         }
     });
 
     // Inject node types with setSelection handler
-    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: Node & IAgentNode | AgentProperty) => void}[]>(
+    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: NodeSelection) => void}[]>(
         () => TypesWithProps({setSelection}),
         []
     )

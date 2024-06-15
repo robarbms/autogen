@@ -3,16 +3,17 @@ import { Handle, Position, Node } from 'reactflow';
 import AssistantNode from './AssistantNode';
 import UserproxyNode from './UserProxyNode';
 import { AgentIcon } from '../Icons';
-import { IAgentNode } from '../canvas/Canvas';
+import { IAgentNode, NodeSelection } from '../canvas/Canvas';
+import { IAgent, IModelConfig, ISkill } from '../../../types';
 
 /**
  * Node for rendering group chat manager
  */
 const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
-  const { id, setSelection }: { id: string, setSelection: (node: Node & IAgentNode) => void} = data;
-  let { linkedAgents }: { linkedAgents: Array<IAgentNode & {dragHandle?: (event: DragEvent) => void }> }  = data.data;
+  const { id, setSelection }: { id: string, setSelection: (selected: NodeSelection) => void} = data;
+  let { linkedAgents }: { linkedAgents: Array<IAgent & {dragHandle?: (event: DragEvent) => void }> | undefined }  = data.data;
   const { name, description }: { name: string, description: string} = data.data.config;
-  const container = createRef();
+  const container = createRef<HTMLDivElement>();
 
   const dragHandle = (id: number, type: string) => {
     return (event: DragEvent) => {
@@ -28,10 +29,12 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
     }
   }
 
-  linkedAgents = linkedAgents ? linkedAgents.map((agent) => {
-    agent.dragHandle = dragHandle(agent.id, agent.type);
-    return agent;
-  }) : linkedAgents;
+  if (linkedAgents) {
+    linkedAgents = linkedAgents.map((agent: IAgent & {dragHandle?: (event: DragEvent) => void}) => {
+      agent.dragHandle = dragHandle(agent.id || -1, agent.type || "");
+      return agent;
+    });
+  }
 
   return (
     <div data-id={data.data.id} className={`node group_agent node-has-content drop-agents ${data.data.deselected ? "deselected" : ""}`} ref={container}>
@@ -41,9 +44,9 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
         </div>
         <div className="nodes_area">
           {linkedAgents && 
-            linkedAgents.map((node, idx) => node.type === "assistant" ? 
-              <AssistantNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} /> :
-              <UserproxyNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} />
+            linkedAgents.map((node: IAgent & {position?: {x: number, y: number}}, idx: number) => node.type === "assistant" ? 
+              <AssistantNode key={idx} data={{...node, position: {x: 0, y: 0}}} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} /> :
+              <UserproxyNode key={idx} data={node as IAgent} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} />
             )
           }
           {!linkedAgents || linkedAgents.length < 1 &&

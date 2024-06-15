@@ -69,11 +69,13 @@ const EditSkill = (props: EditSkillProps) => {
         setLocalSkill(updatedSkill);
     }
 
-    const addNode = () => {};
+    const addLibraryItem = () => {
+
+    }
 
     return (
         <BuildLayout
-            menu={<Library libraryItems={[{label: "Skills", items: skills}]} user={user ? user : ""} addNode={addNode}/>}
+            menu={<Library libraryItems={[{label: "Skills", items: skills}]} user={user ? user : ""} addLibraryItem={addLibraryItem} />}
         >
             {localSkill &&
             <>

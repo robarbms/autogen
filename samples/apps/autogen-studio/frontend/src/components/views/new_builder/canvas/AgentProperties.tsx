@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Node } from "reactflow";
-import { AgentProperty, IAgentNode } from "./Canvas";
+import { AgentProperty, IAgentNode, NodeSelection } from "./Canvas";
 import { IAgent } from "../../../types";
 import { ItemType } from "../../../../../node_modules/rc-collapse/es/interface";
 import { BugAntIcon, CpuChipIcon, UserGroupIcon } from "@heroicons/react/24/outline";
@@ -14,7 +14,7 @@ import { useBuildStore } from "../../../../hooks/buildStore";
 type AgentPropertiesProps = {
     agent: IAgent | null;
     api: API;
-    setSelectedNode: (node: Array<Node & IAgentNode> | AgentProperty | null) => void;
+    setSelectedNode: (node: NodeSelection) => void;
     agents: Array<IAgent>;
     nodes: Array<Node & IAgentNode>;
     setNodes: (nodes: Array<Node & IAgentNode>) => void;

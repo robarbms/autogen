@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useEffect, useState } from "react";
 import { IModelConfig, IStatus } from "../../../types";
-import { AgentProperty, IAgentNode } from "./Canvas";
+import { AgentProperty, IAgentNode, NodeSelection } from "./Canvas";
 import { Button, Input } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import {
@@ -14,7 +14,7 @@ import { useBuildStore } from "../../../../hooks/buildStore";
 type ModelPropertiesProps = {
     api: API;
     model: IModelConfig;
-    setSelectedNode: (node: Array<Node & IAgentNode> | AgentProperty | null) => void;
+    setSelectedNode: (node: NodeSelection) => void;
 }
 
 const ModelProperties = (props: ModelPropertiesProps) => {

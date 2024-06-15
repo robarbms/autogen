@@ -8,7 +8,7 @@ import {
   } from "../../../atoms";
 import { ISkill } from "../../../types";
 import { API } from "../API";
-import { AgentProperty, IAgentNode } from "./Canvas";
+import { AgentProperty, IAgentNode, NodeSelection } from "./Canvas";
 import {
     ArrowDownTrayIcon,
     ArrowUpTrayIcon,
@@ -22,7 +22,7 @@ import {
     
 type SkillPropertiesProps = {
     api: API;
-    setSelectedNode: (node: Array<Node & IAgentNode> | AgentProperty | null) => void;
+    setSelectedNode: (node: NodeSelection) => void;
     skill: ISkill;
 }
 

@@ -7,7 +7,7 @@ import ReactFlow, {
     useKeyPress,
     useOnSelectionChange,
 } from "reactflow";
-import { IAgentNode, NodeTypes } from "./canvas/Canvas";
+import { IAgentNode, NodeSelection, NodeTypes } from "./canvas/Canvas";
 import { TypesWithProps } from "./canvas/Canvas";
 
 // Properties used for the AgentCanvas component
@@ -19,7 +19,7 @@ type AgentCanvasProps = {
     onNodesChange: OnNodesChange;
     setBounding: Function;
     setNodes: (nodes: Node[]) => void;
-    setSelection: (node: Array<Node & IAgentNode>) => void;
+    setSelection: (node: NodeSelection) => void;
 }
 
 /**
@@ -59,13 +59,13 @@ const AgentCanvas = (props: AgentCanvasProps) => {
     // Adds node highlighting when selected
     useOnSelectionChange({
         onChange: ({nodes} : {nodes: Node[]}): void => {
-            setSelection(nodes);
+            setSelection(nodes as Array<Node & IAgentNode>);
         }
     });
 
     
     // Inject node types with setSelection handler
-    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: Node & IAgentNode | AgentProperty) => void}[]>(
+    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: NodeSelection) => void}[]>(
         () => TypesWithProps({setSelection}),
         []
     )

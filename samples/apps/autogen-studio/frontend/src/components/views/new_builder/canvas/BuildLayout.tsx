@@ -57,7 +57,9 @@ const BuildLayout = (props: BuildLayoutProps) => {
             </div>
             <div className="build-layout-content" style={{height: "100%", width: "calc(100% - 20px)"}}>
                 {children}
-                <div className="library-button" onClick={openMenu as any}><ExpandMenuIcon /> Open library</div>
+                {setShowMenu &&
+                    <div className="library-button" onClick={openMenu as any}><ExpandMenuIcon /> Open library</div>
+                }
             </div>
             <div className="build-layout-props">
                 {properties}
