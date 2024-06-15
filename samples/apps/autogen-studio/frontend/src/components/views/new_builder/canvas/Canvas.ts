@@ -29,7 +29,7 @@ export interface IAgentNode {
     api: API;
     hideConnector?: boolean;
   },
-  setSelection?: (node: Array<Node & IAgentNode> | IModelConfig | ISkill) => void,
+  setSelection?: (node: Array<Node & IAgentNode> | AgentProperty) => void,
   selectedProp?: boolean
 }
 

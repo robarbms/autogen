@@ -7,8 +7,17 @@ import { IWorkItem, dataToWorkItem } from "../utils";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
 import { CollapseMenuIcon } from "../Icons";
 
+export type EmptyLibraryItem = {
+    id: number;
+    config?: {
+        name: string;
+    };
+    model?: string;
+    content?: string;
+}
+
 export type LibraryGroup = {
-    items: Array<IAgent | ISkill | IModelConfig | IWorkflow | {label: string, config: {name: string}}>;
+    items: Array<EmptyLibraryItem | IAgent | ISkill | IModelConfig | IWorkflow>;
     label: string;
     collapsed?: Boolean;
 }

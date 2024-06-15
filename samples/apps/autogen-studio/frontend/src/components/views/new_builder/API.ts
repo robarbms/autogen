@@ -46,13 +46,13 @@ export class API {
     // Local copies of agents and workflows.
     // They might be empty, so flagging if they have been fetched.
     private _agents: IAgent[] = [];
-    private loadedAgents: Boolean = false;
+    private loadedAgents: boolean = false;
     private _workflows: IWorkflow[] = [];
-    private loadedWorkflows: Boolean = false;
+    private loadedWorkflows: boolean = false;
     private _models: IModelConfig[] = [];
-    private loadedModels: Boolean = false;
+    private loadedModels: boolean = false;
     private _skills: ISkill[] = [];
-    private loadedSkills: Boolean = false;
+    private loadedSkills: boolean = false;
     private _sender = null;
     private loadedSender = false;
     private _receiver = null;
@@ -99,7 +99,7 @@ export class API {
     }
 
     // Sorts a list of items by the oldest created to newest
-    private sortByDate (items: Array<T>) {
+    private sortByDate (items: Array<any>) {
         if (items.length > 0 && items[0] && "created_at" in items[0]) {
             items = items.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         }
@@ -128,8 +128,8 @@ export class API {
             }
         }[type];
         // If not forcing refresh, check cached copies first
-        if (!refresh && this[config.loaded]) {
-            action(this[config.target]);
+        if (!refresh && (this as any)[config.loaded]) {
+            action((this as any)[config.target]);
             return;
         }
 
@@ -142,8 +142,8 @@ export class API {
         fetchJSON(this.getPath(type), this.GET_HEADERS, (data) => {
             let items = data.data;
             items = this.sortByDate(items);
-            this[config.target] = items;
-            this[config.loaded] = true;
+            (this as any)[config.target] = items;
+            (this as any)[config.loaded] = true;
 
             action(items);
             this._loading(false);
@@ -198,19 +198,21 @@ export class API {
             const linkedWorkflows: any[] = [];
             while(workflows.length > 0) {
                 const workflow = workflows.pop();
-                this.getWorkflowLinks(workflow.id, (sender, receiver) => {
-                    linkedWorkflows.push({
-                        ...workflow,
-                        sender,
-                        receiver
-                    });
-                    if (linkedWorkflows.length === workflowCount) {
-                        this._workflows === linkedWorkflows;
-                        callback(linkedWorkflows);
-                    }                    
-                })
+                if (workflow && workflow.id) {
+                    this.getWorkflowLinks(workflow.id, (sender: IAgent, receiver: IAgent) => {
+                        linkedWorkflows.push({
+                            ...workflow,
+                            sender,
+                            receiver
+                        });
+                        if (linkedWorkflows.length === workflowCount) {
+                            this._workflows === linkedWorkflows;
+                            callback(linkedWorkflows);
+                        }                    
+                    })
+                }
             }
-        });
+        }, this._error);
     }
 
     // Links workflows to either a sender or receiver agent
@@ -244,7 +246,7 @@ export class API {
             this.getItems("agents", (agents: IAgent[]) => {
                 const {length} = agents;
                 let updatedAgents: IAgent[] = [];
-                const addAgent = (agent) => {
+                const addAgent = (agent: IAgent) => {
                     updatedAgents.push(agent);
                     if (updatedAgents.length === length) {
                         updatedAgents = this.sortByDate(updatedAgents);
@@ -253,11 +255,17 @@ export class API {
                     }
                 }
                 while (agents.length > 0) {
-                    const agent: IAgent = agents.pop();
-                    this.getAgentData(agent.id, agent.type, (data) => {
-                        const agentWithData = Object.assign({}, agent, data);
-                        addAgent(agentWithData);
-                    });
+                    const agent: IAgent | undefined = agents.pop();
+                    if (agent !== undefined && agent.id && agent.type) {
+                        this.getAgentData(agent.id, agent.type, (data: {
+                            models: Array<IModelConfig>,
+                            skills: Array<ISkill>,
+                            linkedAgents?: Array<IAgent>
+                        }) => {
+                            const agentWithData = Object.assign({}, agent, data);
+                            addAgent(agentWithData);
+                        });
+                    }
                 }
             }, refresh);
         }
@@ -272,11 +280,11 @@ export class API {
                 if (agentType === "groupchat") {
                     this.getLinkedAgents(id, (linkedAgents) => {
                         const {length} = linkedAgents;
-                        const order = linkedAgents.map(({id}) => id);
-                        let updatedAgents = [];
+                        const order = linkedAgents.map(({id}: {id: number}) => id);
+                        let updatedAgents: Array<IAgent> = [];
                         while(updatedAgents.length < length) {
                             const agent = linkedAgents.pop();
-                            this.getAgentData(agent.id, agent.type, (agentData) => {
+                            this.getAgentData(agent.id, agent.type, (agentData: IAgent) => {
                                 const updatedAgent = Object.assign({}, agent, agentData);
                                 updatedAgents.push(updatedAgent);
                                 if (updatedAgents.length === length) {
@@ -375,7 +383,9 @@ export class API {
         const url = `${this.serverUrl}/agents/link/agent/${agentId}`;
         const headers = this.GET_HEADERS;
         fetchJSON(url, headers, (data) => {
-            const groupAgents = data.data.map((agent: IAgent) => {
+            const groupAgents = data.data.map((agent: IAgent & {
+                groupAgent?: boolean
+            }) => {
                 agent.groupAgent = true;
                 return agent;
             });

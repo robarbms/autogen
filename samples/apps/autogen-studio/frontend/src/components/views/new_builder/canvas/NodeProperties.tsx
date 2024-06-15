@@ -18,7 +18,7 @@ type NodePropertiesProps = {
   api: API,
   selected: Node & IAgentNode | AgentProperty;
   handleInteract: MouseEventHandler<HTMLDivElement>;
-  setSelectedNode: (node: Array<Node & IAgentNode> | AgentProperty | null) => void;
+  setSelectedNode: (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } | null)  => void;
   setNodes: (nodes: Array<Node & IAgentNode> | undefined) => void;
   nodes: Array<Node & IAgentNode>;
   addEdge?: (id: string) => void;

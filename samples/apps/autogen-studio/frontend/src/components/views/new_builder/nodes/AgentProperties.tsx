@@ -1,12 +1,12 @@
-import React, { DragEvent } from "react";
+import React, { DragEvent, MouseEvent } from "react";
 import { IModelConfig, ISkill } from "../../../types";
 import { ModelIcon, SkillIcon } from "../Icons";
 import { AgentProperty, IAgentNode } from "../canvas/Canvas";
 import { Node } from "reactflow";
 
 // Rendering for an agent skill
-const Skill = (props: ISkill & {dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean}) => {
-    const { name, dragHandle, click, selected }: { name: string, dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean} = props;
+const Skill = (props: ISkill & {dragHandle: (event: DragEvent) => boolean, click: (event: MouseEvent) => void, selected: boolean}) => {
+    const { name, dragHandle, click, selected }: { name: string, dragHandle: (event: DragEvent) => boolean, click: (event: MouseEvent) => void, selected: boolean} = props;
 
     return (
         <div onClick={click} className={`node-skill ${selected ? "selected" : ""}`} draggable="true" onDragStart={dragHandle}>
@@ -17,8 +17,8 @@ const Skill = (props: ISkill & {dragHandle: (event: DragEvent) => boolean, click
 }
 
 // Rendering for an agent model
-const Model = (props: IModelConfig & {dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean}) => {
-    const { model, dragHandle, click, selected }: { model: string, dragHandle: (event: DragEvent) => boolean, click: (event) => void, selected: boolean} = props;
+const Model = (props: IModelConfig & {dragHandle: (event: DragEvent) => boolean, click: (event: MouseEvent) => void, selected: boolean}) => {
+    const { model, dragHandle, click, selected }: { model: string, dragHandle: (event: DragEvent) => boolean, click: (event: MouseEvent) => void, selected: boolean} = props;
 
     return (
         <div onClick={click} className={`node-model ${selected ? "selected" : ""}`} draggable="true" onDragStart={dragHandle}>
@@ -34,8 +34,9 @@ type AgentPropertiesProps = {
     skills: ISkill[],
     parent: number,
     instance: string,
-    setSelection: (node: Array<Node & IAgentNode> | IModelConfig | ISkill) => void,
+    setSelection: (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } | null) => void,
     selectedProp: AgentProperty,
+    group?: string
 }
 
 /**
@@ -44,7 +45,15 @@ type AgentPropertiesProps = {
  * @returns 
  */
 const AgentProperties = (props: AgentPropertiesProps) => {
-    const { models, skills, parent, instance, setSelection, selectedProp }: { models: IModelConfig[], skills: ISkill[], parent: number, instance: string, setSelection: (node: Array<Node & IAgentNode> | IModelConfig | ISkill) => void, selectedProp: AgentProperty } = props;
+    const { models, skills, parent, instance, setSelection, selectedProp }: 
+        { 
+            models: IModelConfig[],
+            skills: ISkill[],
+            parent: number,
+            instance: string,
+            setSelection: (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string } | null) => void,
+            selectedProp: AgentProperty
+        } = props;
 
     const dragHandle = (type: "model" | "skill", id?: number) => {
         return (event: DragEvent) => {
@@ -57,13 +66,14 @@ const AgentProperties = (props: AgentPropertiesProps) => {
             };
             const nodeInfo = JSON.stringify(data);
             event.dataTransfer.setData('text/plain', nodeInfo);
+            return true;
         }
     }
 
-    const clickHandler = (data) => {
+    const clickHandler = (data: (IModelConfig | ISkill) & { parent?: string, group?: string }) => {
         data.parent = instance;
         data.group = props.group;
-        return (event) => setSelection(data);
+        return (event: MouseEvent) => setSelection(data);
     }
   
     return (

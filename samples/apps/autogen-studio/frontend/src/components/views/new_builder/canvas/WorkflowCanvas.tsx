@@ -32,7 +32,7 @@ type WorfkflowCanvasProps = {
     setEdges: (edges: Edge[]) => void;
     setNodes: (nodes: Node[]) => void;
     setSelection: (node: Node[]) => void;
-    selectedNode: Node & IAgentNode | AgentProperty
+    selectedNode?: Array<Node & IAgentNode> | AgentProperty | null
 }
 
 /**

@@ -115,7 +115,7 @@ const EditAgent = (props: EditAgentProps) => {
         <ReactFlowProvider>
             <BuildLayout
                 menu={<Library user={api.user?.email || ""} setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
-                properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} setNodes={agentSetNodes} nodes={nodes as Array<Node & IAgentNode>} /> : null}
+                properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode as any} setNodes={agentSetNodes} nodes={nodes as Array<Node & IAgentNode>} /> : null}
             >
                 <AgentCanvas
                     nodes={nodes}

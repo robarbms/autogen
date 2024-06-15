@@ -1,5 +1,5 @@
 import React, { useEffect, useState, MouseEvent, MouseEventHandler } from "react";
-import Library from "../library/Library";
+import Library, { EmptyLibraryItem, LibraryGroup } from "../library/Library";
 import BuildLayout from "./BuildLayout";
 import WorkflowCanvas from "./WorkflowCanvas";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
@@ -45,9 +45,9 @@ const Workflow = (props: WorkflowProps) => {
   const [ bounding, setBounding ] = useState<DOMRect>();
   const [ nodes, setNodes, onNodesChange ] = useNodesState<Array<Node & IAgentNode | IAgent>>([]);
   const [ edges, setEdges, onEdgesChange ] = useEdgesState<Edge>([]);
-  const [ showChat, setShowChat ] = useState<Boolean>(false);
-  const [ selectedNode, setSelectedNode ] = useState<null | Object>(null);
-  const [ isValidWorkflow, setIsValidWorkflow ] = useState<Boolean>(false);
+  const [ showChat, setShowChat ] = useState<boolean>(false);
+  const [ selectedNode, setSelectedNode ] = useState<Node & IAgentNode | AgentProperty | null>(null);
+  const [ isValidWorkflow, setIsValidWorkflow ] = useState<boolean>(false);
   const [ editting, setEditting ] = useState<IWorkItem>();
   const [ initialized, setInitialized ] = useState<boolean>(false);
   const [ showMenu, setShowMenu ] = useState(true);
@@ -241,12 +241,12 @@ const Workflow = (props: WorkflowProps) => {
   };
 
   // Updates the selected node when it changes
-  const handleSelection = (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string } | null) => {
+  const handleSelection = (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } | AgentProperty | null) => {
     if (selected) {
       if (Array.isArray(selected)) {
         setSelectedNode(selected.length > 0 ? selected[selected.length - 1].data : null);
       }
-      else {
+      else if (selected.parent) {
         const selectedData: AgentProperty = {
           id: selected.id || 0,
           parent: selected.parent,
@@ -282,10 +282,10 @@ const Workflow = (props: WorkflowProps) => {
           delete node.data.selectedProp;
         }
         if (node.type === "groupchat" && "linkedAgents" in node.data) {
-          node.data.linkedAgents = node.data.linkedAgents.map((agent: IAgent, idx: number) => {
+          node.data.linkedAgents = node.data.linkedAgents.map((agent: IAgentNode, idx: number) => {
             if (selectedNode && "group" in selectedNode && selectedNode.group === node.id) {
               if (idx === parseInt(selectedNode.parent)) {
-                agent.selectedProp = selectedNode;
+                agent.selectedProp = !!selectedNode;
               }
               else {
                 delete agent.selectedProp;
@@ -311,11 +311,11 @@ const Workflow = (props: WorkflowProps) => {
 
   // Refreshes agents from the database and 
   const updateNodes = () => {
-    api.getAgents((agentsFromDB) => {
+    api.getAgents((agentsFromDB: Array<IAgent>) => {
       setAgents(agentsFromDB);
-      const updatedNodes = nodes.map(node => {
+      const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
         const nodeCopy = JSON.parse(JSON.stringify(node));
-        const updatedAgent = agentsFromDB.find((agent) => agent.id === node.data.id);
+        const updatedAgent = agentsFromDB.find((agent: IAgent) => agent.id === node.data.id);
         const newNode = {
           ...nodeCopy,
           data: {
@@ -330,36 +330,38 @@ const Workflow = (props: WorkflowProps) => {
       setNodes(updatedNodes);
     }, true);
   }
-  
+  const newAgent: EmptyLibraryItem = {
+    id: 0,
+    config: {
+      name: "New Agent"
+    }
+  };
   // Items to show in the library
-  const libraryItems = [
-    { label: "Agents", items: [{
-      id: 0,
-      config: {
-        name: "New Agent"
-      }
-    }].concat(agents)},
+  const libraryItems: Array<LibraryGroup> = [
+    { label: "Agents", items: [ newAgent, ...agents]},
     { label: "Models", items: [{
       id: 0,
       model: "New Model"
-    }].concat(models)},
+    }, ...models]},
     { label: "Skills", items: [{
       id: 0,
       name: "New Skill",
       content: " ",
-    }].concat(skills)}
+    }, ...skills]}
   ];
 
   // Creates or attaches Agents, models and skills
-  const addLibraryItem = (data) => {
+  const addLibraryItem = (data: (IAgent | IModelConfig | ISkill) & {
+    type: "agent" | "model" | "skill"
+  }) => {
     const rightPos = nodes && nodes.length > 0 ? Math.max(...nodes.map(node => node.position.x)) + 300 : 100;
-    const addAgent = (id: number) => addNode(nodes, api, agents, setNodes, edges, setEdges, id, {
+    const addAgent = (id: number) => addNode(nodes as Array<Node & IAgentNode>, api, agents, setNodes, edges, setEdges, id, {
       x: rightPos,
       y: 100
     });
     const createEmptyAgent = () => {
       const agentsWithEmpty = agents.concat([emptyAgent(api.user?.email)]);
-      addNode(nodes, api, agentsWithEmpty, (newNodes) => {
+      addNode(nodes as Array<Node & IAgentNode>, api, agentsWithEmpty, (newNodes) => {
         const selected = newNodes.map(node => {
           if (node.data.id === -1) {
             node.selected = true;
@@ -371,38 +373,39 @@ const Workflow = (props: WorkflowProps) => {
         });
         setNodes(selected);
       }, edges, setEdges, -1, {x: rightPos, y: 100});
-      setSelectedNode(nodes[nodes.length - 1]);
+      setSelectedNode((nodes as Array<Node & IAgentNode>)[nodes.length - 1]);
   }
     // Logic for attaching to a selected item
     if (selectedNode) {
+      const id = typeof selectedNode.id === "string" ? parseInt(selectedNode.id) : selectedNode.id;
       switch (data.type) {
         case "model":
           // Link model to selected node
-          if (data.id > 0) {
-            api.linkAgentModel(selectedNode.id, data.id, (data) => {
+          if (data.id !== undefined && data.id > 0) {
+            api.linkAgentModel(id, data.id, (data) => {
               updateNodes();
             });
           }
           else {
-            createModel(api, nodes, setModels, handleSelection, updateNodes, selectedNode.id);
+            createModel(api, nodes as Array<Node & IAgentNode>, setModels, handleSelection, updateNodes, id);
           }
           break;
         case "skill":
           // Link skill to selected node
-          if (data.id > 0) {
-            api.linkAgentSkill(selectedNode.id, data.id, (data) => {
+          if (data.id !== undefined && data.id > 0) {
+            api.linkAgentSkill(id, data.id, (data: Array<ISkill>) => {
               updateNodes();
             });
           }
           else {
             // create a new skill and link it to the model
-            createSkill(api, nodes, setSkills, handleSelection, updateNodes, selectedNode.id);
+            createSkill(api, nodes as Array<Node & IAgentNode>, setSkills, handleSelection, updateNodes, id);
           }
           break;
         case "agent":
           if (selectedNode.type !== "groupchat") {
-            if (data.id > 0) {
-              addNode(nodes, api, agents, (updatedNodes) => {
+            if (data.id !== undefined && data.id > 0) {
+              addNode(nodes as Array<Node & IAgentNode>, api, agents, (updatedNodes) => {
                 const selected = updatedNodes.map((node, idx) => {
                   node.selected = idx === updatedNodes.length - 1;
                   return node;
@@ -416,8 +419,8 @@ const Workflow = (props: WorkflowProps) => {
           }
           else {
             // link an agent to group chat agent
-            if (data.id > 0) {
-              api.linkAgent(selectedNode.id, data.id, updateNodes);
+            if (data.id !== undefined && data.id > 0) {
+              api.linkAgent(id, data.id, updateNodes);
             }
             else {
               // add an empty agent
@@ -429,7 +432,7 @@ const Workflow = (props: WorkflowProps) => {
     else {
       if (data.type === "agent") {
         // Adding an existing agent to the canvas
-        if (data.id > 0) {
+        if (data.id !== undefined && data.id > 0) {
           const newNode = agents.find(agent => agent.id === data.id);
           if (newNode) {
             addAgent(data.id);
@@ -448,24 +451,34 @@ const Workflow = (props: WorkflowProps) => {
         showMenu={showMenu}
         setShowMenu={setShowMenu}
         closeChat={() => setShowChat(false)}
-        menu={<Library libraryItems={libraryItems} addNode={addNode} user={api.user.email} setShowMenu={setShowMenu} addLibraryItem={addLibraryItem} />}
-        properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={handleSelection} nodes={nodes} setNodes={setNodes} addEdge={addEdge} /> : null}
-        chat={showChat && isValidWorkflow ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
+        menu={<Library libraryItems={libraryItems} user={api.user?.email || ""} setShowMenu={setShowMenu} addLibraryItem={addLibraryItem} />}
+        properties={selectedNode !== null ? 
+          <NodeProperties
+            api={api}
+            selected={selectedNode}
+            handleInteract={updateNodes}
+            setSelectedNode={handleSelection}
+            nodes={nodes as Array<Node & IAgentNode>}
+            setNodes={setNodes}
+            addEdge={addEdge}
+          /> :
+          null}
+        chat={showChat && isValidWorkflow && workflowId !== null ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
         chatTitle={editting?.name}
       >
-        <BuildNavigation className="nav-over-canvas" id={workflowId} category="workflow" editting={editting} handleEdit={() => {}} />
+        <BuildNavigation className="nav-over-canvas" category="workflow" />
         <WorkflowCanvas
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onDrop={handleDragDrop}
+          onDrop={handleDragDrop as any}
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
           setBounding={setBounding}
           setEdges={setEdges}
           setNodes={setNodes}
-          setSelection={handleSelection}
+          setSelection={handleSelection as any}
         />
         {!showChat &&
           <TestWorkflow validWorkflow={isValidWorkflow} click={testWorkflow} />

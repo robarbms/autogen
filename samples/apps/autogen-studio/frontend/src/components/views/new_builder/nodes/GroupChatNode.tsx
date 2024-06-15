@@ -3,7 +3,7 @@ import { Handle, Position, Node } from 'reactflow';
 import AssistantNode from './AssistantNode';
 import UserproxyNode from './UserProxyNode';
 import { AgentIcon } from '../Icons';
-import { IAgentNode } from '../canvas/Workflow';
+import { IAgentNode } from '../canvas/Canvas';
 
 /**
  * Node for rendering group chat manager
@@ -14,7 +14,7 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
   const { name, description }: { name: string, description: string} = data.data.config;
   const container = createRef();
 
-  const dragHandle = (id?: number, type: string) => {
+  const dragHandle = (id: number, type: string) => {
     return (event: DragEvent) => {
         const position = (event.target as HTMLDivElement)?.getBoundingClientRect();
         const dataTransfer = {
@@ -24,7 +24,7 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
             group: "group-agent"
         };
         const nodeInfo = JSON.stringify(dataTransfer);
-        event.dataTransfer.setData('text/plain', nodeInfo);
+        event.dataTransfer?.setData('text/plain', nodeInfo);
     }
   }
 

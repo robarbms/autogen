@@ -8,7 +8,7 @@ import { IAgentNode, AgentProperty } from "../canvas/Canvas";
 /**
  * A node representing a userproxy agent
  */
-const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void}, isConnectable) => {
+const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void, parent: string}, isConnectable) => {
   const { id }: { id: string } = data;
   const { isInitiator, models, skills, groupAgent, selectedProp }: { isInitiator: boolean, models: IModelConfig[], skills: ISkill[], groupAgent: boolean, selectedProp: AgentProperty } = data.data;
   const { description, name }: { description: string, name: string } = data.data.config;
@@ -18,6 +18,7 @@ const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: Mo
     if (!transferData) {
       data.data.dragHandle(event);
     }
+    return true;
   } : () => {};
 
 
@@ -42,7 +43,7 @@ const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: Mo
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>
-      <AgentProperties setSelection={data.setSelection} {...{ models, skills }} group={groupAgent ? data.parent : null} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
+      <AgentProperties setSelection={data.setSelection} {...{ models, skills }} group={groupAgent ? data.parent : undefined} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="source"

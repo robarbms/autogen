@@ -121,7 +121,7 @@ const RecentWork = (props: RecentWorkProps) => {
     // Load work items as common data as they are returned
     useEffect(() => {
         const dataForUser: (work: IAgent | IModelConfig | ISkill | IWorkflow) => IWorkItem = dataToWorkItem.bind(null, user);
-        let workItms: IWorkItem[] = ["Agents", "Models", "Skills", "Workflows"].reduce((itms, label) => {
+        let workItms: IWorkItem[] = ["Agents", "Models", "Skills", "Workflows"].reduce((itms: IWorkItem[], label: string) => {
             if (filter === "All" || filter === label) {
                 let target = null;
                 switch (label){
@@ -140,7 +140,7 @@ const RecentWork = (props: RecentWorkProps) => {
                 }
 
                 if (target) {
-                    itms = itms.concat(target.map(dataForUser));
+                    itms = [...itms, ...target.map(dataForUser)];
                 }
             }
             return itms;

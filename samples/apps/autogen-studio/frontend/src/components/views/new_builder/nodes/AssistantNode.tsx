@@ -4,13 +4,13 @@ import { AgentIcon } from '../Icons';
 import { AgentProperty, IAgentNode } from '../canvas/Canvas';
 import { Node } from 'reactflow';
 import AgentProperties from './AgentProperties';
-import { IModelConfig, ISkill } from '../../../types';
+import { IAgent, IModelConfig, ISkill } from '../../../types';
 
 /**
  * Node for rendering assistant agents
  */
 const AssistantNode = memo(
-  (data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void},
+  (data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void, parent: string},
   isConnectable: boolean | undefined
 ) => {
   const {
@@ -34,8 +34,8 @@ const AssistantNode = memo(
     }
   } : () => {};
 
-  const click = groupAgent ? (e) => {
-    e.preventDefault();
+  const click = groupAgent ? (event: MouseEvent) => {
+    event.preventDefault();
     data.setSelection(
       [{
         ...data,
@@ -47,12 +47,12 @@ const AssistantNode = memo(
   } : () => {};
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.deselected === true ? "deselected" : ""}`}>
-      <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click}>
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart as any} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.deselected === true ? "deselected" : ""}`}>
+      <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click as any}>
         <h2><AgentIcon />{name}</h2>
         {description}
       </div>
-      <AgentProperties setSelection={data.setSelection} models={models} skills={skills} group={groupAgent ? data.parent : null} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
+      <AgentProperties setSelection={data.setSelection} models={models} skills={skills} group={groupAgent ? data.parent : undefined} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="target"
