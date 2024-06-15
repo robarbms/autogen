@@ -1,14 +1,13 @@
 import React, { MouseEvent, MouseEventHandler, useEffect, useState } from "react";
 import BuildLayout from "./canvas/BuildLayout";
-import Library from "./library/Library";
+import Library, { LibraryGroup } from "./library/Library";
 import AgentCanvas from "./AgentCanvas";
-import {  Node, useNodesState, ReactFlowProvider } from "reactflow";
+import { Node, useNodesState, ReactFlowProvider } from "reactflow";
 import { useBuildStore } from "../../../hooks/buildStore";
 import { API } from "./API";
-import BuildNavigation from "./BuildNavigation";
-import { addNode, AgentProperty, getDropHandler, IAgentNode, nodeUpdater } from "./canvas/Canvas";
+import { AgentProperty, getDropHandler, IAgentNode, nodeUpdater } from "./canvas/Canvas";
 import NodeProperties from "./canvas/NodeProperties";
-import { IModelConfig, ISkill } from "../../types";
+import { IAgent, IModelConfig, ISkill } from "../../types";
 
 // Properties for EditAgent component
 type EditAgentProps = {
@@ -31,8 +30,9 @@ const EditAgent = (props: EditAgentProps) => {
     }))
     const { api } = props;
     const [selectedNode, setSelectedNode] = useState<Node & IAgentNode | AgentProperty | null>(null);
-    const [nodes, setNodes, onNodesChange] = useNodesState<(Node & IAgentNode)[]>([]);
+    const [nodes, setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode>>([]);
     const [bounding, setBounding] = useState<DOMRect>();
+    const [ showMenu, setShowMenu ] = useState(true);
 
     // On clicking of a node sets it as selected
     const handleSelection = (selected: Array<Node & IAgentNode> | IModelConfig & { parent: string } | ISkill & { parent: string }) => {
@@ -59,21 +59,23 @@ const EditAgent = (props: EditAgentProps) => {
         event.preventDefault();
     };
 
-  const agentSetNodes = (nodes) => {
-    const noConnectorNodes = nodes.map(node => {
-      node.data.hideConnector = true;
-      return node;
-    });
-    setNodes(noConnectorNodes);
+  const agentSetNodes = (nodes: Array<Node & IAgentNode> | undefined) => {
+    if (nodes) {
+      const noConnectorNodes = nodes.map(node => {
+        node.data.hideConnector = true;
+        return node;
+      });
+      setNodes(noConnectorNodes);
+    }
   }
 
   // Drag and drop handler for items dragged onto the canvas or agents
-  const handleDrop = getDropHandler(bounding, api, setNodes, nodes, agents, setAgents, setModels, setSkills, handleSelection, true);
+  const handleDrop = getDropHandler(bounding, api, setNodes, nodes as Array<Node & IAgentNode>, [], () => {}, agents, setAgents, setModels, setSkills, handleSelection, true) as any;
 
   // Update selected agent properties when selectedNode changes
   useEffect(() => {
     if (nodes && nodes.length > 0) {
-      const updatedNodes = JSON.parse(JSON.stringify(nodes)).map(node => {
+      const updatedNodes = JSON.parse(JSON.stringify(nodes)).map((node: Node & IAgentNode) => {
         node.data.selectedProp = selectedNode && "parent" in selectedNode && selectedNode.parent === node.id ? selectedNode : null;
         return node;
       });
@@ -81,33 +83,39 @@ const EditAgent = (props: EditAgentProps) => {
     }
   }, [selectedNode]);
 
-    // Updates nodes on the canvas when there are changes made
-    const updateNodes = nodeUpdater.bind(this, api, setAgents, setNodes, nodes)
+  // Updates nodes on the canvas when there are changes made
+  const updateNodes = nodeUpdater.bind(this, api, setAgents, setNodes, nodes as Array<Node & IAgentNode>)
+
+  // Handles on click for library item
+  // TO DO: This should be similar to workflow.tsx.
+  const addLibraryItem = (data: any) => {
+    console.log(data);
+  }
   
   // Items to show in the library
-  const libraryItems = [
+  const libraryItems: Array<LibraryGroup> = [
     { label: "Agents", items: [{
       id: 0,
       config: {
         name: "New Agent"
       }
-    }].concat(agents)},
+    }, ...agents]} as LibraryGroup,
     { label: "Models", items: [{
       id: 0,
       model: "New Model"
-    }].concat(models)},
+    }, ...models]},
     { label: "Skills", items: [{
       id: 0,
       name: "New Skill",
       content: " ",
-    }].concat(skills)}
+    }, ...skills]}
   ];
 
     return (
         <ReactFlowProvider>
             <BuildLayout
-                menu={<Library libraryItems={libraryItems} addNode={addNode} />}
-                properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} setNodes={agentSetNodes} nodes={nodes} /> : null}
+                menu={<Library user={api.user?.email || ""} setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
+                properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode} setNodes={agentSetNodes} nodes={nodes as Array<Node & IAgentNode>} /> : null}
             >
                 <AgentCanvas
                     nodes={nodes}

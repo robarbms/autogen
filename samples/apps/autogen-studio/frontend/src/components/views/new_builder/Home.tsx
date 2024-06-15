@@ -44,7 +44,7 @@ type HomeProps = {
  * @returns 
  */
 const Home = (props: HomeProps) => {
-    const { hasPreviousWork }: { showRecent: boolean} = props;
+    const { hasPreviousWork }: { hasPreviousWork: boolean} = props;
     const {setEditScreen, setEditId} = useBuildStore((state: IBuildState) => ({
         setEditScreen: state.setEditScreen,
         setEditId: state.setEditId,

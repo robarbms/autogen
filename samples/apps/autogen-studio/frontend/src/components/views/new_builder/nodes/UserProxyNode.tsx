@@ -34,7 +34,7 @@ const UserproxyNode = memo((data: Node & IAgentNode & { setSelection: (event: Mo
   } : () => {};
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""}`}>
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.deslected ? "deselected" : ""}`}>
       {isInitiator &&
         <div className="node_tag">Initiator &gt;</div>
       }

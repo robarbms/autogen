@@ -8,7 +8,7 @@ import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
 import { CollapseMenuIcon } from "../Icons";
 
 export type LibraryGroup = {
-    items: Array<IAgent | ISkill | IModelConfig | IWorkflow>;
+    items: Array<IAgent | ISkill | IModelConfig | IWorkflow | {label: string, config: {name: string}}>;
     label: string;
     collapsed?: Boolean;
 }
@@ -17,7 +17,6 @@ export type LibraryGroup = {
  * Properties for the Library component
  */
 type LibraryProps = {
-    addNode: (node: any) => void;
     libraryItems: LibraryGroup[];
     user: string;
     setShowMenu: (showMenu: boolean) => void;
@@ -30,7 +29,7 @@ type LibraryProps = {
  * @returns 
  */
 const Library = (props: LibraryProps) => {
-    const { libraryItems, user, addNode, setShowMenu, addLibraryItem } = props;
+    const { libraryItems, user, setShowMenu, addLibraryItem } = props;
     const [search, setSearch] = useState('');
     const [items, setItems] = useState<Group[]>([]);
 
@@ -71,7 +70,6 @@ const Library = (props: LibraryProps) => {
             <div className="library-content scroll overflow-y-scroll overflow-hidden">
                 <LibraryGroups
                     groups={items}
-                    addNode={addNode}
                     addLibraryItem={addLibraryItem}
                 />
             </div>

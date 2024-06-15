@@ -22,7 +22,7 @@ import {
     
 type SkillPropertiesProps = {
     api: API;
-    setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
+    setSelectedNode: (node: Array<Node & IAgentNode> | AgentProperty | null) => void;
     skill: ISkill;
 }
 
@@ -44,7 +44,7 @@ const SkillProperties = (props: SkillPropertiesProps) => {
     const setSkill = (updatedSkill: ISkill) => {
         setLoading(true);
         api.setSkill(updatedSkill, (resp) => {
-            api.getItems("skills", (skills) => {
+            api.getItems("skills", (skills: Array<ISkill>) => {
                 setSkills(skills);
                 setLoading(false);
             }, true);
@@ -60,7 +60,7 @@ const SkillProperties = (props: SkillPropertiesProps) => {
                 placeholder="Skill Name"
                 value={skillEdit?.name}
                 onChange={(e) => {
-                  const updatedSkill = { ...skillEdit, name: e.target.value };
+                  const updatedSkill: ISkill = { ...skillEdit, name: e.target.value || "" } as ISkill;
                   setSkillEdit(updatedSkill);
                 }}
               />
@@ -68,7 +68,7 @@ const SkillProperties = (props: SkillPropertiesProps) => {
 
             <div style={{ height: "70vh" }} className="h-full  mt-2 rounded">
               <MonacoEditor
-                value={skillEdit?.content}
+                value={skillEdit?.content || ""}
                 language="python"
                 editorRef={editorRef}
               />
@@ -89,7 +89,7 @@ const SkillProperties = (props: SkillPropertiesProps) => {
             onClick={() => {
               if (editorRef.current) {
                 const value = editorRef.current.getValue();
-                const updatedSkill = { ...skillEdit, content: value };
+                const updatedSkill: ISkill = { ...skillEdit, content: value } as ISkill;
                 setSkill(updatedSkill);
                 close();
               }

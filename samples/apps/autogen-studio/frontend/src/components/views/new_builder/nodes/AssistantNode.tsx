@@ -47,7 +47,7 @@ const AssistantNode = memo(
   } : () => {};
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""}`}>
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.deselected === true ? "deselected" : ""}`}>
       <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click}>
         <h2><AgentIcon />{name}</h2>
         {description}

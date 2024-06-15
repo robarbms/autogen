@@ -10,35 +10,47 @@ import { Collapse } from "antd";
 import { API } from "../API";
 import { useBuildStore } from "../../../../hooks/buildStore";
 
+// properties for the AgentProperties component
 type AgentPropertiesProps = {
-    agent: IAgent;
+    agent: IAgent | null;
     api: API;
-    setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
+    setSelectedNode: (node: Array<Node & IAgentNode> | AgentProperty | null) => void;
     agents: Array<IAgent>;
     nodes: Array<Node & IAgentNode>;
     setNodes: (nodes: Array<Node & IAgentNode>) => void;
-    addEdge: (id: string) => void;
+    addEdge?: (id: string) => void;
 }
 
+/**
+ * Component used for the edit agent panel on the workflow canvas
+ * @param props 
+ * @returns 
+ */
 const AgentProperties = (props: AgentPropertiesProps) => {
     let { agent, api, setSelectedNode, agents, nodes, setNodes, addEdge } = props;
     const [ agentEdit, setAgentEdit ] = useState<IAgent | null>(null);
     const { setAgents } = useBuildStore(({setAgents}) => ({setAgents}));
 
+    console.log({agent, agentEdit})
+
     useEffect(() => {
-        setAgentEdit(JSON.parse(JSON.stringify(agent)));
+      // Create a copy of the agent details to an editable object
+      setAgentEdit({...JSON.parse(JSON.stringify(agent)), ...{type: agent?.type}});
     }, [agent]);
 
-    const updateAgent = (agent) => {
-        setAgentEdit(JSON.parse(JSON.stringify(agent)));
+    // Updates agent edits locally
+    const updateAgent = (agent: IAgent) => {
+      setAgentEdit(JSON.parse(JSON.stringify(agent)));
     }
 
+    // Closes the agent properties panel
     const close = () => {
         setSelectedNode(null);
     }
 
-    const addAgent = (data) => {
-      const maxId = agents && agents.length > 0 ? Math.max(...agents.map(agent => agent.id)) : 0;
+    // Adds a new agent
+    const addAgent = (data: IAgent) => {
+      const maxId = agents && agents.length > 0 ? Math.max(...agents.map(agent => agent.id || 0)) : 0;
       const id = maxId + 1;
       const agentData = {
         ...agent,
@@ -67,11 +79,11 @@ const AgentProperties = (props: AgentPropertiesProps) => {
               isInitiator: nodes.length === 1
             },
             type: agentData.type,
-          }
+          } as Node & IAgentNode;
           const updatedNodes = nodes;
           updatedNodes[tempNodeIndex] = newNode;
           setNodes(updatedNodes);
-          if (newNode.type !== "userproxy") {
+          if (newNode.type !== "userproxy" && addEdge) {
             addEdge(newNode.id);
           }
           setSelectedNode([newNode]);
@@ -92,11 +104,11 @@ const AgentProperties = (props: AgentPropertiesProps) => {
           key: "0",
           children: (
             <div>
-              {!agentEdit?.type || agentEdit?.type === "agentselect" && (
+              {(!agentEdit || !agentEdit.type || agentEdit.type === undefined) && (
                 <AgentTypeSelector agent={agentEdit} setAgent={addAgent} />
               )}
     
-              {agentEdit?.type && agentEdit?.type !== "agentselect" && agent && (
+              {agentEdit?.type && agentEdit?.type !== undefined && agent && (
                 <AgentConfigView agent={agentEdit} setAgent={updateAgent} close={close} />
               )}
             </div>
@@ -104,7 +116,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
         },
       ];
       if (agentEdit) {
-        if (agentEdit.id >= 0) {
+        if (agentEdit.id && agentEdit.id >= 0) {
           if (agentEdit.type && agentEdit.type === "groupchat") {
             items.push({
               label: (

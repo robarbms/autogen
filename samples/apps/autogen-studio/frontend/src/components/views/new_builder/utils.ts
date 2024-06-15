@@ -70,16 +70,16 @@ export interface IWorkItem {
  * @param data 
  * @returns 
  */
-export const dataToWorkItem = (user_email: string, data: IAgent | IModelConfig | ISkill | IWorkflow): IWorkItem => {
+export const dataToWorkItem = (user_email: string, data: IAgent | IModelConfig | ISkill | IWorkflow | {label: string, config: {name: string}}): IWorkItem => {
     let category: DataType = getDataType(data);
-    let {id, created_at, updated_at, user_id} = data;
+    let {id, created_at, updated_at, user_id} = data as any;
     let name: string | undefined = "";
     let description: string | undefined = "";
 
     // properties for agents
     if ("config" in data) {
         name = data.config.name;
-        description = data.config.description;
+        description = "description" in data.config ? data.config.description : "";
     }
     else {
         if ("name" in data) {

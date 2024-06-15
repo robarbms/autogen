@@ -48,9 +48,11 @@ const EditWorkflow = (props: EditWorkflowProps) => {
                 api.linkWorkflow(workflow.id, "sender", userproxy?.id);
             }
             // refresh workflows
-            api.getItems("workflows", (workflows) => {
+            api.getItems("workflows", (workflows: Array<IWorkflow>) => {
                 setWorkflows(workflows);
-                setWorkflowId(workflow.id); 
+                if (workflow.id) {
+                    setWorkflowId(workflow.id); 
+                }
                 setEditScreen(null);
                 setEditId(null);
             });

@@ -9,7 +9,6 @@ type LibraryItemProps = {
     name: string;
     description?: string;
     category: string;
-    addNode: Function;
     addLibraryItem: Function;
 }
 

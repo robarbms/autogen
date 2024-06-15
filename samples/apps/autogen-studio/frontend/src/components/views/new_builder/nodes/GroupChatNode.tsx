@@ -34,7 +34,7 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
   }) : linkedAgents;
 
   return (
-    <div data-id={data.data.id} className="node group_agent node-has-content drop-agents" ref={container}>
+    <div data-id={data.data.id} className={`node group_agent node-has-content drop-agents ${data.data.deselected ? "deselected" : ""}`} ref={container}>
         <div className="node_title drag-handle">
           <h2><AgentIcon />{name}</h2>
           {description}

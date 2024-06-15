@@ -1,5 +1,5 @@
 import React, { MouseEventHandler, useEffect, useState } from "react";
-import { IModelConfig } from "../../../types";
+import { IModelConfig, IStatus } from "../../../types";
 import { AgentProperty, IAgentNode } from "./Canvas";
 import { Button, Input } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -14,12 +14,12 @@ import { useBuildStore } from "../../../../hooks/buildStore";
 type ModelPropertiesProps = {
     api: API;
     model: IModelConfig;
-    setSelectedNode: (node: Node & IAgentNode | AgentProperty | null) => void;
+    setSelectedNode: (node: Array<Node & IAgentNode> | AgentProperty | null) => void;
 }
 
 const ModelProperties = (props: ModelPropertiesProps) => {
     const { api, model, setSelectedNode } = props;
-    const [ modelStatus, setModelStatus ] = useState();
+    const [ modelStatus, setModelStatus ] = useState<IStatus>();
     const [ loading, setLoading ] = useState(false);
     const [ editModel, setEditModel ] = useState<IModelConfig>();
     const [ hasChanged, setHasChanged ] = useState(false);
@@ -29,8 +29,8 @@ const ModelProperties = (props: ModelPropertiesProps) => {
         const newModel = {
             ...editModel
         };
-        newModel[key] = value;
-        setEditModel(newModel);
+        (newModel as any)[key] = value;
+        setEditModel(newModel as IModelConfig);
         setHasChanged(true);
     }
 
@@ -49,8 +49,7 @@ const ModelProperties = (props: ModelPropertiesProps) => {
 
     const setModel = (model: IModelConfig) => {
         api.setModel(model, (resp) => {
-            console.log(resp);
-            api.getItems("models", (models) => {
+            api.getItems("models", (models: Array<IModelConfig>) => {
                 setModels(models);
             }, true)
         });
@@ -62,7 +61,7 @@ const ModelProperties = (props: ModelPropertiesProps) => {
     }
 
     useEffect(() => {
-        setModelStatus(null);
+        setModelStatus(null as any);
         setEditModel(model);
     }, [model]);
 

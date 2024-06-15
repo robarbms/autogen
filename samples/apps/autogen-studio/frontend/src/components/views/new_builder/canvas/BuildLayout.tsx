@@ -1,4 +1,4 @@
-import React, {ReactNode, useEffect, useState} from "react";
+import React, {EventHandler, MouseEventHandler, ReactNode, useEffect, useState} from "react";
 import "../../../../styles/build.css";
 import { ExpandMenuIcon } from "../Icons";
 import { Drawer } from "antd";
@@ -12,10 +12,10 @@ type BuildLayoutProps = {
     properties?: ReactNode;           // A right menu area used for node properties
     chat?: ReactNode;           // A furthermost right menu used for workflow testing
     className?: string;
-    showMenu: boolean;
-    setShowMenu: (showMenu: boolean) => void;
-    closeChat: () => void;
-    chatTitle: string;
+    showMenu?: boolean;
+    setShowMenu?: (showMenu: boolean) => void;
+    closeChat?: () => void;
+    chatTitle?: string;
 }
 
 /**
@@ -44,8 +44,10 @@ const BuildLayout = (props: BuildLayoutProps) => {
 
         setStructure(cn);
     }, [ properties, chat, showMenu, menu]);
-    const openMenu = (e) => {
-        setShowMenu(true);
+    const openMenu = (event: MouseEvent) => {
+        if (setShowMenu) {
+            setShowMenu(true);
+        }
     }
 
     return (
@@ -55,7 +57,7 @@ const BuildLayout = (props: BuildLayoutProps) => {
             </div>
             <div className="build-layout-content" style={{height: "100%", width: "calc(100% - 20px)"}}>
                 {children}
-                <div className="library-button" onClick={openMenu}><ExpandMenuIcon /> Open library</div>
+                <div className="library-button" onClick={openMenu as any}><ExpandMenuIcon /> Open library</div>
             </div>
             <div className="build-layout-props">
                 {properties}

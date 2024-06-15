@@ -5,7 +5,7 @@ import AgentSelectNode from "../nodes/AgentSelectNode";
 import { Node, Edge, MarkerType } from "reactflow";
 import { IAgent, IModelConfig, ISkill } from "../../../types";
 import { API } from "../API";
-import React, { createElement } from "react";
+import React, { MouseEventHandler, createElement } from "react";
 
 // Type for positioning of a node
 export type NodePosition = {
@@ -19,7 +19,7 @@ export type NodePosition = {
 export interface IAgentNode {
   position: NodePosition;
   id: string;
-  type: "userproxy" | "assistant" | "groupchat" | "agentselect";
+  type: "userproxy" | "assistant" | "groupchat" | undefined;
   isConnectable?: Boolean;
   dragHandle?: string;
   data: IAgent & {
@@ -55,10 +55,14 @@ export interface IDropData {
   type?: "model" | "skill";
 }
 
+export interface INodeTypes {
+  [key: string]: any
+}
+
 /**
  * Nodes used by the canvas
  */
-export const NodeTypes = {
+export const NodeTypes: INodeTypes = {
   userproxy: UserProxyNode,
   assistant: AssistantNode,
   groupchat: GroupChatNode,
@@ -74,7 +78,7 @@ export const TypesWithProps = (extraProps: {[key: string]: any}) => {
   const typeWithProps:  {[key: string]: any} = {};
   for (let key in NodeTypes) {
     const node = NodeTypes[key];
-    typeWithProps[key] = (props) => createElement(NodeTypes[key], {
+    typeWithProps[key] = (props: any) => createElement(node, {
       ...extraProps,
       ...props
     });
@@ -194,12 +198,12 @@ export const nodeUpdater = (
   }, true);
 }
 
-export const emptyAgent = (user_id: string = "") => ({
+export const emptyAgent = (user_id: string = ""): IAgent => ({
   id: -1,
   user_id,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-  type: "agentselect",
+  type: undefined,
   config: {
     name: "create_agent",
     human_input_mode: "NEVER",
@@ -302,12 +306,14 @@ export const createSkill = (
   });
 }
 
+export const activeNode = (edges: Array<Edge>, nodeId: string) => edges && edges.length > 0 && !!edges.find(edge => edge.source === nodeId || edge.target === nodeId);
+
 // Figures out what was dropped, where it came from and where it is being dropped
 export const getDropHandler = (
   canvasArea: DOMRect | undefined,
   api: API,
   setNodes: (nodes: Array<Node & IAgentNode>) => void,
-  nodes: Array<(Node & IAgentNode) | IAgent>,
+  nodes: Array<Node & IAgentNode>,
   edges: Array<Edge>,
   setEdges: (edges: Array<Edge>) => void,
   agents: Array<IAgent>,
@@ -365,99 +371,100 @@ export const getDropHandler = (
     switch (group) {
       // If dragging and dropping an agent
       case "agent":
-          const agentTarget = eventTargetId("drop-agents");
-          const initiator = nodes.find(node => node.data.isInitiator);
+        const agentTarget = eventTargetId("drop-agents");
+        const initiator = nodes.find(node => node.data.isInitiator);
 
-          // Creating a new agent
-          if (!id) {
-            // Push an empty agent node into the nodes stack
-            const now = new Date().toISOString();
-            const agentsPlusEmpty = agents.concat([emptyAgent(api.user?.email)]);
-          
-            // Adding a new agent to a group agent
-            if (agentTarget > 0) {
+        // Creating a new agent
+        if (!id) {
+          // Push an empty agent node into the nodes stack
+          const now = new Date().toISOString();
+          const agentsPlusEmpty = [...agents, emptyAgent(api.user?.email)];
+        
+          // Adding a new agent to a group agent
+          if (agentTarget > 0) {
 
-            }
-            else {
-              newNode( -1, position, agentsPlusEmpty, (updatedNodes) => {
-                const selected = updatedNodes.map(node => {
-                  if (node.data.id === -1) {
-                    node.selected = true;
-                  }
-                  return node;
-                });
-                setNodes(selected);
-                // const emptyNode = updatedNodes.find((node) => node.data.id === -1);
-              }, true);
-            }
           }
-
-          // If dropping the agent onto a group agent
-          else if (agentTarget > 0) {
-              api.linkAgent(agentTarget, id, callback);
-          }
-
-          // Otherwise create a position on the canvas to render
           else {
-            newNode(id, position);
+            newNode( -1, position, agentsPlusEmpty, (updatedNodes) => {
+              const selected = updatedNodes.map(node => {
+                if (node.data.id === -1) {
+                  node.selected = true;
+                }
+                node.data.deselected = !edges || edges.length < 1 || !edges.find(edge => node.id === edge.source || node.id === edge.target);
+                return node;
+              });
+              setNodes(selected);
+              // const emptyNode = updatedNodes.find((node) => node.data.id === -1);
+            }, true);
           }
+        }
 
-          break;
+        // If dropping the agent onto a group agent
+        else if (agentTarget > 0) {
+            api.linkAgent(agentTarget, id, callback);
+        }
+
+        // Otherwise create a position on the canvas to render
+        else {
+          newNode(id, position);
+        }
+
+        break;
       // Dragging a model or skill from an agent on the canvas
       case "agent-property":
-          const targetId = eventTargetId(`drop-${type}s`);
+        const targetId = eventTargetId(`drop-${type}s`);
 
-          if (targetId !== parent) {
-              if (type === "model") {
+        if (targetId !== parent) {
+            if (type === "model") {
+              if (parent) {
+                api.unLinkAgentModel(parent, id, callback);
+              }
+              if (targetId >= 0) {
+                api.linkAgentModel(targetId, id, callback);
+              }
+            }
+            else if (type === "skill") {
                 if (parent) {
-                  api.unLinkAgentModel(parent, id, callback);
+                  api.unLinkAgentSkill(parent, id, callback);
                 }
                 if (targetId >= 0) {
-                  api.linkAgentModel(targetId, id, callback);
+                  api.linkAgentSkill(targetId, id, callback);
                 }
-              }
-              else if (type === "skill") {
-                  if (parent) {
-                    api.unLinkAgentSkill(parent, id, callback);
-                  }
-                  if (targetId >= 0) {
-                    api.linkAgentSkill(targetId, id, callback);
-                  }
-              }
-          }
-          break;
+            }
+        }
+        break;
       // Dragging a skill from the library
       case "skill":
-          const skillTarget = eventTargetId("drop-skills");
-          if(skillTarget >= 0) {
-            if (id) {
-              api.linkAgentSkill(skillTarget, id, callback);
-            }
-            else {
-              createSkill(api, nodes, setSkills, handleSelection, callback, skillTarget);
-            }
+        const skillTarget = eventTargetId("drop-skills");
+        if(skillTarget >= 0) {
+          if (id) {
+            api.linkAgentSkill(skillTarget, id, callback);
           }
-          break;
+          else {
+            createSkill(api, nodes, setSkills, handleSelection, callback, skillTarget);
+          }
+        }
+        break;
       // Dragging a model from the library
       case "model":
-          const modelTarget = eventTargetId("drop-models");
-          if (modelTarget >= 0) {
-              if (id) {
-                api.linkAgentModel(modelTarget, id, callback);
-              }
-              else {
-                createModel(api, nodes, setModels, handleSelection, callback, modelTarget);
-              }
-          }
-          break;
+        const modelTarget = eventTargetId("drop-models");
+        if (modelTarget >= 0) {
+            if (id) {
+              api.linkAgentModel(modelTarget, id, callback);
+            }
+            else {
+              createModel(api, nodes, setModels, handleSelection, callback, modelTarget);
+            }
+        }
+        break;
       // Dragging an agent from a group-chat agent
       case "group-agent":
-          const groupTarget = eventTargetId("drop-agents");
+        const groupTarget = eventTargetId("drop-agents");
 
-          if (parent && groupTarget !== parent) {
-              api.unlinkAgent(parent, id, callback as () => {});
-          }
+        if (parent && groupTarget !== parent) {
+            api.unlinkAgent(parent, id, callback as () => {});
+        }
 
-          break;
+        break;
     }
 }
