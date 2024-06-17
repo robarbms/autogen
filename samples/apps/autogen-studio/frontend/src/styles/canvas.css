@@ -211,6 +211,10 @@ div.workflow-canvas {
   background: #fff;
 }
 
+.ant-drawer-content-wrapper {
+  background: #fff;
+}
+
 .build-chat > .text-primary {
   height: 100%!important;
 }
