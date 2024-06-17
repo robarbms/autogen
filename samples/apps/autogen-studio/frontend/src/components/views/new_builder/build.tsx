@@ -42,7 +42,7 @@ const BuildView = (props: BuildViewProps) => {
     // Load workflows, agents, models and skills and push them to the store
     api.getWorkflows(setWorkflows);
     api.getAgents(setAgents);
-    api.getItems("models", setModels);
+    api.getModels(setModels);
     api.getItems("skills", setSkills);
   }, []);
 
@@ -64,7 +64,7 @@ const BuildView = (props: BuildViewProps) => {
   return (
     <div className="build h-full">
       {workflowId === null && editScreen === null &&
-        <Home hasPreviousWork={previousWork} />
+        <Home hasPreviousWork={previousWork} api={api} />
       }
       {editScreen === "workflow" &&
         <EditWorkflow api={api} />

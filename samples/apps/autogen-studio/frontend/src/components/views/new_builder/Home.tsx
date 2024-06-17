@@ -3,6 +3,7 @@ import RecentWork from "./RecentWork";
 import { AgentIcon, ModelIcon, SkillIcon, WorkflowIcon } from "./Icons";
 import { IAgent, IModelConfig,ISkill, IStatus, IWorkflow } from "../../types";
 import { BuildSections, IBuildState, useBuildStore } from "../../../hooks/buildStore";
+import { API } from "./API";
 
 // Properties for the BuildTile component
 type BuildTileProps = {
@@ -36,6 +37,7 @@ const BuildTile = (props: BuildTileProps) => {
 // Properties for the Home component
 type HomeProps = {
     hasPreviousWork: boolean;
+    api: API;
 }
 
 /**
@@ -44,7 +46,7 @@ type HomeProps = {
  * @returns 
  */
 const Home = (props: HomeProps) => {
-    const { hasPreviousWork }: { hasPreviousWork: boolean} = props;
+    const { hasPreviousWork, api }: { hasPreviousWork: boolean, api: API} = props;
     const {setEditScreen, setEditId} = useBuildStore((state: IBuildState) => ({
         setEditScreen: state.setEditScreen,
         setEditId: state.setEditId,
@@ -67,7 +69,7 @@ const Home = (props: HomeProps) => {
                     <BuildTile category="skill" label="Add Skills" action={editNew.bind(this, "skill")} />
                 </div>
                 {hasPreviousWork &&
-                    <RecentWork />
+                    <RecentWork api={api} />
                 }
             </div>
         </div>

@@ -224,11 +224,14 @@ div.ant-segmented {
 div.ant-segmented label.ant-segmented-item {
     background: #fff;
     border: 1px solid #d6cfc2;
-    border-radius: 8px;;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #333;
 }
 
 div.ant-segmented label.ant-segmented-item-selected {
     background: rgba(70, 79, 235, .2);
+    border-color: var(--agent-color);
 }
 
 .ant-segmented-item + .ant-segmented-item {
@@ -248,6 +251,7 @@ div.ant-segmented label.ant-segmented-item-selected {
     line-height: 36px;
     font-size: 14px;
     font-weight: 400;
+    margin: 20px 0 0;
 }
 
 .recent-work tr {
@@ -262,8 +266,32 @@ div.ant-segmented label.ant-segmented-item-selected {
     border-top: 1px solid #d1d1d1;
 }
 
+.recent-work th {
+    text-align: left;
+    border-bottom: 1px solid #d1d1d1;
+    color: #555;
+}
+
 .recent-work td {
+    padding: 10px 0;
+}
+
+.recent-work .action {
+    display: inline-block;
     padding: 10px;
+    margin: -10px 10px -10px -10px;
+}
+
+.recent-work .action + .action {
+    margin-right: 0;
+}
+
+.recent-work .action svg {
+    width: 16px;
+}
+
+.recent-work .action svg path {
+    fill: var(--agent-color);
 }
 
 .recent-work svg {

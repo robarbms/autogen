@@ -31,8 +31,6 @@ const AgentProperties = (props: AgentPropertiesProps) => {
     const [ agentEdit, setAgentEdit ] = useState<IAgent | null>(null);
     const { setAgents } = useBuildStore(({setAgents}) => ({setAgents}));
 
-    console.log({agent, agentEdit})
-
     useEffect(() => {
       // Create a copy of the agent details to an editable object
       setAgentEdit({...JSON.parse(JSON.stringify(agent)), ...{type: agent?.type}});

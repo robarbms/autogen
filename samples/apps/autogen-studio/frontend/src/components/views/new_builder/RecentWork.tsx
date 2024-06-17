@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, MouseEvent } from "react";
 import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "./Icons";
 import { dataToWorkItem, IWorkItem } from "./utils";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
 import { Segmented } from "antd";
-import { BuildSections, IBuildState, useBuildStore } from "../../../hooks/buildStore";
+import { IBuildState, useBuildStore } from "../../../hooks/buildStore";
 import { useNavigationStore } from "../../../hooks/navigationStore";
+import { ArrowDownTrayIcon, DocumentDuplicateIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { API } from "./API";
 
 /**
  * Rendering of a work item row (agent, model, skill or workflow)
@@ -14,9 +16,11 @@ import { useNavigationStore } from "../../../hooks/navigationStore";
 const RecentRow = (props: IWorkItem & {
     setEditScreen: Function,
     setEditId: Function,
-    setWorkflowId: Function
+    setWorkflowId: Function,
+    api: API
 }) => {
-    const {category, id, name, description, type, time, edit, setEditScreen, setEditId, setWorkflowId} = props;
+    const {category, id, name, description, type, time, edit, setEditScreen, setEditId, setWorkflowId, api} = props;
+    const { workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels } = useBuildStore(({workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels}) => ({workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels}));
     let click = () => {
         if (category === "workflow") {
             setWorkflowId(id);
@@ -36,19 +40,72 @@ const RecentRow = (props: IWorkItem & {
         "skill": <SkillIcon />
     }
 
+    const downloadWork = (event: MouseEvent) => {
+        event.stopPropagation();
+        alert("Downloading...");
+        return false;
+    }
+
+    const copyWork = (event: MouseEvent) => {
+        event.stopPropagation();
+        alert("Copying...");
+        return false;
+    }
+
+    const deleteWork = (event: MouseEvent) => {
+        event.stopPropagation();
+        switch (category) {
+            case "workflow":
+                api.deleteWorkflow(id, (data: IWorkflow[]) => {
+                    setWorkflows(workflows.filter(workflow => workflow.id !== id));
+                });
+                break;
+            case "agent":
+                api.deleteAgent(id, (data: IAgent[]) => {
+                    setAgents(agents.filter(agent => agent.id !== id));
+                });
+                break;
+            case "model":
+                api.deleteModel(id, (data: IModelConfig[]) => {
+                    setModels(models.filter(model => model.id !== id));
+                    api.getAgents(setAgents);
+                });
+                break;
+            case "skill":
+                api.deleteSkill(id, (data: ISkill[]) => {
+                    setSkills(skills.filter(skill => skill.id !== id));
+                    api.getAgents(setAgents);
+                });
+                break;
+        }
+        return false;
+    }
+
+    
     return (
         <tr onClick={click}>
             <td>{icons[category]} {name}</td>
             <td>{description}</td>
             <td>{type}</td>
             <td>{time}</td>
-            <td>{edit}</td>
+            <td>
+                <div className="action download" onClick={downloadWork} title="Download">
+                    <ArrowDownTrayIcon />
+                </div>
+                <div className="action copy" onClick={copyWork} title="Copy">
+                    <DocumentDuplicateIcon />
+                </div>
+                <div className="action delete" onClick={deleteWork} title="Delete">
+                    <TrashIcon />
+                </div>
+            </td>
         </tr>
     )
 }
 
 // Properties for the RecentWork component
 type RecentWorkProps = {
+    api: API;
 }
 
 /**
@@ -158,9 +215,18 @@ const RecentWork = (props: RecentWorkProps) => {
             />
             <div className="recent-work-scroll scroll overflow-y-scroll overflow-hidden">
                 <table>
+                    <thead>
+                        <tr>
+                            <th>Work</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Updated at</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         {work &&
-                            work.map((item, idx) => <RecentRow setEditScreen={setEditScreen} setEditId={setEditId} setWorkflowId={setWorkflowId} key={idx} {...item} />)
+                            work.map((item, idx) => <RecentRow api={props.api} setEditScreen={setEditScreen} setEditId={setEditId} setWorkflowId={setWorkflowId} key={idx} {...item} />)
                         }
                     </tbody>
                 </table>

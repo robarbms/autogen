@@ -75,11 +75,13 @@ export const dataToWorkItem = (user_email: string, data: IAgent | IModelConfig |
     let {id, created_at, updated_at, user_id} = data as any;
     let name: string | undefined = "";
     let description: string | undefined = "";
+    let type = "Workflow"
 
     // properties for agents
     if ("config" in data) {
         name = data.config.name;
         description = "description" in data.config ? data.config.description : "";
+        type = "Agent";
     }
     else {
         if ("name" in data) {
@@ -88,18 +90,23 @@ export const dataToWorkItem = (user_email: string, data: IAgent | IModelConfig |
         // properties for models
         if ("model" in data) {
             name = data.model;
+            type = "Model";
         }
         description = data.description;
     }
-
-    let type: string | undefined = "";
-
-    if ("type" in data) {
-        type = data.type;
+    // properties for skills
+    if ("content" in data) {
+        type = "Skill";
     }
+
+    // Type property for agents and workflows appended
+    if ("type" in data && data.type) {
+        type += ": " + data.type;
+    }
+
     // types for models
-    else if ("api_type" in data) {
-        type = data.api_type;
+    else if ("api_type" in data && data.api_type) {
+        type += ": " + data.api_type;
     }
 
     const user_name: string = user_id && user_email === user_id ? "You" : user_id || "";

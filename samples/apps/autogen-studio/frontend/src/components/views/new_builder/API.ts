@@ -167,6 +167,7 @@ export class API {
         });
     }
     
+    // Gets agents linked to a workflow
     public getWorkflowLinks (id: number, action: Function, refresh: Boolean = false) {
         // If refreshing, reload workflows and agents
         // After refreshing, call back into getWorkflowLinks without a refresh
@@ -186,6 +187,7 @@ export class API {
         }
     }
 
+    // Gets all workflows and their associated agents
     public getWorkflows(callback: (data: any) => void) {
         const url = `${this.serverUrl}/workflows?user_id=${this.user?.email}`;
         const headers = this.GET_HEADERS;
@@ -212,6 +214,19 @@ export class API {
                     })
                 }
             }
+        }, this._error);
+    }
+
+    // Deletes a workflow from the DB
+    public deleteWorkflow(id: number, callback: (workflows: IWorkflow[]) => void) {
+        const url = `${this.serverUrl}/workflows/delete?workflow_id=${id}&user_id=${this.user?.email || ""}`;
+        const headers = this.DELETE_HEADERS;
+
+        fetchJSON(url, headers, (data: IWorkflow[]) => {
+            const updatedWorkflows = this._workflows.filter(workflow => workflow.id !== id);
+            const sortedWorkflows = this.sortByDate(updatedWorkflows);
+            this._workflows = sortedWorkflows;
+            callback(sortedWorkflows);
         }, this._error);
     }
 
@@ -318,6 +333,7 @@ export class API {
         })
     }
 
+    // Inserts a new agent
     public addAgent(agent: IAgent, callback: (data: any) => void) {
         let error_msg = "";
         if (!agent.id || agent.id < 1) {
@@ -340,6 +356,19 @@ export class API {
         fetchJSON(url, headers, (data) => {
             callback(data.data);
         }, this._error);
+    }
+
+    // Removes an agent from the DB by ID
+    public deleteAgent(id: number, callback: (data: IAgent[]) => void) {
+        if (id) {
+            const url = `${this.serverUrl}/agents/delete?agent_id=${id}&user_id=${this.user?.email || ""}`;
+            const headers = this.DELETE_HEADERS;
+
+            fetchJSON(url, headers, (data: IAgent[]) => {
+                this._agents = this._agents.filter((agent: IAgent) => agent.id !== id);
+                callback(this._agents);
+            }, this._error);
+        }
     }
 
     // Creates a new skill
@@ -470,17 +499,54 @@ export class API {
         }, this._error);
     }
 
+    public getModels(callback: (data: IModelConfig[]) => void, refresh: boolean = true) {
+        if (refresh === false) {
+            callback(this._models);
+            return;
+        }
+        const url =`${this.serverUrl}/models?user_id=${this.user?.email || ""}`;
+        const headers = this.GET_HEADERS;
+
+        fetchJSON(url, headers, (data) => {
+            const models = data.data;
+            const sortedModels = this.sortByDate(models);
+            this._models = sortedModels;
+            callback(sortedModels);
+        }, this._error);
+    }
+
+    // Adds a new model to the DB
     public setModel(model: IModelConfig, callback: (data: any) => void) {
         const url = `${this.serverUrl}/models`;
         const headers = this.POST_HEADERS;
         headers.body = JSON.stringify(model);
 
         fetchJSON(url, headers, (data) => {
-            callback(data);
+            const updatedModels = [...this._models, model];
+            const sortedModels = this.sortByDate(updatedModels);
+            this._models = sortedModels;
+            callback(sortedModels);
         }, this._error);
     }
 
+    // Removes a model from the DB by ID
+    public deleteModel(id: number, callback: (data: IModelConfig[]) => void) {
+        if (id) {
+            const url = `${this.serverUrl}/models/delete?model_id=${id}&user_id=${this.user?.email || ""}`;
+            const headers = this.DELETE_HEADERS;
+    
+            fetchJSON(url, headers, (data: IModelConfig[]) => {
+                // remove from local models and return them
+                const updatedModels = this._models.filter(model => model.id !== id);
+                callback(updatedModels);
+                this._models = updatedModels;
+            }, this._error);
+        }
+    }
+
+    // Adds a new skill to the DB
     public setSkill(skill: ISkill, callback: (data: any) => void) {
+        // Find all agents with the skill and unlink them
         const url = `${this.serverUrl}/skills`;
         const headers = this.POST_HEADERS;
         headers.body = JSON.stringify(skill);
@@ -488,5 +554,19 @@ export class API {
         fetchJSON(url, headers, (data) => {
             callback(data);
         }, this._error);
+    }
+    
+    // Removes a skill from the DB by ID
+    public deleteSkill(id: number, callback: (data: ISkill[]) => void) {
+        if (id) {
+            const url = `${this.serverUrl}/skills/delete?skill_id=${id}&user_id=${this.user?.email || ""}`;
+            const headers = this.DELETE_HEADERS;
+    
+            fetchJSON(url, headers, (data: ISkill[]) => {
+                // remove from local skills and return them
+                this._skills = this._skills.filter(skill => skill.id !== id);
+                callback(this._skills);
+            }, this._error);
+        }
     }
 }
