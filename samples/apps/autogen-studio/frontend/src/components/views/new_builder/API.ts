@@ -525,7 +525,7 @@ export class API {
             const updatedModels = [...this._models, model];
             const sortedModels = this.sortByDate(updatedModels);
             this._models = sortedModels;
-            callback(sortedModels);
+            callback(data);
         }, this._error);
     }
 
