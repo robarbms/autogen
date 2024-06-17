@@ -73,9 +73,119 @@ const RecentRow = (props: IWorkItem & {
     }
 
     const copyWork = (event: MouseEvent) => {
+        const copy = (value: any) => JSON.parse(JSON.stringify(value));
         event.stopPropagation();
-        alert("Copying...");
-        return false;
+        const now = () => new Date().toISOString();
+        switch (category) {
+            case "workflow":
+                const workflowData = workflows.find(workflow => workflow.id === id);
+                if (workflowData) {
+                    const workflowCopy = copy({
+                        ...workflowData,
+                        name: `${workflowData.name}_copy`,
+                        created_at: now(),
+                        updated_at: now()
+                    })
+                    delete workflowCopy.sender;
+                    delete workflowCopy.receiver;
+                    delete workflowCopy.id;
+                    api.addWorkflow(workflowCopy, (workflow) => {
+                        // link the workflow if they exist
+                        if (workflowData.sender) {
+                            api.linkWorkflow(workflow.id, "sender", workflowData.sender.id || 0);
+                            workflow.sender = copy(workflowData.sender); 
+                        }
+                        if (workflowData.receiver) {
+                            api.linkWorkflow(workflow.id, "receiver", workflowData.receiver.id || 0);
+                            workflow.receiver = copy(workflowData.receiver);
+                        }
+                        setWorkflows([
+                            ...workflows,
+                            workflow
+                        ]);
+                        setWorkflowId(workflow.id);
+                    })
+                }
+                break;
+            case "agent":
+                const agentData = agents.find(agent => agent.id === id) as IAgent & { models: IModelConfig[], skills: ISkill[], linkedAgents?: IAgent[]};
+                const maxId = agents && agents.length > 0 ? Math.max(...agents.map(agent => agent.id || 0)) : 0;
+                if (agentData && agentData.id) {
+                    const agentCopy = copy({
+                        ...agentData,
+                        id: maxId + 1,
+                        config: {
+                            ...agentData.config,
+                            name: `${agentData.config.name}_copy`
+                        }
+                    });
+                    delete agentCopy.models;
+                    delete agentCopy.skills;
+
+                    api.addAgent(agentCopy, (data) => {
+                        // link models
+                        agentData.models.forEach(model => api.linkAgentModel(data.id, model.id || 0, () =>{}));
+                        agentData.skills.forEach(skill => api.linkAgentSkill(data.id, skill.id || 0, () => {}));
+                        if (agentData.type === "groupchat" && agentData.linkedAgents) {
+                            // duplicate group chat links
+                            agentData.linkedAgents.forEach(agent => {
+                                api.linkAgent(data.id, agent.id || 0, () => {});
+                            });
+                            data.linkedAgents = copy(agentData.linkedAgents);
+                        }
+                        data.models = copy(agentData.models);
+                        data.skills = copy(agentData.skills);
+                        setAgents([
+                            ...agents,
+                            data
+                        ])
+                    });
+                }
+                break;
+            case "model":
+                const modelData = models.find(model => model.id === id);
+                if (modelData) {
+                    // create a copy of this model
+                    const modelCopy = copy({
+                        ...modelData,
+                        model: `${modelData.model}_copy`,
+                        created_at: now(),
+                        updated_at: now()
+                    });
+                    delete modelCopy.id;
+
+                    api.setModel(modelCopy, (data) => {
+                        setModels([
+                            ...models,
+                            data.data
+                        ]);
+                        setEditId(data.data.id);
+                        setEditScreen("model");
+                    })
+                }
+                break;
+            case "skill":
+                const skillData = skills.find(skill => skill.id === id);
+                if (skillData) {
+                    // create a copy of this skill
+                    const skillCopy = copy({
+                        ...skillData,
+                        name: `${skillData.name}_copy`,
+                        created_at: now(),
+                        updated_at: now()
+                    });
+                    delete skillCopy.id;
+
+                    api.addSkill(skillCopy, ((updatedSkills: ISkill[]) => {
+                        setSkills(updatedSkills);
+                        const newSkill = updatedSkills[updatedSkills.length - 1];
+                        setEditId(newSkill.id);
+                        setEditScreen("skill");
+                    }));
+                }
+                
+                break;
+        }
     }
 
     const deleteWork = (event: MouseEvent) => {

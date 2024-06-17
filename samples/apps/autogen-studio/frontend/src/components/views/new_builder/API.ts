@@ -217,6 +217,17 @@ export class API {
         }, this._error);
     }
 
+    // Adds a new workflow
+    public addWorkflow(workflow: IWorkflow, callback: (data: any) => void) {
+        const url = `${this.serverUrl}/workflows?user_id=${this.user?.email || ""}`;
+        const headers = this.POST_HEADERS;
+        headers.body = JSON.stringify(workflow);
+
+        fetchJSON(url, headers, (data) => {
+            callback(data.data);
+        }, this._error);
+    };
+
     // Deletes a workflow from the DB
     public deleteWorkflow(id: number, callback: (workflows: IWorkflow[]) => void) {
         const url = `${this.serverUrl}/workflows/delete?workflow_id=${id}&user_id=${this.user?.email || ""}`;
