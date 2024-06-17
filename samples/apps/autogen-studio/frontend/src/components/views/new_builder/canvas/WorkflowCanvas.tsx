@@ -107,13 +107,13 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
     // Adds node highlighting when selected
     useOnSelectionChange({
         onChange: ({nodes, edges} : {nodes: Node[], edges: Edge[]}): void => {
-            setSelection(nodes as Array<Node & IAgentNode>);
+            setSelection(nodes as NodeSelection);
         }
     });
 
     // Inject node types with setSelection handler
     const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: NodeSelection) => void}[]>(
-        () => TypesWithProps({setSelection}),
+        () => TypesWithProps({setSelection}) as any,
         []
     )
 

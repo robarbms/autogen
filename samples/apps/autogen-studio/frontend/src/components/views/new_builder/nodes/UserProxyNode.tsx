@@ -8,7 +8,9 @@ import { IAgentNode, AgentProperty, NodeSelection } from "../canvas/Canvas";
 /**
  * A node representing a userproxy agent
  */
-const UserproxyNode = memo((data: (Node & IAgentNode | IAgentNode) & { setSelection: (node: NodeSelection) => void, parent: string}, isConnectable) => {
+const UserproxyNode = memo(
+  (data: ((Node & IAgentNode | {data: IAgent, selected?: boolean, isConnectable?: boolean, id: string}) & { setSelection: (node: NodeSelection) => void, parent: string}),
+  isConnectable) => {
   const { isInitiator, models, skills, groupAgent, selectedProp }: { isInitiator: boolean, models: IModelConfig[], skills: ISkill[], groupAgent: boolean, selectedProp: AgentProperty } = data.data;
   const { description, name }: { description: string, name: string } = data.data.config;
   const dragStart = data.data.dragHandle ? (event: DragEvent) => {
@@ -23,14 +25,14 @@ const UserproxyNode = memo((data: (Node & IAgentNode | IAgentNode) & { setSelect
 
   const click = groupAgent ? (event: MouseEvent) => {
     event.preventDefault();
-    data.setSelection(
-      [{
-        ...data,
-        data: {
-          ...data.data,
-          parent:  data.parent
-        }
-      }]);
+    const selected: NodeSelection = [{
+      ...data,
+      data: {
+        ...data.data,
+        parent:  data.parent
+      }
+    }] as NodeSelection;
+    data.setSelection(selected);
   } : () => {};
 
   return (

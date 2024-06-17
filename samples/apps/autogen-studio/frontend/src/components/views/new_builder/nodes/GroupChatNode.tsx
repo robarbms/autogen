@@ -9,7 +9,9 @@ import { IAgent, IModelConfig, ISkill } from '../../../types';
 /**
  * Node for rendering group chat manager
  */
-const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
+const GroupChatNode = memo(
+  (data: Node & IAgentNode & { setSelection: (node: NodeSelection) => void, parent: string},
+  isConnectable) => {
   const { id, setSelection }: { id: string, setSelection: (selected: NodeSelection) => void} = data;
   let { linkedAgents }: { linkedAgents: Array<IAgent & {dragHandle?: (event: DragEvent) => void }> | undefined }  = data.data;
   const { name, description }: { name: string, description: string} = data.data.config;
@@ -44,9 +46,9 @@ const GroupChatNode = memo((data: Node & IAgentNode, isConnectable) => {
         </div>
         <div className="nodes_area">
           {linkedAgents && 
-            linkedAgents.map((node: IAgent & {position?: {x: number, y: number}}, idx: number) => node.type === "assistant" ? 
-              <AssistantNode key={idx} data={{...node, position: {x: 0, y: 0}}} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} /> :
-              <UserproxyNode key={idx} data={node as IAgent} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} />
+            linkedAgents.map((node: IAgent, idx: number) => node.type === "assistant" ? 
+              <AssistantNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} /> :
+              <UserproxyNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} />
             )
           }
           {!linkedAgents || linkedAgents.length < 1 &&

@@ -19,7 +19,7 @@ export type NodeSelection = Array<Node & IAgentNode> | AgentProperty | IModelCon
  * Encapsulating IAgent config and node information
  */
 export interface IAgentNode {
-  position: NodePosition;
+  position?: NodePosition;
   id: string;
   type: "userproxy" | "assistant" | "groupchat" | undefined;
   isConnectable?: Boolean;
@@ -78,7 +78,7 @@ export const NodeTypes: INodeTypes = {
  * @param extraProps 
  * @returns 
  */
-export const TypesWithProps = (extraProps: {[key: string]: any | Function}) => {
+export const TypesWithProps = (extraProps: any) => {
   const typeWithProps:  {[key: string]: any} = {};
   for (let key in NodeTypes) {
     const node = NodeTypes[key];

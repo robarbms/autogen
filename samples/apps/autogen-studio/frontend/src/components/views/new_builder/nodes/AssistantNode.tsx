@@ -10,7 +10,7 @@ import { IAgent, IModelConfig, ISkill } from '../../../types';
  * Node for rendering assistant agents
  */
 const AssistantNode = memo(
-  (data: Node & IAgentNode & { setSelection: (node: NodeSelection) => void, parent: string},
+  (data: ((Node & IAgentNode | {data: IAgent, selected?: boolean, isConnectable?: boolean, id: string}) & { setSelection: (node: NodeSelection) => void, parent: string}),
   isConnectable: boolean | undefined
 ) => {
   const {
@@ -36,14 +36,14 @@ const AssistantNode = memo(
 
   const click = groupAgent ? (event: MouseEvent) => {
     event.preventDefault();
-    data.setSelection(
-      [{
-        ...data,
-        data: {
-          ...data.data,
-          parent: data.parent
-        }
-      }]);
+    const selected = [{
+      ...data,
+      data: {
+        ...data.data,
+        parent: data.parent
+      }
+    }] as NodeSelection;
+    data.setSelection(selected);
   } : () => {};
 
   return (

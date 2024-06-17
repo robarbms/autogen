@@ -66,7 +66,7 @@ const AgentCanvas = (props: AgentCanvasProps) => {
     
     // Inject node types with setSelection handler
     const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: NodeSelection) => void}[]>(
-        () => TypesWithProps({setSelection}),
+        () => TypesWithProps({setSelection}) as any,
         []
     )
 
