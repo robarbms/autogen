@@ -12,6 +12,7 @@ import { IAgent, IModelConfig, ISkill } from "../../types";
 // Properties for EditAgent component
 type EditAgentProps = {
     api: API;
+    agentId: number;
 }
 
 /**
@@ -20,6 +21,7 @@ type EditAgentProps = {
  * @returns 
  */
 const EditAgent = (props: EditAgentProps) => {
+  const { agentId } = props;
     const { agents, setAgents, models, skills, setModels, setSkills } = useBuildStore(({ agents, setAgents, models, skills, setModels, setSkills}) => ({
         agents,
         setAgents,
@@ -33,6 +35,7 @@ const EditAgent = (props: EditAgentProps) => {
     const [nodes, setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode>>([]);
     const [bounding, setBounding] = useState<DOMRect>();
     const [ showMenu, setShowMenu ] = useState(true);
+    const [ initialized, setInitialized ] = useState<boolean>(false);
 
     // On clicking of a node sets it as selected
     const handleSelection = (selected: NodeSelection) => {
@@ -71,6 +74,33 @@ const EditAgent = (props: EditAgentProps) => {
 
   // Drag and drop handler for items dragged onto the canvas or agents
   const handleDrop = getDropHandler(bounding, api, setNodes, nodes as Array<Node & IAgentNode>, [], () => {}, agents, setAgents, setModels, setSkills, handleSelection, true) as any;
+
+  // Load a new node to the canvas if there is an agentId
+  useEffect(() => {
+    if (initialized === false && agentId !== undefined) {
+      const agentNode = agents.find((agent: IAgent) => agent.id === agentId);
+      if (agentNode) {
+        const newAgent = {
+          id: '1',
+          position: {
+            x: 100,
+            y: 100
+          },
+          data: {
+            ...agentNode,
+            api,
+            hideConnector: true,
+          },
+          selected: true,
+          type: agentNode.type,
+          setSelection: handleSelection
+        } as Node & IAgentNode;
+        console.log({agentId, agentNode, newAgent});
+        setNodes([newAgent]);
+        setInitialized(true);
+      }
+    }
+  }, [])
 
   // Update selected agent properties when selectedNode changes
   useEffect(() => {

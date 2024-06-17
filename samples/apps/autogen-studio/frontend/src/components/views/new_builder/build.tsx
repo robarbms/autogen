@@ -70,7 +70,7 @@ const BuildView = (props: BuildViewProps) => {
         <EditWorkflow api={api} />
       }
       {editScreen === "agent" &&
-        <EditAgent api={api} />
+        <EditAgent agentId={editId || 0} api={api} />
       }
       {editScreen === "model" &&
         <EditModel api={api} />

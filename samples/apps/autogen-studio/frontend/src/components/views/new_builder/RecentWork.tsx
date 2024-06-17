@@ -138,7 +138,9 @@ const RecentRow = (props: IWorkItem & {
                         setAgents([
                             ...agents,
                             data
-                        ])
+                        ]);
+                        setEditId(data.id);
+                        setEditScreen("agent");
                     });
                 }
                 break;
