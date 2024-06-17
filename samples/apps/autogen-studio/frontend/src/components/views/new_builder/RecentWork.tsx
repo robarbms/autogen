@@ -7,6 +7,7 @@ import { IBuildState, useBuildStore } from "../../../hooks/buildStore";
 import { useNavigationStore } from "../../../hooks/navigationStore";
 import { ArrowDownTrayIcon, DocumentDuplicateIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { API } from "./API";
+import { sanitizeConfig } from "../../utils";
 
 /**
  * Rendering of a work item row (agent, model, skill or workflow)
@@ -42,8 +43,33 @@ const RecentRow = (props: IWorkItem & {
 
     const downloadWork = (event: MouseEvent) => {
         event.stopPropagation();
-        alert("Downloading...");
-        return false;
+        // find the data to download
+        let data;
+        switch(category) {
+            case "workflow":
+                data = workflows.find(wf => wf.id === id);
+                break;
+            case "agent":
+                data = agents.find(agent => agent.id === id);
+                break;
+            case "model":
+                data = models.find(model => model.id === id);
+                break;
+            case "skill":
+                data = skills.find(skill => skill.id === id);
+        }
+        if (data) {
+            const element = document.createElement("a");
+            const sanitizedWork = sanitizeConfig(data);
+            const file = new Blob([JSON.stringify(sanitizedWork)], {
+                type: "application/json",
+            });
+            element.href = URL.createObjectURL(file);
+            // downloads the file as it's category and name. Example: workflow-Default_Agent_Workflow.json, agent-userproxy.json
+            element.download = `${category}-${name.replace(/ /g, "_")}.json`;
+            document.body.appendChild(element); // Required for this to work in FireFox
+            element.click();
+        }
     }
 
     const copyWork = (event: MouseEvent) => {
@@ -78,7 +104,6 @@ const RecentRow = (props: IWorkItem & {
                 });
                 break;
         }
-        return false;
     }
 
     
