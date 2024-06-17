@@ -380,6 +380,27 @@ div.ant-segmented label.ant-segmented-item-selected {
     margin: 0;
 }
 
+.new-workflow {
+    color: var(--agent-color);
+    cursor: pointer;
+    padding: 5px 12px;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.new-workflow:hover {
+    background: rgba(0, 0, 0, .04);
+}
+
+.new-workflow svg {
+    width: 18px;
+    display: inline-block;
+}
+
+.new-workflow svg path {
+    fill: var(--agent-color);
+}
+
 .build-nav-select {
     margin: 0 0 0 10px;
 }

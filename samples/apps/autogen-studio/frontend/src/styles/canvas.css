@@ -1,3 +1,7 @@
+body {
+  --agent-color: #464feb;
+}
+
 div.workflow-canvas {
   background: #e5ebf8;
   width: auto !important;

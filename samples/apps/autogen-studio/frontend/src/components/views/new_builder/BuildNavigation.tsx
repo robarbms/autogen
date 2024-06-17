@@ -1,10 +1,11 @@
 import React, { MouseEventHandler, ReactElement, JSX } from "react";
 import { IWorkItem } from "./utils";
 import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "./Icons";
-import { Select } from "antd";
+import { Divider, Select } from "antd";
 import "../../../styles/build.css";
 import { useBuildStore } from "../../../hooks/buildStore";
 import { IWorkflow } from "../../types";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 /**
  * Properties for the BuildNavigation component
@@ -40,9 +41,29 @@ const BuildNavigation = (props: BuildNavigationProps) => {
         label: workflow.name
     }));
 
+    const newWorkflow = () => {
+        setWorkflowId(null);
+        setEditId(null);
+        setEditScreen("workflow");
+    }
+
     return (
         <div className={`build-nav ${className || ""}`}>
-            <Select onChange={onChange} className="build-nav-select" defaultValue={workflowId} options={options} />
+            <Select
+                onChange={onChange}
+                className="build-nav-select"
+                defaultValue={workflowId}
+                dropdownRender={(menu) => (
+                    <>
+                        {menu}
+                        <Divider style={{margin: "8px"}} />
+                        <div className="new-workflow" onClick={newWorkflow}>
+                            <PlusIcon /> New workflow
+                        </div>
+                    </>
+                )}
+                options={options}
+            />
         </div>
     )
 }
