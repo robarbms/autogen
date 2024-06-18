@@ -13,6 +13,8 @@ import { useBuildStore } from "../../../../hooks/buildStore";
 import { useNavigationStore } from "../../../../hooks/navigationStore";
 import { API } from "../API";
 import { addNode, getDropHandler, IAgentNode, AgentProperty, emptyAgent, createModel, createSkill, NodePosition } from "./Canvas";
+import { Cog6ToothIcon } from "@heroicons/react/24/outline";
+import { Tooltip } from "antd";
 
 /**
  * Properties for the Workflow component
@@ -46,7 +48,7 @@ const Workflow = (props: WorkflowProps) => {
   const [ nodes, setNodes, onNodesChange ] = useNodesState<Array<Node & IAgentNode>>([]);
   const [ edges, setEdges, onEdgesChange ] = useEdgesState<Edge>([]);
   const [ showChat, setShowChat ] = useState<boolean>(false);
-  const [ selectedNode, setSelectedNode ] = useState<Node & IAgentNode | AgentProperty | null>(null);
+  const [ selectedNode, setSelectedNode ] = useState<Node & IAgentNode | AgentProperty | IWorkflow | null>(null);
   const [ isValidWorkflow, setIsValidWorkflow ] = useState<boolean>(false);
   const [ editting, setEditting ] = useState<IWorkItem>();
   const [ initialized, setInitialized ] = useState<boolean>(false);
@@ -241,12 +243,14 @@ const Workflow = (props: WorkflowProps) => {
   };
 
   // Updates the selected node when it changes
-  const handleSelection = (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } | AgentProperty | null) => {
+  const handleSelection = (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } |  IWorkflow | AgentProperty | null) => {
     if (selected) {
+      // A selected agent
       if (Array.isArray(selected)) {
         setSelectedNode(selected.length > 0 ? selected[selected.length - 1].data : null);
       }
-      else if (selected.parent) {
+      // A selected model or skill
+      else if ("parent" in selected && selected.parent) {
         const selectedData: AgentProperty = {
           id: selected.id || 0,
           parent: selected.parent,
@@ -256,6 +260,11 @@ const Workflow = (props: WorkflowProps) => {
           selectedData.group = selected.group as string;
         }
         setSelectedNode(selectedData);
+      }
+      // A selected workflow
+      else {
+        const workflow = selected;
+        setSelectedNode(workflow as IWorkflow)
       }
     }
     else {
@@ -349,6 +358,15 @@ const Workflow = (props: WorkflowProps) => {
       content: " ",
     }, ...skills]}
   ];
+
+  const editWorkflow = () => {
+    // click handler to edit the currently active workflow
+    const workflow = workflows.find(workflow => workflow.id === workflowId);
+    if (workflow) {
+      console.log(workflow);
+      handleSelection(workflow);
+    }
+  }
 
   // Creates or attaches Agents, models and skills
   const addLibraryItem = (data: (IAgent | IModelConfig | ISkill) & {
@@ -470,7 +488,12 @@ const Workflow = (props: WorkflowProps) => {
         chat={showChat && isValidWorkflow && workflowId !== null ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
         chatTitle={editting?.name}
       >
-        <BuildNavigation className="nav-over-canvas" category="workflow" />
+        <div className="canvas-actions">
+          <BuildNavigation className="nav-over-canvas" category="workflow" />
+          <Tooltip placement="bottom" title="Edit workflow">
+            <div className="workflow-edit" onClick={editWorkflow}><Cog6ToothIcon /></div>
+          </Tooltip>
+        </div>
         <WorkflowCanvas
           nodes={nodes}
           edges={edges}

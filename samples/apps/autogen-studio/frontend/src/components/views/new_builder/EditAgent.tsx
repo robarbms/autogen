@@ -43,7 +43,7 @@ const EditAgent = (props: EditAgentProps) => {
           if (Array.isArray(selected)) {
             setSelectedNode(selected.length > 0 ? selected[0].data : null);
           }
-          else {
+          else if ("parent" in selected) {
             const selectedData: AgentProperty = {
               id: selected.id || 0,
               parent: selected.parent,

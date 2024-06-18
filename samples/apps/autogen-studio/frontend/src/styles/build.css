@@ -366,20 +366,6 @@ div.ant-segmented label.ant-segmented-item-selected {
     margin: 0 0 0 10px;
 }
 
-/* Site navigation */
-.build-nav {
-    font-size: 14px;
-    margin: 20px 0;
-}
-
-.nav-over-canvas {
-    position: absolute;
-    z-index: 1;
-    left: 20px;
-    top: 10px;
-    margin: 0;
-}
-
 .new-workflow {
     color: var(--agent-color);
     cursor: pointer;

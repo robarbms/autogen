@@ -3,7 +3,7 @@ import GroupChatNode from "../nodes/GroupChatNode";
 import UserProxyNode from "../nodes/UserProxyNode";
 import AgentSelectNode from "../nodes/AgentSelectNode";
 import { Node, Edge, MarkerType } from "reactflow";
-import { IAgent, IModelConfig, ISkill } from "../../../types";
+import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
 import { API } from "../API";
 import React, { MouseEventHandler, createElement } from "react";
 
@@ -13,7 +13,7 @@ export type NodePosition = {
   y: number;
 }
 
-export type NodeSelection = Array<Node & IAgentNode> | AgentProperty | IModelConfig & AgentProperty | ISkill & AgentProperty | null;
+export type NodeSelection = Array<Node & IAgentNode> | AgentProperty | IModelConfig & AgentProperty | ISkill & AgentProperty | IWorkflow | null;
 
 /**
  * Encapsulating IAgent config and node information
