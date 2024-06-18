@@ -13,7 +13,7 @@ const IndexPage = ({ data }: any) => {
 
 
   return (
-    <PageLayout buildNav={buildNav}>
+    <PageLayout meta={data.site.siteMetadata} title="Build" buildNav={buildNav}>
       <NewBuildView createNav={create} />
     </PageLayout>
   );

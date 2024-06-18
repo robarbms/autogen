@@ -27,11 +27,20 @@ const PageNavigation = (props: PageNavigationProps) => {
     const userAvatar = user?.avatar_url;
     const userName = user?.name || "Uknown";
     const create = (category: BuildSections) => () => {
+        navigateBuild();
         setEditId(null);
         setEditScreen(category);
     }
 
+    const navigateBuild = () => {
+        const {pathname} = document.location;
+        if (pathname.indexOf('/new_build') !== 0) {
+            document.location.href = '/new_build';
+        }
+    }
+
     const buildHome = () => {
+        navigateBuild();
         setEditScreen(null);
         setEditId(null);
         setWorkflowId(null);
@@ -40,7 +49,7 @@ const PageNavigation = (props: PageNavigationProps) => {
     const buildMenu = [
         {
             key: '1',
-            label: (<span onClick={buildHome}><BuildIcon /> <label>Build</label></span>),
+            label: (<a onClick={buildHome}><BuildIcon className="nav-icon" /> <label>Build</label></a>),
             children: 
             <>
                 <div className="build-nav-item" onClick={create("workflow")}>Workflows</div>
@@ -58,7 +67,7 @@ const PageNavigation = (props: PageNavigationProps) => {
             </div>
             <nav>
                 <section>
-                    <a href="/"><PlaygroundIcon /><label>Playground</label></a>
+                    <a href="/"><PlaygroundIcon className="nav-icon" /><label>Playground</label></a>
                     <Collapse onChange={(value) => setBuildExpand(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildExpand ? ['1'] : []} />
                 </section>
                 {hasGallery &&
@@ -78,8 +87,8 @@ const PageNavigation = (props: PageNavigationProps) => {
                     <span className="user-name">{userName}</span>
                 </div>
                 <div className="nav-view">
-                    <div className="nav-minimize" onClick={setNavigationExpand.bind(this, false)}><CollapseMenuIcon />Close sidebar</div>
-                    <div className="nav-expand" onClick={setNavigationExpand.bind(this, true)}><ExpandMenuIcon /></div>
+                    <div className="nav-minimize" onClick={setNavigationExpand.bind(this, false)}><CollapseMenuIcon className="nav-icon" />Close sidebar</div>
+                    <div className="nav-expand" onClick={setNavigationExpand.bind(this, true)}><ExpandMenuIcon className="nav-icon" /></div>
                 </div>
             </div>
         </div>

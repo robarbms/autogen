@@ -9,10 +9,11 @@ import EditSkill from "./EditSkill";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
 import { useBuildStore } from "../../../hooks/buildStore";
 
-type Categories = "agents" | "models" | "skills" | "workflows";
+export type Categories = "agents" | "models" | "skills" | "workflows";
 
 // Properties for the BuildView component
 type BuildViewProps = {
+  createNav: "agent" | "model" | "skill" | "workflow" | null
 }
 
 /**

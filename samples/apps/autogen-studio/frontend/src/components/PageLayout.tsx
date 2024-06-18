@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { ReactElement, useEffect } from "react";
 import { appContext } from "../hooks/provider";
 import PageNavigation from "./PageNavigation";
 import "../styles/site.css";
@@ -8,6 +8,8 @@ import { useNavigationStore } from "../hooks/navigationStore";
 type PageLayoutProps = {
     buildNav: (category: "workflow" | "agent" | "skill" | "model") => void;
     children: ReactElement | Array<ReactElement>;
+    meta: any;
+    title: string;
 }
 
 /**
@@ -20,28 +22,29 @@ const PageLayout = (props: PageLayoutProps) => {
         setUser,
         navigationExpand
     }));
-    const { buildNav, children } = props;
+    const { buildNav, children, meta, title } = props;
     const { darkMode, user } = React.useContext(appContext);
 
     useEffect(() => {
         setUser(user);
     }, []);
-  
-    const links: any[] = [
-      { name: "Build", href: "/build" },
-      { name: "New Build", href: "/new_build"},
-      { name: "Playground", href: "/" },
-      // { name: "Gallery", href: "/gallery" },
-      // { name: "Data Explorer", href: "/explorer" },
-    ];
 
+    React.useEffect(() => {
+      document.getElementsByTagName("html")[0].className = `${
+        darkMode === "dark" ? "dark bg-primary" : "light bg-primary"
+      } `;
+    }, [darkMode]);
+  
     return (
+        <>
+        <title>{meta?.title + " | " + title}</title>
         <div className={`page-layout ${darkMode === "dark" ? "dark" : "light"} ${navigationExpand ? "nav-wide" : "nav-narrow"}`}>
             <PageNavigation buildNav={buildNav} hasGallery={false} />
             <main className="page-content">
                 {children}
             </main>
         </div>
+        </>
     );
 }
 
