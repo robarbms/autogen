@@ -7,7 +7,7 @@ import PageLayout from "../components/PageLayout";
 // markup
 const IndexPage = ({ data }: any) => {
   return (
-    <PageLayout meta={data.site.siteMetadata} title="Home" link={"/"}>
+    <PageLayout meta={data.site.siteMetadata} title="Home" buildNav={() => {}}>
       <main style={{ height: "100%" }} className=" h-full ">
         <RAView />
       </main>

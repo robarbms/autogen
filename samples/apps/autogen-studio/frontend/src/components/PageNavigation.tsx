@@ -63,7 +63,7 @@ const PageNavigation = (props: PageNavigationProps) => {
     return (
         <div className="page-navigation">
             <div className="page-logo">
-                <a href="/"><img className="logo" src="/images/logo.png" /> <label>Autogen Studio</label></a>
+                <a href="/"><img className="logo" src="/images/logo.png" alt="Autogen Studio logo" /> <label>Autogen Studio</label></a>
             </div>
             <nav>
                 <section>
