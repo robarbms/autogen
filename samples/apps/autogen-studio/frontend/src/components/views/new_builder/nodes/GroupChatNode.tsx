@@ -1,22 +1,25 @@
-import React, { createRef, memo } from 'react';
+import React, { createRef, memo, MouseEvent } from 'react';
 import { Handle, Position, Node } from 'reactflow';
 import AssistantNode from './AssistantNode';
 import UserproxyNode from './UserProxyNode';
 import { AgentIcon } from '../Icons';
 import { IAgentNode, NodeSelection } from '../canvas/Canvas';
-import { IAgent, IModelConfig, ISkill } from '../../../types';
+import { IAgent } from '../../../types';
+import { Popover } from 'antd';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 
 /**
  * Node for rendering group chat manager
  */
 const GroupChatNode = memo(
-  (data: Node & IAgentNode & { setSelection: (node: NodeSelection) => void, parent: string},
+  (data: Node & IAgentNode & { setSelection: (node: NodeSelection) => void, parent: string, removeNode: (id: string | number, parent?: string) => void, setInitiator: (id: string) => void},
   isConnectable) => {
   const { id, setSelection }: { id: string, setSelection: (selected: NodeSelection) => void} = data;
   let { linkedAgents }: { linkedAgents: Array<IAgent & {dragHandle?: (event: DragEvent) => void }> | undefined }  = data.data;
   const { name, description }: { name: string, description: string} = data.data.config;
   const container = createRef<HTMLDivElement>();
 
+  // Drag handle used by linked agents
   const dragHandle = (id: number, type: string) => {
     return (event: DragEvent) => {
         const position = (event.target as HTMLDivElement)?.getBoundingClientRect();
@@ -31,6 +34,7 @@ const GroupChatNode = memo(
     }
   }
 
+  // Binds the drag handles to the linked agents data
   if (linkedAgents) {
     linkedAgents = linkedAgents.map((agent: IAgent & {dragHandle?: (event: DragEvent) => void}) => {
       agent.dragHandle = dragHandle(agent.id || -1, agent.type || "");
@@ -38,17 +42,35 @@ const GroupChatNode = memo(
     });
   }
 
+  // deletes the node from the canvas
+  const deleteHandler = (event: MouseEvent) => {
+    event.stopPropagation();
+    if (data.removeNode) {
+      data.removeNode(data.id);
+    }
+  }
+
+  // Actions flyout for an agent
+  const actions = (
+    <>
+      <button onClick={deleteHandler as any}>{"Delete from canvas"}</button>
+    </>
+  )
+
   return (
     <div data-id={data.data.id} className={`node group_agent node-has-content drop-agents ${data.data.deselected ? "deselected" : ""}`} ref={container}>
         <div className="node_title drag-handle">
+          <Popover placement="bottom" content={actions} arrow={false}>
+              <div className="agent-actions" onClick={(event: MouseEvent) => event.stopPropagation()}><EllipsisHorizontalIcon /></div>
+          </Popover>
           <h2><AgentIcon />{name}</h2>
           {description}
         </div>
         <div className="nodes_area">
           {linkedAgents && 
             linkedAgents.map((node: IAgent, idx: number) => node.type === "assistant" ? 
-              <AssistantNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} /> :
-              <UserproxyNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} />
+              <AssistantNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} removeNode={data.removeNode} /> :
+              <UserproxyNode key={idx} data={node} isConnectable={false} selected={node.id === data.data.selectedProp?.id} setSelection={setSelection} id={`${idx}`} parent={id} removeNode={data.removeNode} setInitiator={data.setInitiator} />
             )
           }
           {!linkedAgents || linkedAgents.length < 1 &&

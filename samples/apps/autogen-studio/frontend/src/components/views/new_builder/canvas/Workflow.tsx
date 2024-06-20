@@ -495,7 +495,8 @@ const Workflow = (props: WorkflowProps) => {
           </Tooltip>
         </div>
         <WorkflowCanvas
-          nodes={nodes}
+          api={api}
+          nodes={nodes as Array<Node & IAgentNode>}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}

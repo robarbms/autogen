@@ -372,6 +372,7 @@ div.ant-segmented label.ant-segmented-item-selected {
     padding: 5px 12px;
     border-radius: 4px;
     box-sizing: border-box;
+    white-space: nowrap;
 }
 
 .new-workflow:hover {
@@ -381,6 +382,7 @@ div.ant-segmented label.ant-segmented-item-selected {
 .new-workflow svg {
     width: 18px;
     display: inline-block;
+    margin: 0 0 4px -5px;
 }
 
 .new-workflow svg path {

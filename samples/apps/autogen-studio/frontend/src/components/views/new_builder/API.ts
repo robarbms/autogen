@@ -243,8 +243,8 @@ export class API {
 
     // Links workflows to either a sender or receiver agent
     public linkWorkflow (workflow_id: number, type: "sender" |  "receiver", agent_id: number) {
-        const url = this.getLinkPath(workflow_id, type, agent_id);
-        fetchJSON(url, this.POST_HEADERS, (data) => {}, () => {});
+        const url = `${this.serverUrl}/workflows/link/agent/${workflow_id}/${agent_id}/${type}`;
+        fetchJSON(url, this.POST_HEADERS, (data) => {}, this._error);
     }
 
     // Unlinks workflows from either a sender or receiver agent
@@ -308,7 +308,7 @@ export class API {
                         const {length} = linkedAgents;
                         const order = linkedAgents.map(({id}: {id: number}) => id);
                         let updatedAgents: Array<IAgent> = [];
-                        while(updatedAgents.length < length) {
+                        while(updatedAgents.length < length && linkedAgents.length > 0) {
                             const agent = linkedAgents.pop();
                             this.getAgentData(agent.id, agent.type, (agentData: IAgent) => {
                                 const updatedAgent = Object.assign({}, agent, agentData);

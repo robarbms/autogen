@@ -5,7 +5,7 @@ import AgentSelectNode from "../nodes/AgentSelectNode";
 import { Node, Edge, MarkerType } from "reactflow";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
 import { API } from "../API";
-import React, { MouseEventHandler, createElement } from "react";
+import React, { MouseEvent, createElement } from "react";
 
 // Type for positioning of a node
 export type NodePosition = {
@@ -32,9 +32,11 @@ export interface IAgentNode {
     hideConnector?: boolean;
     linkedAgents?: Array<IAgent & {dragHandle?: Function, isSelected?: boolean}>;
   },
-  setSelection?: (node: NodeSelection) => void,
-  selectedProp?: boolean,
-  selected?: boolean
+  setSelection?: (node: NodeSelection) => void;
+  selectedProp?: boolean;
+  selected?: boolean;
+  removeNode?: (id: string | number, parent?: string) => void;
+  setInitiator?: (id: string) => void;
 }
 
 /**
@@ -176,7 +178,7 @@ export const addNode = (
   }
 }
 
-  // Refreshes agents from the database and rerenders nodes
+// Refreshes agents from the database and rerenders nodes
 export const nodeUpdater = (
   api: API,
   setAgents: (agents: Array<IAgent>) => void,
@@ -202,6 +204,7 @@ export const nodeUpdater = (
   }, true);
 }
 
+// Creates a new empty agent
 export const emptyAgent = (user_id: string = ""): IAgent => ({
   id: -1,
   user_id,
@@ -226,6 +229,7 @@ export const emptyAgent = (user_id: string = ""): IAgent => ({
   }
 });
 
+// Creates a new model
 export const createModel = (
   api: API,
   nodes: Array<Node & IAgentNode>,
@@ -265,6 +269,7 @@ export const createModel = (
   });
 }
 
+// Creats a new skill
 export const createSkill = (
   api: API,
   nodes: Array<Node & IAgentNode>,
@@ -275,14 +280,14 @@ export const createSkill = (
 ) => {
   // Adding a new skill
   const now = new Date().toISOString();
-  const name = "Skill name";
+  const name = "new_skill";
   const skillData = {
     id: 0,
     created_at: now,
     updated_at: now,
     user_id: api.user?.email,
     name,
-    content: "// Content goes here",
+    content: "// Code goes here",
     description: " ",
     secrets: {},
     libraries: {},
@@ -309,8 +314,6 @@ export const createSkill = (
     }
   });
 }
-
-export const activeNode = (edges: Array<Edge>, nodeId: string) => edges && edges.length > 0 && !!edges.find(edge => edge.source === nodeId || edge.target === nodeId);
 
 // Figures out what was dropped, where it came from and where it is being dropped
 export const getDropHandler = (
@@ -365,7 +368,7 @@ export const getDropHandler = (
     const data: IDropData = JSON.parse(dataTransfer) as IDropData;
     const { group, id, offsetX, offsetY, parent, type } = data;
 
-    const eventTargetId = getTargetId.bind(this, event); // Finds the parent drop zone based on the event
+    const eventTargetId = getTargetId.bind(this, event as any); // Finds the parent drop zone based on the event
     const position = {
       x: event.clientX + (offsetX || 0) - left,
       y: event.clientY + (offsetY || 0) - top,
@@ -398,7 +401,6 @@ export const getDropHandler = (
                 return node;
               });
               setNodes(selected);
-              // const emptyNode = updatedNodes.find((node) => node.data.id === -1);
             }, true);
           }
         }

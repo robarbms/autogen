@@ -48,6 +48,20 @@
     overflow: hidden;
 }
 
+.library-item-drag {
+    float: right;
+}
+
+.library-item-drag svg {
+    display: inline-block;
+    height: 16px;
+    margin: 0 -5px;
+}
+
+.library-item-drag svg path {
+    fill: #949494;
+}
+
 .item_emph {
     border-style: dashed dashed dashed solid;
 }

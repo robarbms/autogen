@@ -1,5 +1,6 @@
 import React, { DragEventHandler, DragEvent } from "react";
 import { IAgent } from "../../../types";
+import { EllipsisVerticalIcon } from "@heroicons/react/24/solid";
 
 /**
  * LibraryItem component properties 
@@ -52,6 +53,10 @@ const LibraryItem = (props: LibraryItemProps) => {
                 type: category
             })}
         >
+            <div className="library-item-drag">
+                <EllipsisVerticalIcon />
+                <EllipsisVerticalIcon />
+            </div>
             <div className="library-item-title">{name}</div>
         </div>
     );

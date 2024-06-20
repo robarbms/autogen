@@ -36,6 +36,16 @@ div.workflow-canvas {
   padding: 10px;
 }
 
+.agent-actions {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+
+.agent-actions svg {
+  width: 16px;
+}
+
 .node_title h2 {
   font-weight: 700;
 }

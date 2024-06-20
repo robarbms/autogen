@@ -30,12 +30,11 @@ const EditSkill = (props: EditSkillProps) => {
     const [ localSkill, setLocalSkill ] = useState<ISkill>();
     const [loading, setLoading] = useState<boolean>(false);
     const editorRef = useRef<any | null>(null);
-    const [librarySkills, setLibrarySkills] = useState<IWorkItem[]>([]);
     const loggedInUser = useNavigationStore(({user}) => user);
     const user = loggedInUser?.name || "Uknown";
 
     // If a skill is being editted, it will be passed and set
-    // Otherwise use a sample skill
+    // Otherwise use an empty skill
     useEffect(() => {
         if (editId) {
             const skill_edit = skills.find(skill => skill.id === editId);
@@ -44,7 +43,11 @@ const EditSkill = (props: EditSkillProps) => {
             }
         }
         else {
-            setLocalSkill(getSampleSkill());
+            const emptySkill: ISkill = {
+                name: "new_skill",
+                content: "// Code goes here"
+            }
+            setLocalSkill(emptySkill);
         }
     }, []);
 
