@@ -2,7 +2,7 @@ import React, { useEffect, useState, MouseEvent } from "react";
 import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "./Icons";
 import { dataToWorkItem, IWorkItem } from "./utils";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
-import { Segmented } from "antd";
+import { Segmented, Tooltip } from "antd";
 import { IBuildState, useBuildStore } from "../../../hooks/buildStore";
 import { useNavigationStore } from "../../../hooks/navigationStore";
 import { ArrowDownTrayIcon, DocumentDuplicateIcon, TrashIcon } from "@heroicons/react/24/solid";
@@ -226,14 +226,20 @@ const RecentRow = (props: IWorkItem & {
             <td>{type}</td>
             <td>{time}</td>
             <td>
-                <div className="action download" onClick={downloadWork} title="Download">
-                    <ArrowDownTrayIcon />
+                <div className="action download" onClick={downloadWork}>
+                    <Tooltip placement="top" title="Download">
+                        <ArrowDownTrayIcon />
+                    </Tooltip>
                 </div>
-                <div className="action copy" onClick={copyWork} title="Copy">
-                    <DocumentDuplicateIcon />
+                <div className="action copy" onClick={copyWork}>
+                    <Tooltip placement="top" title="Copy">
+                        <DocumentDuplicateIcon />
+                    </Tooltip>
                 </div>
-                <div className="action delete" onClick={deleteWork} title="Delete">
-                    <TrashIcon />
+                <div className="action delete" onClick={deleteWork}>
+                    <Tooltip placement="top" title="Delete">
+                        <TrashIcon />
+                    </Tooltip>
                 </div>
             </td>
         </tr>
