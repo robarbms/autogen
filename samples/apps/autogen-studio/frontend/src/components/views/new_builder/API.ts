@@ -308,7 +308,7 @@ export class API {
                         const {length} = linkedAgents;
                         const order = linkedAgents.map(({id}: {id: number}) => id);
                         let updatedAgents: Array<IAgent> = [];
-                        while(updatedAgents.length < length && linkedAgents.length > 0) {
+                        while(updatedAgents.length < length) {
                             const agent = linkedAgents.pop();
                             this.getAgentData(agent.id, agent.type, (agentData: IAgent) => {
                                 const updatedAgent = Object.assign({}, agent, agentData);
