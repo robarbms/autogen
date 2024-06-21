@@ -51,6 +51,10 @@ div.workflow-canvas {
   width: 16px;
 }
 
+.set-initiator {
+  margin: 0 0 10px;
+}
+
 .node_title h2 {
   font-weight: 700;
 }

@@ -27,7 +27,7 @@ const UserproxyNode = memo(
 
   // Click handler for selecting the node instance
   const click = groupAgent ? (event: MouseEvent) => {
-    event.preventDefault();
+    event.stopPropagation();
     const selected: NodeSelection = [{
       ...data,
       data: {
@@ -58,7 +58,7 @@ const UserproxyNode = memo(
   const actions = (
     <>
       {(!data.data.isInitiator || data.data.isInitiator === false) && !data.parent &&
-        <div>
+        <div className="set-initiator">
           <button onClick={initiatorHandler}>Set as Initiator</button>
         </div>
       }
@@ -73,7 +73,7 @@ const UserproxyNode = memo(
       }
       <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click}>
         <Popover placement="bottom" content={actions} arrow={false}>
-            <div className="agent-actions" onClick={(event: MouseEvent) => event.stopPropagation()}><EllipsisHorizontalIcon /></div>
+            <div className="agent-actions nodrag"><EllipsisHorizontalIcon /></div>
         </Popover>
         <h2><AgentIcon />{name}</h2>
         {description}

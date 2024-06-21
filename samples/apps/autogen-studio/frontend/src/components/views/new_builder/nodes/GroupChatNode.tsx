@@ -61,7 +61,7 @@ const GroupChatNode = memo(
     <div data-id={data.data.id} className={`node group_agent node-has-content drop-agents ${data.data.deselected ? "deselected" : ""}`} ref={container}>
         <div className="node_title drag-handle">
           <Popover placement="bottom" content={actions} arrow={false}>
-              <div className="agent-actions" onClick={(event: MouseEvent) => event.stopPropagation()}><EllipsisHorizontalIcon /></div>
+              <div className="agent-actions nodrag"><EllipsisHorizontalIcon /></div>
           </Popover>
           <h2><AgentIcon />{name}</h2>
           {description}

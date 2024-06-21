@@ -68,7 +68,7 @@ const AssistantNode = memo(
     <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart as any} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.active === true ? "active" : ""}`}>
       <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click as any}>
         <Popover placement="bottom" content={actions} arrow={false}>
-          <div className="agent-actions" onClick={(event: MouseEvent) => event.stopPropagation()}><EllipsisHorizontalIcon /></div>
+          <div className="agent-actions nodrag"><EllipsisHorizontalIcon /></div>
         </Popover>
         <h2><AgentIcon />{name}</h2>
         {description}
