@@ -235,6 +235,7 @@ const Workflow = (props: WorkflowProps) => {
 
   // Updates the selected node when it changes
   const handleSelection = (selected: Array<Node & IAgentNode> | (IModelConfig | ISkill) & { parent?: string, group?: string } |  IWorkflow | AgentProperty | null) => {
+
     if (selected) {
       // A selected agent
       if (Array.isArray(selected)) {
@@ -275,7 +276,7 @@ const Workflow = (props: WorkflowProps) => {
   useEffect(() => {
     if (nodes && nodes.length > 0) {
       const updatedNodes = JSON.parse(JSON.stringify(nodes)).map((node: Node & IAgentNode) => {
-        if (selectedNode && "parent" in selectedNode && !("group" in selectedNode) && selectedNode.parent === node.id) {
+        if (selectedNode && "parent" in selectedNode && (!("group" in selectedNode) || !selectedNode.group) && selectedNode.parent === node.id) {
           node.data.selectedProp = selectedNode;
         }
         else {
@@ -285,14 +286,14 @@ const Workflow = (props: WorkflowProps) => {
           node.data.linkedAgents = node.data.linkedAgents.map((agent: IAgentNode, idx: number) => {
             if (selectedNode && "group" in selectedNode && selectedNode.group === node.id) {
               if (idx === parseInt(selectedNode.parent)) {
-                agent.selectedProp = !!selectedNode;
+                agent.data.selectedProp = !!selectedNode;
               }
               else {
-                delete agent.selectedProp;
+                delete agent.data.selectedProp;
               }
             }
             else {
-              delete agent.selectedProp;
+              delete agent.data.selectedProp;
             }
             return agent;
           })

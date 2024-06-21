@@ -192,7 +192,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
 
 
     // Inject node types with setSelection handler
-    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: NodeSelection) => void}[]>(
+    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: NodeSelection) => void, removeNode: (id: number | string, parent?: string) => void, setInitiator: (id: string) => void}[]>(
         () => TypesWithProps({setSelection, removeNode, setInitiator}) as any,
         []
     )

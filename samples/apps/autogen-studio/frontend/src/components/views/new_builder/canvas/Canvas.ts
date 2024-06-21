@@ -31,9 +31,9 @@ export interface IAgentNode {
     api: API;
     hideConnector?: boolean;
     linkedAgents?: Array<IAgent & {dragHandle?: Function, isSelected?: boolean}>;
+    selectedProp?: boolean;
   },
   setSelection?: (node: NodeSelection) => void;
-  selectedProp?: boolean;
   selected?: boolean;
   removeNode?: (id: string | number, parent?: string) => void;
   setInitiator?: (id: string) => void;
