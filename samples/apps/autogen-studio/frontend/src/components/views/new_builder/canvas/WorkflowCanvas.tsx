@@ -33,7 +33,7 @@ type WorfkflowCanvasProps = {
     onDragOver: MouseEventHandler;
     setBounding: Function;
     setEdges: (edges: Edge[] | ((els: Edge[]) => Edge[])) => void;
-    setNodes: (nodes: Node[]) => void;
+    setNodes: (nodes: Array<Node & IAgentNode>) => void;
     setSelection: (node: NodeSelection) => void;
     selectedNode?: Array<Node & IAgentNode> | AgentProperty | null;
     api: API;

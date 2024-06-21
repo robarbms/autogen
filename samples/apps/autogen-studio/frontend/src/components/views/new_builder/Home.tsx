@@ -61,7 +61,6 @@ const Home = (props: HomeProps) => {
         <div className="build-home h-full">
             <div className="build-home-back"></div>
             <div className="build-home-const h-full">
-            <h1>Welcome to AutoGen</h1>
                 <div className="build-home-create">
                     <BuildTile category="workflow" label="Build workflow" action={editNew.bind(this, "workflow",)} />
                     <BuildTile category="agent" label="Add Agents" action={editNew.bind(this, "agent")} />

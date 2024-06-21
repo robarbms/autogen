@@ -74,7 +74,7 @@ const Workflow = (props: WorkflowProps) => {
     }
   }
 
-
+  // Loads the current active workflows nodes to the canvas
   const loadWorkflow = () => {
     if (!initialized) {
       // Refresh workflows before rendering the current workflow
@@ -85,7 +85,7 @@ const Workflow = (props: WorkflowProps) => {
         const curr_work = updatedWorkflows.find((work: IWorkflow) => work.id == workflowId)
         if (curr_work) {
           const { sender, receiver } = curr_work;
-          const workflowNodes: Array<Node & {data: IWorkflow} & {data: {sender: IAgent, receiver: IAgent}}> = [];
+          const workflowNodes: Array<Node & IAgentNode> = [];
           const nodeToWorkflow = (nodes: Array<Node & IAgentNode>) => {
             const data = nodes[0];
             data.id = `${workflowNodes.length + 1}`
@@ -122,15 +122,6 @@ const Workflow = (props: WorkflowProps) => {
     setNavigationExpand(false);
     loadWorkflow();
   }, []);
-
-  /*
-  useEffect(() => {
-    setInitialized(false);
-    setEdges([]);
-    setNodes([]);
-    setTimeout(loadWorkflow, 100);
-  }, [workflowId]);
-  */
 
   useEffect(() => {
     if (!initialized) {
@@ -504,7 +495,7 @@ const Workflow = (props: WorkflowProps) => {
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
           setBounding={setBounding}
-          setEdges={setEdges}
+          setEdges={setEdges as (edges: Edge[] | ((els: Edge[]) => Edge[])) => void}
           setNodes={setNodes}
           setSelection={handleSelection}
         />

@@ -12,7 +12,7 @@ import { Popover } from 'antd';
  * Node for rendering assistant agents
  */
 const AssistantNode = memo(
-  (data: ((Node & IAgentNode | {data: IAgent, selected?: boolean, isConnectable?: boolean, id: string, removeNode: (id: number | string, parent?: string) => void}) & { setSelection: (node: NodeSelection) => void, parent: string}),
+  (data: ((Node & IAgentNode | {data: IAgent, active?: boolean, selected?: boolean, isConnectable?: boolean, id: string, removeNode: (id: number | string, parent?: string) => void}) & { setSelection: (node: NodeSelection) => void, parent: string}),
   isConnectable: boolean | undefined
 ) => {
   const {
@@ -49,6 +49,7 @@ const AssistantNode = memo(
     data.setSelection(selected);
   } : () => {};
 
+  // function for removing the agent from the canvas or a group chat agent
   const deleteHandler = (event: MouseEvent) => {
     event.stopPropagation();
     if (data.removeNode) {
@@ -61,10 +62,10 @@ const AssistantNode = memo(
     <>
       <button onClick={deleteHandler}>{groupAgent ? "Delete from group agent" : "Delete from canvas"}</button>
     </>
-  )
+  );
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart as any} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.deselected === true ? "deselected" : ""}`}>
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart as any} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.active === true ? "active" : ""}`}>
       <div className={`node_title ${groupAgent ? "" : "drag-handle"}`} onClick={click as any}>
         <Popover placement="bottom" content={actions} arrow={false}>
           <div className="agent-actions" onClick={(event: MouseEvent) => event.stopPropagation()}><EllipsisHorizontalIcon /></div>

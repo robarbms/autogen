@@ -37,6 +37,7 @@ export interface IAgentNode {
   selected?: boolean;
   removeNode?: (id: string | number, parent?: string) => void;
   setInitiator?: (id: string) => void;
+  active?: boolean;
 }
 
 /**
@@ -92,7 +93,7 @@ export const TypesWithProps = (extraProps: any) => {
   return typeWithProps;
 }
 
-// Walks dom up looking for a valid drop element
+// Walks up dom looking for a valid drop element
 export const getTargetId = (event: Event, targetClass: string) => {
   let target: HTMLElement = event.target as HTMLElement;
   const match = (elm: HTMLElement) => elm && elm.classList && elm.classList.contains(targetClass);
@@ -128,7 +129,7 @@ export const addNode = (
   setEdges: (edges: Array<Edge>) => void,
   agentId: number,
   position: NodePosition,
-  hideConnector: boolean = false
+  hideConnector: boolean = false,
 ) => {
   if(!agentId) return;
   const agentData: IAgent | undefined = agents.find((agent:IAgent) => agent.id === agentId);
@@ -141,17 +142,20 @@ export const addNode = (
         config: {...agentData.config},
         isInitiator,
         api,
-        hideConnector
+        hideConnector,
       },
       position,
       dragHandle: '.drag-handle',
       id: node_id.toString(),
       type: agentData.type || "assistant",
     };
+
     if (!initiator && nodeData.type === "userproxy") {
       nodeData.data.isInitiator = true;
     }
+    
     const newNodes: Array<Node & IAgentNode> = nodes.concat([nodeData]);
+
     if (setNodes){
       setNodes(newNodes);
 

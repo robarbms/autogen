@@ -1,5 +1,6 @@
 body {
   --agent-color: #464feb;
+  --deactivated-color: #D2D3FF;
 }
 
 div.workflow-canvas {
@@ -22,6 +23,10 @@ div.workflow-canvas {
   transition: all ease-out 0.3s;
   position: relative;
   max-width: 298px;
+}
+
+.node.inactive {
+  border-color: var(--deactivated-color);
 }
 
 .node-has-content {

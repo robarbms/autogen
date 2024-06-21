@@ -83,7 +83,7 @@ nav + .flex-1 {
 
 .build-home-const {
     display: grid;
-    grid-template-rows: 200px 1fr 60%;
+    grid-template-rows: 300px 1fr;
     max-width: 1200px;
     margin: 0 auto;
     position: relative;
@@ -106,7 +106,7 @@ nav + .flex-1 {
 .build-home-back::before {
     content: "";
     display: block;
-    background: linear-gradient(0deg, #fff 25%, transparent 85%);
+    background: linear-gradient(0deg, #fff 45%, rgba(255, 255, 255, .5) 100%);
 }
 
 .build-home h1 {
@@ -129,6 +129,8 @@ nav + .flex-1 {
     display: flex;
     height: fit-content;
     justify-content: space-between;
+    align-items: center;
+    height: 100%;
 }
 
 .build-tile {
@@ -136,7 +138,7 @@ nav + .flex-1 {
     border-radius: 16px;
     width: 270px;
     height: auto;
-    background: rgba(255, 255, 255, .43);
+    background: rgba(255, 255, 255, .7);
     font-weight: 600;
     padding: 60px 20px;
     cursor: pointer;
@@ -153,7 +155,8 @@ nav + .flex-1 {
 
 .build-tile-icon svg {
     display: inline-block;
-    height: 20px;
+    height: 24px;
+    width: 24px;
     margin: 10px 0 0;
 }
 

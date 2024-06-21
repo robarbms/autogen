@@ -67,7 +67,7 @@ const UserproxyNode = memo(
   )
 
   return (
-    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart as any} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.deslected ? "deselected" : ""}`}>
+    <div data-id={data.data.id} draggable={groupAgent} onDragStart={dragStart as any} className={`node group_agent node-has-content drop-models drop-skills ${data.selected ? "selected" : ""} ${data.data.active === true ? "active" : ""}`}>
       {isInitiator &&
         <div className="node_tag">Initiator &gt;</div>
       }
