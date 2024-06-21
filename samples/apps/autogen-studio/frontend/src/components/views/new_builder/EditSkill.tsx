@@ -56,6 +56,7 @@ const EditSkill = (props: EditSkillProps) => {
         setEditId(null);
     }
 
+    // Save action. Pushes the new skill to the DB and refreshes the cached skills
     const save = () => {
         if (editorRef.current) {
             const value = editorRef.current.getValue();
@@ -67,8 +68,18 @@ const EditSkill = (props: EditSkillProps) => {
         cancel();
     }
 
-    const onChange: ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    // Handles changing the skill name
+    const nameChange: ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
         const updatedSkill = { ...localSkill, name: e?.target?.value || ""} as ISkill;
+        setLocalSkill(updatedSkill);
+    }
+
+    // Handles changing the skill description
+    const descriptionChange: ChangeEventHandler = (event: ChangeEvent<HTMLTextAreaElement>) => {
+        const updatedSkill = {
+            ...localSkill,
+            description: event?.target?.value || ""
+        } as ISkill;
         setLocalSkill(updatedSkill);
     }
 
@@ -78,20 +89,34 @@ const EditSkill = (props: EditSkillProps) => {
 
     return (
         <BuildLayout
-            menu={<Library libraryItems={[{label: "Skills", items: skills}]} user={user ? user : ""} addLibraryItem={addLibraryItem} />}
+            menu={<Library libraryItems={[{label: "Skills", items: [
+                {
+                    name: "New skill",
+                    content: ""
+                },
+                ...skills
+            ]}]} user={user ? user : ""} addLibraryItem={addLibraryItem} />}
         >
             {localSkill &&
-            <>
-                <div style={{ minHeight: "70vh" }}>
-                    <div className="mb-2">
-                        <Input
-                            placeholder="Skill Name"
-                            value={localSkill.name}
-                            onChange={onChange}
-                        />
+            <div className="edit-skill">
+                <h2>Skill setting: {localSkill.name}</h2>
+                <div className="edit-skill-layout">
+                    <div className="edit-skill-col1">
+                        <div className="skill-name">
+                            <h3>Skill name</h3>
+                            <Input
+                                placeholder="Skill Name"
+                                value={localSkill.name}
+                                onChange={nameChange}
+                            />
+                        </div>
+                        <div className="edit-description">
+                            <h3>What does the Skill do?</h3>
+                            <textarea value={localSkill.description} onChange={descriptionChange}></textarea>
+                        </div>
                     </div>
-
-                    <div style={{ height: "70vh" }} className="h-full  mt-2 rounded">
+                    <div className="edit-skill-col2">
+                        <h3>Python Code</h3>
                         <MonacoEditor
                             value={localSkill?.content}
                             language="python"
@@ -115,7 +140,7 @@ const EditSkill = (props: EditSkillProps) => {
                         Save
                     </Button>
                 </div>
-            </>
+            </div>
             }
         </BuildLayout>
     );

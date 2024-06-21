@@ -75,7 +75,7 @@ const UserproxyNode = memo(
         <Popover placement="bottom" content={actions} arrow={false}>
             <div className="agent-actions nodrag"><EllipsisHorizontalIcon /></div>
         </Popover>
-        <h2><AgentIcon />{name}</h2>
+        <h3><AgentIcon />{name}</h3>
         {description}
       </div>
       <AgentProperties setSelection={data.setSelection} {...{ models, skills }} group={groupAgent ? data.parent : undefined} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />

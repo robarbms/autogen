@@ -55,11 +55,7 @@ div.workflow-canvas {
   margin: 0 0 10px;
 }
 
-.node_title h2 {
-  font-weight: 700;
-}
-
-.node_title h2 svg {
+.node_title svg {
   display: inline-block;
   margin: 0 6px 0 0;
 }

@@ -3,10 +3,7 @@ import { ModelConfigView } from "../builder/utils/modelconfig";
 import { IModelConfig } from "../../types";
 import BuildLayout from "./canvas/BuildLayout";
 import Library from "./library/Library";
-import BuildNavigation from "./BuildNavigation";
-import { dataToWorkItem } from "./utils";
-import { IBuildState, useBuildStore } from "../../../hooks/buildStore";
-import { useNavigationStore } from "../../../hooks/navigationStore";
+import { useBuildStore } from "../../../hooks/buildStore";
 import { API } from "./API";
 
 // EditModel component properties
@@ -28,12 +25,10 @@ const EditModel = (props: EditModelProps) => {
         setEditScreen,
         setEditId
     }));
-    const loggedInUser = useNavigationStore(({user}) => user);
-    const user = loggedInUser?.name || "Unknown";
     const defaultModel: IModelConfig = {
         model: "gpt-4-1106-preview",
         description: "Sample OpenAI GPT-4 model",
-        user_id: user,
+        user_id: api.user?.name || "",
     };
     let model: IModelConfig = defaultModel;
     if (editId) {
@@ -61,9 +56,14 @@ const EditModel = (props: EditModelProps) => {
     return (
         <BuildLayout className="edit-model" menu={<Library libraryItems={[{
                 label: "Models",
-                items: models
+                items: [
+                    {
+                        model: "New model",
+                    },
+                    ...models
+                ]
             }]}
-            user={user}
+            user={api.user?.name || ""}
             addLibraryItem={addLibraryItem}
             />}
         >

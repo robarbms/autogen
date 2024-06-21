@@ -340,11 +340,9 @@ const Workflow = (props: WorkflowProps) => {
   const libraryItems: Array<LibraryGroup> = [
     { label: "Agents", items: [ newAgent, ...agents]},
     { label: "Models", items: [{
-      id: 0,
       model: "New Model"
     }, ...models]},
     { label: "Skills", items: [{
-      id: 0,
       name: "New Skill",
       content: " ",
     }, ...skills]}
@@ -354,7 +352,6 @@ const Workflow = (props: WorkflowProps) => {
     // click handler to edit the currently active workflow
     const workflow = workflows.find(workflow => workflow.id === workflowId);
     if (workflow) {
-      console.log(workflow);
       handleSelection(workflow);
     }
   }

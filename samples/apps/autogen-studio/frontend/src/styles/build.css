@@ -5,6 +5,18 @@ body {
     max-width: none;
 }
 
+h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #323130;
+}
+
+h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #323130;
+}
+
 nav + .flex-1 {
     height: calc(100% - 160px);
 }
@@ -425,3 +437,52 @@ div.ant-segmented label.ant-segmented-item-selected {
 .edit-model {
     max-width: 1200px;
 }
+
+/* Edit Skill Page */
+.edit-skill {
+    height: 100%;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.edit-skill h2 {
+    height: 30px;
+}
+
+.edit-skill-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 20px;
+    height: calc(100% - 110px);
+}
+
+.edit-skill-col1 {
+    display: grid;
+    grid-template-rows: 80px 1fr;
+}
+
+.edit-skill-col2 {
+    height: calc(100% - 42px);
+}
+
+.edit-skill h3 {
+    margin: 20px 0 0;
+}
+
+.edit-skill input {
+    border-radius: 4px;
+}
+
+.edit-skill textarea {
+    width: 100%;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    height: calc(100% - 40px);
+    font-size: inherit;
+    font-family: inherit;
+    padding: 5px 10px;
+}
+
