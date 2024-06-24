@@ -147,6 +147,10 @@ div.workflow-canvas {
   color: #fff;
 }
 
+.selected h3 {
+  color: #fff;
+}
+
 .selected > .node > .node_title svg path,
 .node.selected > .node_title svg path {
   fill: #fff;

@@ -1,22 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Node } from "reactflow";
-import { AgentProperty, IAgentNode, NodeSelection } from "./Canvas";
+import { Node, useNodes } from "reactflow";
+import { IAgentNode, NodeSelection, nodeUpdater } from "../canvas/Canvas";
 import { IAgent } from "../../../types";
-import { ItemType } from "../../../../../node_modules/rc-collapse/es/interface";
+import { ItemType } from "rc-collapse/es/interface";
 import { BugAntIcon, CpuChipIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { AgentConfigView } from "../../builder/utils/agentconfig";
 import { AgentTypeSelector, SkillSelector, AgentSelector, ModelSelector } from "../../builder/utils/selectors";
 import { Collapse } from "antd";
-import { API } from "../API";
 import { useBuildStore } from "../../../../hooks/buildStore";
 
 // properties for the AgentProperties component
 type AgentPropertiesProps = {
     agent: IAgent | null;
-    api: API;
     setSelectedNode: (node: NodeSelection) => void;
-    agents: Array<IAgent>;
-    nodes: Array<Node & IAgentNode>;
     setNodes: (nodes: Array<Node & IAgentNode>) => void;
     addEdge?: (id: string) => void;
 }
@@ -27,9 +23,10 @@ type AgentPropertiesProps = {
  * @returns 
  */
 const AgentProperties = (props: AgentPropertiesProps) => {
-    let { agent, api, setSelectedNode, agents, nodes, setNodes, addEdge } = props;
+    let { agent, setSelectedNode, setNodes, addEdge } = props;
     const [ agentEdit, setAgentEdit ] = useState<IAgent | null>(null);
-    const { setAgents } = useBuildStore(({setAgents}) => ({setAgents}));
+    const { api, setAgents, agents } = useBuildStore(({ api, setAgents, agents }) => ({ api, setAgents, agents }));
+    const nodes = useNodes() as Array<Node & IAgentNode>;
 
     useEffect(() => {
       // Create a copy of the agent details to an editable object
@@ -48,45 +45,49 @@ const AgentProperties = (props: AgentPropertiesProps) => {
 
     // Adds a new agent
     const addAgent = (data: IAgent) => {
-      const maxId = agents && agents.length > 0 ? Math.max(...agents.map(agent => agent.id || 0)) : 0;
-      const id = maxId + 1;
-      const agentData = {
-        ...agent,
-        config: {
-          ...data.config,
-        },
-        id,
-        type: data.type
-      }
-
-      api.addAgent(agentData, (resp) => {
-        // Update agents when new agent is added
-        const updatedAgents = agents.concat([agentData]);
-        setAgents(updatedAgents);
-        // get selected node and update it
-        const tempNodeIndex = nodes.findIndex(node => node.data.id === -1);
-        const tempNode = nodes[tempNodeIndex];
-        if (tempNode) {
-          // create a new node
-          const newNode = {
-            ...tempNode,
-            data: {
-              ...agentData,
-              models: [],
-              skills: [],
-              isInitiator: nodes.length === 1
-            },
-            type: agentData.type,
-          } as Node & IAgentNode;
-          const updatedNodes = nodes;
-          updatedNodes[tempNodeIndex] = newNode;
-          setNodes(updatedNodes);
-          if (newNode.type !== "userproxy" && addEdge) {
-            addEdge(newNode.id);
-          }
-          setSelectedNode([newNode]);
+      if (api) {
+        const maxId = agents && agents.length > 0 ? Math.max(...agents.map(agent => agent.id || 0)) : 0;
+        const id = maxId + 1;
+        const agentData = {
+          ...agent,
+          config: {
+            ...data.config,
+          },
+          id,
+          type: data.type
         }
-      });
+
+        api.addAgent(agentData, (resp) => {
+          // Update agents when new agent is added
+          const updatedAgents = [...agents, agentData];
+          setAgents(updatedAgents);
+          // get selected node and update it
+          const tempNodeIndex = nodes.findIndex(node => node.data.id === -1);
+          const tempNode = nodes[tempNodeIndex];
+
+          if (tempNode) {
+            // create a new node
+            const newNode = {
+              ...tempNode,
+              data: {
+                ...agentData,
+                models: [],
+                skills: [],
+                isInitiator: nodes.length === 1
+              },
+              type: agentData.type,
+            } as Node & IAgentNode;
+            const updatedNodes = JSON.parse(JSON.stringify(nodes));
+            updatedNodes[tempNodeIndex] = newNode;
+            setNodes([newNode]);
+            nodeUpdater(api, setAgents, setNodes, nodes);
+            if (newNode.type !== "userproxy" && addEdge) {
+              // addEdge(newNode.id);
+            }
+            setSelectedNode(newNode);
+          }
+        });
+      }
     }
 
     // Items to show in the collapse menu for agent edit

@@ -1,10 +1,10 @@
 import React, { memo, MouseEvent } from 'react';
 import { Handle, Position } from 'reactflow';
-import { AgentIcon } from '../Icons';
-import { AgentProperty, IAgentNode, NodeSelection } from '../canvas/Canvas';
+import { AgentIcon } from '../../utilities/Icons';
+import { AgentProperty, IAgentNode, NodeSelection } from '../Canvas';
 import { Node } from 'reactflow';
 import AgentProperties from './AgentProperties';
-import { IAgent, IModelConfig, ISkill } from '../../../types';
+import { IAgent, IModelConfig, ISkill } from '../../../../types';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { Popover } from 'antd';
 
@@ -39,13 +39,13 @@ const AssistantNode = memo(
   // Handles selecting node if it is a linked agent to a group agent
   const click = groupAgent ? (event: MouseEvent) => {
     event.stopPropagation();
-    const selected = [{
+    const selected = {
       ...data,
       data: {
         ...data.data,
         parent: data.parent
       }
-    }] as NodeSelection;
+    } as NodeSelection;
     data.setSelection(selected);
   } : () => {};
 

@@ -1,4 +1,4 @@
-import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
+import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
 
 // Gets string version of the amount of time between 2 dates or a date and now
 export const timeAgo = (date: string | Date | number, date2?: string | Date | number): string => {
@@ -117,7 +117,7 @@ export const dataToWorkItem = (user_email: string, data: IAgent | IModelConfig |
     return {
         category,
         type,
-        name,
+        name: name || "",
         description,
         time,
         edit,

@@ -1,5 +1,5 @@
 import React, { DragEventHandler, DragEvent } from "react";
-import { IAgent } from "../../../types";
+import { IAgent } from "../../../../types";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/solid";
 
 /**

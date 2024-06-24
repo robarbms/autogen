@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { CollapseMenuIcon, BuildIcon, ExpandMenuIcon, PlaygroundIcon } from "./views/new_builder/Icons";
+import { CollapseMenuIcon, BuildIcon, ExpandMenuIcon, PlaygroundIcon } from "./views/new_builder/utilities/Icons";
 import { IUser } from "../hooks/provider";
 import { Collapse } from "antd";
 import { useNavigationStore } from "../hooks/navigationStore";

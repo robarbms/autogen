@@ -12,11 +12,13 @@ import ReactFlow, {
     OnNodesChange,
     updateEdge,
     useKeyPress,
-    useOnSelectionChange
+    useOnSelectionChange,
+    useEdges,
+    useNodes
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { IAgentNode, TypesWithProps, AgentProperty, NodeTypes, NodeSelection } from './Canvas';
-import { API } from '../API';
+import { IAgentNode, TypesWithProps, AgentProperty, NodeTypes, NodeSelection } from '../canvas/Canvas';
+import { API } from '../utilities/API';
 import { IAgent, IWorkflow } from '../../../types';
 import { useBuildStore } from '../../../../hooks/buildStore';
 
@@ -36,7 +38,6 @@ type WorfkflowCanvasProps = {
     setNodes: (nodes: Array<Node & IAgentNode>) => void;
     setSelection: (node: NodeSelection) => void;
     selectedNode?: Array<Node & IAgentNode> | AgentProperty | null;
-    api: API;
 }
 
 /**
@@ -57,9 +58,8 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
         setEdges,
         setNodes,
         setSelection,
-        api,
     } = props;
-    const { agents, setAgents, workflowId, workflows, setWorkflows } = useBuildStore(({ agents, setAgents, workflowId, workflows, setWorkflows }) => ({ agents, setAgents, workflowId, workflows, setWorkflows }));
+    const { api, setAgents, workflowId, workflows, setWorkflows } = useBuildStore(({ api, setAgents, workflowId, workflows, setWorkflows }) => ({ api, setAgents, workflowId, workflows, setWorkflows }));
     const canvasWrap: RefObject<HTMLDivElement> = createRef();
     const nodeState = useRef<Array<Node & IAgentNode>>(nodes);
     const edgeState = useRef<Array<Edge>>(edges);
@@ -117,14 +117,14 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
     // Adds node highlighting when selected
     useOnSelectionChange({
         onChange: ({nodes, edges} : {nodes: Node[], edges: Edge[]}): void => {
-            setSelection(nodes as NodeSelection);
+            setSelection(nodes[nodes.length - 1] as NodeSelection);
         }
     });
 
     // method for removing a node from the canvas or from another agent
     const removeNode = (id: number | string, parent?: string) => {
         // if this is an agent linked to a group agent, unlink it
-        if (parent !== undefined) {
+        if (api && parent !== undefined) {
             const parentNode = nodeState.current.find((node: Node & IAgentNode) => node.id === parent);
             const updatedNodes = copy(nodeState.current).map((node: Node & IAgentNode) => {
                 if (node.data.id === parentNode?.data.id) {
@@ -163,7 +163,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
             }]);
         }
         // If they are not the same base node, change the workflow sender
-        if (currentInitiator?.data.id !== newInitiator?.data.id && workflowId) {
+        if (api && currentInitiator?.data.id !== newInitiator?.data.id && workflowId) {
             // unlink the old sender
             api.unlinkWorkflow(workflowId, "sender", currentInitiator?.data.id);
 

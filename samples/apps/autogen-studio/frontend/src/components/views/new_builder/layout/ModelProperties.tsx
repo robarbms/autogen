@@ -1,30 +1,32 @@
-import React, { MouseEventHandler, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IModelConfig, IStatus } from "../../../types";
-import { AgentProperty, IAgentNode, NodeSelection } from "./Canvas";
+import { NodeSelection } from "../canvas/Canvas";
 import { Button, Input } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import {
-    CpuChipIcon,
-    InformationCircleIcon,
-  } from "@heroicons/react/24/outline";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { ControlRowView } from "../../../atoms";
-import { API } from "../API";
 import { useBuildStore } from "../../../../hooks/buildStore";
-  
+
+// Properties for the model properties pane
 type ModelPropertiesProps = {
-    api: API;
     model: IModelConfig;
     setSelectedNode: (node: NodeSelection) => void;
 }
 
+/**
+ * A property pane showing a models configuration
+ * @param props 
+ * @returns 
+ */
 const ModelProperties = (props: ModelPropertiesProps) => {
-    const { api, model, setSelectedNode } = props;
+    const { model, setSelectedNode } = props;
     const [ modelStatus, setModelStatus ] = useState<IStatus>();
     const [ loading, setLoading ] = useState(false);
     const [ editModel, setEditModel ] = useState<IModelConfig>();
     const [ hasChanged, setHasChanged ] = useState(false);
-    const { setModels } = useBuildStore(({setModels}) => ({setModels}));
+    const { api, setModels } = useBuildStore(({ api, setModels }) => ({ api, setModels }));
 
+    // Updates the local model
     const updateModelConfig = (key: string, value: string) => {
         const newModel = {
             ...editModel
@@ -34,32 +36,40 @@ const ModelProperties = (props: ModelPropertiesProps) => {
         setHasChanged(true);
     }
 
+    // Tests the current model configuration
     const testModel = (model: IModelConfig) => {
+      if (api) {
         setLoading(true);
         api.testModel(model, (resp) => {
             setModelStatus(resp)
             console.log(resp);
             setLoading(false);
         });
+      }
     }
 
     const createModel = (model: IModelConfig) => {
 
     }
 
+    // Writes changes to the DB
     const setModel = (model: IModelConfig) => {
+      if (api) {
         api.setModel(model, (resp) => {
             api.getItems("models", (models: Array<IModelConfig>) => {
                 setModels(models);
             }, true)
         });
         setHasChanged(false);
+      }
     }
 
+    // Closes the model properties pane
     const close = () => {
         setSelectedNode(null);
     }
 
+    // Loads the model for editing
     useEffect(() => {
         setModelStatus(null as any);
         setEditModel(model);

@@ -1,7 +1,7 @@
 import React from "react";
 import { Collapse } from "antd";
 import { LibraryItem } from "./LibraryItem";
-import { IWorkItem } from "../utils";
+import { IWorkItem } from "../../utilities/utils";
 
 /**
  * Group properties

@@ -1,17 +1,16 @@
 import React, { MouseEvent, MouseEventHandler, useEffect, useState } from "react";
-import BuildLayout from "./canvas/BuildLayout";
-import Library, { LibraryGroup } from "./library/Library";
-import AgentCanvas from "./AgentCanvas";
+import BuildLayout from "../layout/BuildLayout";
+import Library, { LibraryGroup } from "../layout/library/Library";
+import AgentCanvas from "../canvas/AgentCanvas";
 import { Node, useNodesState, ReactFlowProvider } from "reactflow";
-import { useBuildStore } from "../../../hooks/buildStore";
-import { API } from "./API";
-import { AgentProperty, getDropHandler, IAgentNode, NodeSelection, nodeUpdater } from "./canvas/Canvas";
-import NodeProperties from "./canvas/NodeProperties";
-import { IAgent, IModelConfig, ISkill } from "../../types";
+import { useBuildStore } from "../../../../hooks/buildStore";
+import { API } from "../utilities/API";
+import { AgentProperty, getDropHandler, IAgentNode, NodeSelection, nodeUpdater } from "../canvas/Canvas";
+import NodeProperties from "../layout/NodeProperties";
+import { IAgent, IModelConfig, ISkill } from "../../../types";
 
 // Properties for EditAgent component
 type EditAgentProps = {
-    api: API;
     agentId: number;
 }
 
@@ -22,15 +21,15 @@ type EditAgentProps = {
  */
 const EditAgent = (props: EditAgentProps) => {
   const { agentId } = props;
-    const { agents, setAgents, models, skills, setModels, setSkills } = useBuildStore(({ agents, setAgents, models, skills, setModels, setSkills}) => ({
-        agents,
-        setAgents,
-        models,
-        skills,
-        setModels,
-        setSkills
-    }))
-    const { api } = props;
+    const { api, agents, setAgents, models, skills, setModels, setSkills } = useBuildStore(({ api, agents, setAgents, models, skills, setModels, setSkills}) => ({
+      api,
+      agents,
+      setAgents,
+      models,
+      skills,
+      setModels,
+      setSkills
+    }));
     const [selectedNode, setSelectedNode] = useState<Node & IAgentNode | AgentProperty | null>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode>>([]);
     const [bounding, setBounding] = useState<DOMRect>();
@@ -114,7 +113,7 @@ const EditAgent = (props: EditAgentProps) => {
   }, [selectedNode]);
 
   // Updates nodes on the canvas when there are changes made
-  const updateNodes = nodeUpdater.bind(this, api, setAgents, setNodes, nodes as Array<Node & IAgentNode>)
+  const updateNodes = nodeUpdater.bind(this, api, setAgents, setNodes, nodes as Array<Node & IAgentNode>);
 
   // Handles on click for library item
   // TO DO: This should be similar to workflow.tsx.
@@ -144,8 +143,8 @@ const EditAgent = (props: EditAgentProps) => {
     return (
         <ReactFlowProvider>
             <BuildLayout
-                menu={<Library user={api.user?.email || ""} setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
-                properties={selectedNode !== null ? <NodeProperties api={api} selected={selectedNode} handleInteract={updateNodes} setSelectedNode={setSelectedNode as any} setNodes={agentSetNodes} nodes={nodes as Array<Node & IAgentNode>} /> : null}
+                menu={<Library setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
+                properties={selectedNode !== null ? <NodeProperties handleInteract={updateNodes} setSelectedNode={setSelectedNode as any} setNodes={agentSetNodes} /> : null}
             >
                 <AgentCanvas
                     nodes={nodes}

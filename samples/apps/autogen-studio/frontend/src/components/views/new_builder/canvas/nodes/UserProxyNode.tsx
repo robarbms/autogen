@@ -1,9 +1,9 @@
 import React, { memo, MouseEvent } from 'react';
 import { Handle, Position, Node } from 'reactflow';
-import { AgentIcon } from '../Icons';
+import { AgentIcon } from '../../utilities/Icons';
 import AgentProperties from './AgentProperties';
-import { IAgent, IModelConfig, ISkill } from '../../../types';
-import { IAgentNode, AgentProperty, NodeSelection } from "../canvas/Canvas";
+import { IAgent, IModelConfig, ISkill } from '../../../../types';
+import { IAgentNode, AgentProperty, NodeSelection } from "../Canvas";
 import { Popover } from 'antd';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 
@@ -28,13 +28,13 @@ const UserproxyNode = memo(
   // Click handler for selecting the node instance
   const click = groupAgent ? (event: MouseEvent) => {
     event.stopPropagation();
-    const selected: NodeSelection = [{
+    const selected: NodeSelection = {
       ...data,
       data: {
         ...data.data,
         parent:  data.parent
       }
-    }] as NodeSelection;
+    } as NodeSelection;
     data.setSelection(selected);
   } : () => {};
 

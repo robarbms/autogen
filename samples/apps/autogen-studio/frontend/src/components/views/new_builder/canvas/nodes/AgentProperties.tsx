@@ -1,7 +1,7 @@
 import React, { DragEvent, MouseEvent } from "react";
-import { IModelConfig, ISkill } from "../../../types";
-import { ModelIcon, SkillIcon } from "../Icons";
-import { AgentProperty, IAgentNode, NodeSelection } from "../canvas/Canvas";
+import { IModelConfig, ISkill } from "../../../../types";
+import { ModelIcon, SkillIcon } from "../../utilities/Icons";
+import { AgentProperty, IAgentNode, NodeSelection } from "../Canvas";
 import { Node } from "reactflow";
 
 // Rendering for an agent skill

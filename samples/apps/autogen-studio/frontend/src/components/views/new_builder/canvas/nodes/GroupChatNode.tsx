@@ -2,9 +2,9 @@ import React, { createRef, memo, MouseEvent } from 'react';
 import { Handle, Position, Node } from 'reactflow';
 import AssistantNode from './AssistantNode';
 import UserproxyNode from './UserProxyNode';
-import { AgentIcon } from '../Icons';
-import { IAgentNode, NodeSelection } from '../canvas/Canvas';
-import { IAgent } from '../../../types';
+import { AgentIcon } from '../../utilities/Icons';
+import { IAgentNode, NodeSelection } from '../Canvas';
+import { IAgent } from '../../../../types';
 import { Popover } from 'antd';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 

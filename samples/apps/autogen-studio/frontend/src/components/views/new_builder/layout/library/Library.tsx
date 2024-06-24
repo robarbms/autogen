@@ -1,11 +1,11 @@
 import React, {useState, useEffect} from "react";
-import { Drawer } from "antd";
 import LibraryTitle from "./LibraryTitle";
-import "../../../../styles/library.css";
+import "../../../../../styles/library.css";
 import { LibraryGroups, Group } from "./LibraryGroups";
-import { IWorkItem, dataToWorkItem } from "../utils";
-import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
-import { CollapseMenuIcon } from "../Icons";
+import { dataToWorkItem } from "../../utilities/utils";
+import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../../types";
+import { CollapseMenuIcon } from "../../utilities/Icons";
+import { useBuildStore } from "../../../../../hooks/buildStore";
 
 export type EmptyLibraryItem = {
     id: number;
@@ -27,7 +27,6 @@ export type LibraryGroup = {
  */
 type LibraryProps = {
     libraryItems: LibraryGroup[];
-    user: string;
     setShowMenu?: (showMenu: boolean) => void;
     addLibraryItem: Function;
 };
@@ -38,9 +37,11 @@ type LibraryProps = {
  * @returns 
  */
 const Library = (props: LibraryProps) => {
-    const { libraryItems, user, setShowMenu, addLibraryItem } = props;
+    const { libraryItems, setShowMenu, addLibraryItem } = props;
     const [search, setSearch] = useState('');
     const [items, setItems] = useState<Group[]>([]);
+    const { api } = useBuildStore(({ api }) => ({api}));
+    const user = api?.user?.email || "";
 
     // Update rendered items when search string changes
     useEffect(() => {

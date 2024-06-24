@@ -1,9 +1,7 @@
 import React from "react";
 import RecentWork from "./RecentWork";
-import { AgentIcon, ModelIcon, SkillIcon, WorkflowIcon } from "./Icons";
-import { IAgent, IModelConfig,ISkill, IStatus, IWorkflow } from "../../types";
-import { BuildSections, IBuildState, useBuildStore } from "../../../hooks/buildStore";
-import { API } from "./API";
+import { AgentIcon, ModelIcon, SkillIcon, WorkflowIcon } from "../utilities/Icons";
+import { BuildSections, useBuildStore } from "../../../../hooks/buildStore";
 
 // Properties for the BuildTile component
 type BuildTileProps = {
@@ -37,7 +35,6 @@ const BuildTile = (props: BuildTileProps) => {
 // Properties for the Home component
 type HomeProps = {
     hasPreviousWork: boolean;
-    api: API;
 }
 
 /**
@@ -46,13 +43,14 @@ type HomeProps = {
  * @returns 
  */
 const Home = (props: HomeProps) => {
-    const { hasPreviousWork, api }: { hasPreviousWork: boolean, api: API} = props;
-    const {setEditScreen, setEditId} = useBuildStore((state: IBuildState) => ({
-        setEditScreen: state.setEditScreen,
-        setEditId: state.setEditId,
+    const { hasPreviousWork }: { hasPreviousWork: boolean} = props;
+    const { setEditScreen, setEditId} = useBuildStore(({setEditScreen, setEditId}) => ({
+        setEditScreen,
+        setEditId,
     }));
 
-    const editNew = (category: BuildSections) => {
+    // Creates action handlers for editing a workflow, agent, model or skill
+    const editNew = (category: BuildSections) => () => {
         setEditScreen(category);
         setEditId(null);
     }
@@ -62,13 +60,13 @@ const Home = (props: HomeProps) => {
             <div className="build-home-back"></div>
             <div className="build-home-const h-full">
                 <div className="build-home-create">
-                    <BuildTile category="workflow" label="Build workflow" action={editNew.bind(this, "workflow",)} />
-                    <BuildTile category="agent" label="Add Agents" action={editNew.bind(this, "agent")} />
-                    <BuildTile category="model" label="Add Models" action={editNew.bind(this, "model")} />
-                    <BuildTile category="skill" label="Add Skills" action={editNew.bind(this, "skill")} />
+                    <BuildTile category="workflow" label="Build workflow" action={editNew("workflow")} />
+                    <BuildTile category="agent" label="Add Agents" action={editNew("agent")} />
+                    <BuildTile category="model" label="Add Models" action={editNew("model")} />
+                    <BuildTile category="skill" label="Add Skills" action={editNew("skill")} />
                 </div>
                 {hasPreviousWork &&
-                    <RecentWork api={api} />
+                    <RecentWork />
                 }
             </div>
         </div>

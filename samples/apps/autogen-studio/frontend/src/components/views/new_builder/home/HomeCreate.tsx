@@ -1,5 +1,5 @@
 import React from "react";
-import { AgentIcon, ModelIcon, SkillIcon } from "./Icons";
+import { AgentIcon, ModelIcon, SkillIcon } from "../utilities/Icons";
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 
 // Properties for HomeCreate component

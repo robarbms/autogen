@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { WorflowViewer } from "../builder/utils/workflowconfig";
-import { sampleWorkflowConfig } from "../../utils";
-import { IWorkflow } from "../../types";
-import { API } from "./API";
-import { useBuildStore } from "../../../hooks/buildStore";
-import { IAgent } from "../../types";
+import { WorflowViewer } from "../../builder/utils/workflowconfig";
+import { sampleWorkflowConfig } from "../../../utils";
+import { IWorkflow } from "../../../types";
+import { API } from "../utilities/API";
+import { useBuildStore } from "../../../../hooks/buildStore";
+import { IAgent } from "../../../types";
 
 /**
  * Properties used by the EditWorkflow component
  */
-type EditWorkflowProps = {
-    api: API;
+type CreateWorkflowProps = {
 }
 
 /**
@@ -18,8 +17,9 @@ type EditWorkflowProps = {
  * @param props 
  * @returns 
  */
-const EditWorkflow = (props: EditWorkflowProps) => {
-    const { agents, setEditScreen, editId, setEditId, workflowId, setWorkflowId, workflows, setWorkflows } = useBuildStore(({ agents, setEditScreen, editId, setEditId, workflowId, setWorkflowId, workflows, setWorkflows}) => ({
+const CreateWorkflow = (props: CreateWorkflowProps) => {
+    const { api, agents, setEditScreen, editId, setEditId, workflowId, setWorkflowId, workflows, setWorkflows } = useBuildStore(({ api, agents, setEditScreen, editId, setEditId, workflowId, setWorkflowId, workflows, setWorkflows}) => ({
+        api,
         agents,
         setEditScreen,
         setEditId,
@@ -29,7 +29,6 @@ const EditWorkflow = (props: EditWorkflowProps) => {
         workflows,
         setWorkflows
     }))
-    const { api } = props;
     const [workflow, setWorkflow] = useState<IWorkflow | null>(null);
     let sampleWorkflow = sampleWorkflowConfig();
     let editWorkflow;
@@ -41,7 +40,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     const update = (workflow: IWorkflow) => {
         setLocalWorkflow(workflow);
         // Handle workflow created
-        if (workflow.id !== undefined) {
+        if (workflow.id !== undefined && api) {
             // Add an initiator
             const userproxy = agents.find((agent: IAgent) => agent.type === "userproxy");
             if (userproxy && !!userproxy.id) {
@@ -76,4 +75,4 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     )
 }
 
-export default EditWorkflow;
+export default CreateWorkflow;

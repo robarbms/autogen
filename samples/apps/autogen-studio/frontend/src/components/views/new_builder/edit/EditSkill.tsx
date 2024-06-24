@@ -1,32 +1,26 @@
 import React, { ChangeEvent, ChangeEventHandler, useState, useEffect, useRef, MouseEventHandler } from "react";
-import { MonacoEditor } from "../../atoms";
+import { MonacoEditor } from "../../../atoms";
 import { Button, Input } from "antd";
-import { ISkill } from "../../types";
-import { getSampleSkill } from "../../utils";
-import BuildLayout from "./canvas/BuildLayout";
-import Library from "./library/Library";
-import { IWorkItem, dataToWorkItem } from "./utils";
-import BuildNavigation from "./BuildNavigation";
-import { useBuildStore } from "../../../hooks/buildStore";
-import { useNavigationStore } from "../../../hooks/navigationStore";
-import { API } from "./API";
-
+import { ISkill } from "../../../types";
+import BuildLayout from "../layout/BuildLayout";
+import Library from "../layout/library/Library";
+import { useBuildStore } from "../../../../hooks/buildStore";
+import { useNavigationStore } from "../../../../hooks/navigationStore";
 
 // Properties for creating and editing skills
 type EditSkillProps = {
-    api: API;
 }
 
 // Panel for creating and editing skills
 const EditSkill = (props: EditSkillProps) => {
-    const { editId, skills, setSkills, setEditScreen, setEditId } = useBuildStore(({ editId, skills, setSkills, setEditScreen, setEditId}) => ({
+    const { api, editId, skills, setSkills, setEditScreen, setEditId } = useBuildStore(({ api, editId, skills, setSkills, setEditScreen, setEditId}) => ({
+        api,
         editId,
         skills,
         setSkills,
         setEditScreen,
         setEditId
     }));
-    const { api } = props;
     const [ localSkill, setLocalSkill ] = useState<ISkill>();
     const [loading, setLoading] = useState<boolean>(false);
     const editorRef = useRef<any | null>(null);
@@ -61,7 +55,7 @@ const EditSkill = (props: EditSkillProps) => {
         if (editorRef.current) {
             const value = editorRef.current.getValue();
             const updatedSkill: ISkill = { ...localSkill, content: value } as ISkill;
-            api.addSkill(updatedSkill, () => {
+            api?.addSkill(updatedSkill, () => {
                 api.getItems("skills", setSkills, true);
             });
         }
@@ -95,7 +89,7 @@ const EditSkill = (props: EditSkillProps) => {
                     content: ""
                 },
                 ...skills
-            ]}]} user={user ? user : ""} addLibraryItem={addLibraryItem} />}
+            ]}]} addLibraryItem={addLibraryItem} />}
         >
             {localSkill &&
             <div className="edit-skill">

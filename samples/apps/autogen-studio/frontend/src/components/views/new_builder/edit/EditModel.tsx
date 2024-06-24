@@ -1,14 +1,13 @@
 import React, { useState } from "react";
-import { ModelConfigView } from "../builder/utils/modelconfig";
-import { IModelConfig } from "../../types";
-import BuildLayout from "./canvas/BuildLayout";
-import Library from "./library/Library";
-import { useBuildStore } from "../../../hooks/buildStore";
-import { API } from "./API";
+import { ModelConfigView } from "../../builder/utils/modelconfig";
+import { IModelConfig } from "../../../types";
+import BuildLayout from "../layout/BuildLayout";
+import Library from "../layout/library/Library";
+import { useBuildStore } from "../../../../hooks/buildStore";
+import { API } from "../utilities/API";
 
 // EditModel component properties
 type EditModelProps = {
-    api: API;
 }
 
 /**
@@ -17,8 +16,8 @@ type EditModelProps = {
  * @returns 
  */
 const EditModel = (props: EditModelProps) => {
-    const { api } = props;
-    const { models, setModels, setEditScreen, editId, setEditId } = useBuildStore(({ models, setModels, setEditScreen, editId, setEditId}) => ({
+    const { api, models, setModels, setEditScreen, editId, setEditId } = useBuildStore(({ api, models, setModels, setEditScreen, editId, setEditId}) => ({
+        api,
         models,
         setModels,
         editId,
@@ -28,7 +27,7 @@ const EditModel = (props: EditModelProps) => {
     const defaultModel: IModelConfig = {
         model: "gpt-4-1106-preview",
         description: "Sample OpenAI GPT-4 model",
-        user_id: api.user?.name || "",
+        user_id: api?.user?.name || "",
     };
     let model: IModelConfig = defaultModel;
     if (editId) {
@@ -46,7 +45,7 @@ const EditModel = (props: EditModelProps) => {
 
     const updateModel = (model: IModelConfig) => {
         setLocalModel(model);
-        api.getItems("models", setModels, true);
+        api?.getItems("models", setModels, true);
     }
 
     const addLibraryItem = () => {
@@ -63,7 +62,6 @@ const EditModel = (props: EditModelProps) => {
                     ...models
                 ]
             }]}
-            user={api.user?.name || ""}
             addLibraryItem={addLibraryItem}
             />}
         >

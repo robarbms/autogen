@@ -1,6 +1,6 @@
 import React, {EventHandler, MouseEventHandler, ReactNode, useEffect, useState} from "react";
 import "../../../../styles/build.css";
-import { ExpandMenuIcon } from "../Icons";
+import { ExpandMenuIcon } from "../utilities/Icons";
 import { Drawer } from "antd";
 
 /**

@@ -1,13 +1,13 @@
 import React, { useEffect, useState, MouseEvent } from "react";
-import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "./Icons";
-import { dataToWorkItem, IWorkItem } from "./utils";
-import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
+import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "../utilities/Icons";
+import { dataToWorkItem, IWorkItem } from "../utilities/utils";
+import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
 import { Segmented, Tooltip } from "antd";
-import { IBuildState, useBuildStore } from "../../../hooks/buildStore";
-import { useNavigationStore } from "../../../hooks/navigationStore";
+import { useBuildStore } from "../../../../hooks/buildStore";
+import { useNavigationStore } from "../../../../hooks/navigationStore";
 import { ArrowDownTrayIcon, DocumentDuplicateIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { API } from "./API";
-import { sanitizeConfig } from "../../utils";
+import { API } from "../utilities/API";
+import { sanitizeConfig } from "../../../utils";
 
 /**
  * Rendering of a work item row (agent, model, skill or workflow)
@@ -18,10 +18,9 @@ const RecentRow = (props: IWorkItem & {
     setEditScreen: Function,
     setEditId: Function,
     setWorkflowId: Function,
-    api: API
 }) => {
-    const {category, id, name, description, type, time, edit, setEditScreen, setEditId, setWorkflowId, api} = props;
-    const { workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels } = useBuildStore(({workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels}) => ({workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels}));
+    const {category, id, name, description, type, time, edit, setEditScreen, setEditId, setWorkflowId} = props;
+    const { api, workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels } = useBuildStore(({ api, workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels }) => ({ api,workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels }));
     let click = () => {
         if (category === "workflow") {
             setWorkflowId(id);
@@ -72,6 +71,7 @@ const RecentRow = (props: IWorkItem & {
         }
     }
 
+    // Logic for copying an existing workflow, agent, model, or skill
     const copyWork = (event: MouseEvent) => {
         const copy = (value: any) => JSON.parse(JSON.stringify(value));
         event.stopPropagation();
@@ -89,7 +89,7 @@ const RecentRow = (props: IWorkItem & {
                     delete workflowCopy.sender;
                     delete workflowCopy.receiver;
                     delete workflowCopy.id;
-                    api.addWorkflow(workflowCopy, (workflow) => {
+                    api?.addWorkflow(workflowCopy, (workflow) => {
                         // link the workflow if they exist
                         if (workflowData.sender) {
                             api.linkWorkflow(workflow.id, "sender", workflowData.sender.id || 0);
@@ -122,7 +122,7 @@ const RecentRow = (props: IWorkItem & {
                     delete agentCopy.models;
                     delete agentCopy.skills;
 
-                    api.addAgent(agentCopy, (data) => {
+                    api?.addAgent(agentCopy, (data) => {
                         // link models
                         agentData.models.forEach(model => api.linkAgentModel(data.id, model.id || 0, () =>{}));
                         agentData.skills.forEach(skill => api.linkAgentSkill(data.id, skill.id || 0, () => {}));
@@ -156,7 +156,7 @@ const RecentRow = (props: IWorkItem & {
                     });
                     delete modelCopy.id;
 
-                    api.setModel(modelCopy, (data) => {
+                    api?.setModel(modelCopy, (data) => {
                         setModels([
                             ...models,
                             data.data
@@ -178,7 +178,7 @@ const RecentRow = (props: IWorkItem & {
                     });
                     delete skillCopy.id;
 
-                    api.addSkill(skillCopy, ((updatedSkills: ISkill[]) => {
+                    api?.addSkill(skillCopy, ((updatedSkills: ISkill[]) => {
                         setSkills(updatedSkills);
                         const newSkill = updatedSkills[updatedSkills.length - 1];
                         setEditId(newSkill.id);
@@ -190,27 +190,28 @@ const RecentRow = (props: IWorkItem & {
         }
     }
 
+    // Deletes a workflow, agent, model or skill from the DB
     const deleteWork = (event: MouseEvent) => {
         event.stopPropagation();
         switch (category) {
             case "workflow":
-                api.deleteWorkflow(id, (data: IWorkflow[]) => {
+                api?.deleteWorkflow(id, (data: IWorkflow[]) => {
                     setWorkflows(workflows.filter(workflow => workflow.id !== id));
                 });
                 break;
             case "agent":
-                api.deleteAgent(id, (data: IAgent[]) => {
+                api?.deleteAgent(id, (data: IAgent[]) => {
                     setAgents(agents.filter(agent => agent.id !== id));
                 });
                 break;
             case "model":
-                api.deleteModel(id, (data: IModelConfig[]) => {
+                api?.deleteModel(id, (data: IModelConfig[]) => {
                     setModels(models.filter(model => model.id !== id));
                     api.getAgents(setAgents);
                 });
                 break;
             case "skill":
-                api.deleteSkill(id, (data: ISkill[]) => {
+                api?.deleteSkill(id, (data: ISkill[]) => {
                     setSkills(skills.filter(skill => skill.id !== id));
                     api.getAgents(setAgents);
                 });
@@ -218,7 +219,6 @@ const RecentRow = (props: IWorkItem & {
         }
     }
 
-    
     return (
         <tr onClick={click}>
             <td>{icons[category]} {name}</td>
@@ -248,7 +248,6 @@ const RecentRow = (props: IWorkItem & {
 
 // Properties for the RecentWork component
 type RecentWorkProps = {
-    api: API;
 }
 
 /**
@@ -259,14 +258,15 @@ type RecentWorkProps = {
 const RecentWork = (props: RecentWorkProps) => {
     const [work, setWork] = useState<IWorkItem[]>([]);
     const [filter, setFilter] = useState<String>("All");
-    const { agents, models, setEditScreen, setEditId, skills, workflows, setWorkflowId } = useBuildStore((state: IBuildState) => ({
-        agents: state.agents,
-        models: state.models,
-        setEditScreen: state.setEditScreen,
-        setEditId: state.setEditId,
-        skills: state.skills,
-        workflows: state.workflows,
-        setWorkflowId: state.setWorkflowId
+    const { api, agents, models, setEditScreen, setEditId, skills, workflows, setWorkflowId } = useBuildStore(({ api, agents, models, setEditScreen, setEditId, skills, workflows, setWorkflowId }) => ({
+        api,
+        agents,
+        models,
+        setEditScreen,
+        setEditId,
+        skills,
+        workflows,
+        setWorkflowId
     }));
     const userObj = useNavigationStore(state => state.user);
     const user = userObj?.email || "Unknown";
@@ -369,7 +369,7 @@ const RecentWork = (props: RecentWorkProps) => {
                     </thead>
                     <tbody>
                         {work &&
-                            work.map((item, idx) => <RecentRow api={props.api} setEditScreen={setEditScreen} setEditId={setEditId} setWorkflowId={setWorkflowId} key={idx} {...item} />)
+                            work.map((item, idx) => <RecentRow setEditScreen={setEditScreen} setEditId={setEditId} setWorkflowId={setWorkflowId} key={idx} {...item} />)
                         }
                     </tbody>
                 </table>

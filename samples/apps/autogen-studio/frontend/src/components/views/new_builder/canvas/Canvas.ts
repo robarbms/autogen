@@ -1,10 +1,10 @@
-import AssistantNode from "../nodes/AssistantNode";
-import GroupChatNode from "../nodes/GroupChatNode";
-import UserProxyNode from "../nodes/UserProxyNode";
-import AgentSelectNode from "../nodes/AgentSelectNode";
+import AssistantNode from "./nodes/AssistantNode";
+import GroupChatNode from "./nodes/GroupChatNode";
+import UserProxyNode from "./nodes/UserProxyNode";
+import AgentSelectNode from "./nodes/AgentSelectNode";
 import { Node, Edge, MarkerType } from "reactflow";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
-import { API } from "../API";
+import { API } from "../utilities/API";
 import React, { MouseEvent, createElement } from "react";
 
 // Type for positioning of a node
@@ -13,7 +13,8 @@ export type NodePosition = {
   y: number;
 }
 
-export type NodeSelection = Array<Node & IAgentNode> | AgentProperty | IModelConfig & AgentProperty | ISkill & AgentProperty | IWorkflow | null;
+// Node selection
+export type NodeSelection = Node & IAgentNode | AgentProperty | IModelConfig & AgentProperty | ISkill & AgentProperty | IWorkflow | null;
 
 /**
  * Encapsulating IAgent config and node information
@@ -28,7 +29,6 @@ export interface IAgentNode {
     isInitiator?: Boolean;
     models?: IModelConfig[];
     skills?: ISkill[];
-    api: API;
     hideConnector?: boolean;
     linkedAgents?: Array<IAgent & {dragHandle?: Function, isSelected?: boolean}>;
     selectedProp?: boolean;
@@ -122,7 +122,7 @@ const getNodeId = (nodes: Array<Node & IAgentNode> | null): number => {
 // method used to add new nodes and track node Id's
 export const addNode = (
   nodes: Array<Node & IAgentNode>,
-  api: API,
+  api: API | null,
   agents: Array<IAgent>,
   setNodes: (nodes: Array<Node & IAgentNode>) => void,
   edges: Array<Edge>,
@@ -132,6 +132,11 @@ export const addNode = (
   hideConnector: boolean = false,
 ) => {
   if(!agentId) return;
+  // appending an empty agent to known agents
+  agents = [
+    ...agents,
+    emptyAgent(api?.user?.email || "")
+  ];
   const agentData: IAgent | undefined = agents.find((agent:IAgent) => agent.id === agentId);
   const initiator = nodes.find(node => node.data.isInitiator);
   const isInitiator: Boolean = !!(!initiator && agentData && agentData.type === "userproxy");
@@ -141,7 +146,6 @@ export const addNode = (
       data: {...agentData,
         config: {...agentData.config},
         isInitiator,
-        api,
         hideConnector,
       },
       position,
@@ -161,7 +165,8 @@ export const addNode = (
 
       // Create a new edge from the initiator to the newly created node
       if (nodeData.type === "assistant" || nodeData.type === "groupchat") {
-        if (initiator) {
+        if (initiator && "id" in initiator && node_id) {
+          console.log({initiator, edges, node_id});
           setEdges([{
             source: initiator.id,
             id: `${edges.length + 2}`,
@@ -184,12 +189,12 @@ export const addNode = (
 
 // Refreshes agents from the database and rerenders nodes
 export const nodeUpdater = (
-  api: API,
+  api: API | null,
   setAgents: (agents: Array<IAgent>) => void,
   setNodes: (nodes: Array<Node & IAgentNode>) => void,
   nodes: Array<Node & IAgentNode>
 ) => {
-  api.getAgents((agentsFromDB: Array<IAgent>) => {
+  api?.getAgents((agentsFromDB: Array<IAgent>) => {
     setAgents(agentsFromDB);
     const updatedNodes = nodes.map(node => {
       const nodeCopy = JSON.parse(JSON.stringify(node));
@@ -235,7 +240,7 @@ export const emptyAgent = (user_id: string = ""): IAgent => ({
 
 // Creates a new model
 export const createModel = (
-  api: API,
+  api: API | null,
   nodes: Array<Node & IAgentNode>,
   setModels: Function,
   handleSelection: Function,
@@ -249,10 +254,10 @@ export const createModel = (
     created_at: now,
     updated_at: now,
     model: name,
-    user_id: api.user?.email,
+    user_id: api?.user?.email,
   }
 
-  api.setModel(modelData, (data: any) => {
+  api?.setModel(modelData, (data: any) => {
     const {id} = data.data;
     api.linkAgentModel(modelTarget, id, (resp) => {
       callback(resp);
@@ -275,7 +280,7 @@ export const createModel = (
 
 // Creats a new skill
 export const createSkill = (
-  api: API,
+  api: API | null,
   nodes: Array<Node & IAgentNode>,
   setSkills: Function,
   handleSelection: Function,
@@ -289,14 +294,14 @@ export const createSkill = (
     id: 0,
     created_at: now,
     updated_at: now,
-    user_id: api.user?.email,
+    user_id: api?.user?.email,
     name,
     content: "// Code goes here",
     description: " ",
     secrets: {},
     libraries: {},
   }
-  api.addSkill(skillData, (data: any) => {
+  api?.addSkill(skillData, (data: any) => {
     setSkills(data);
     let targetIndex = data.length - 1;
     while (targetIndex > 0 && data[targetIndex].name !== name) {
@@ -322,7 +327,7 @@ export const createSkill = (
 // Figures out what was dropped, where it came from and where it is being dropped
 export const getDropHandler = (
   canvasArea: DOMRect | undefined,
-  api: API,
+  api: API | null,
   setNodes: (nodes: Array<Node & IAgentNode>) => void,
   nodes: Array<Node & IAgentNode>,
   edges: Array<Edge>,
@@ -352,14 +357,13 @@ export const getDropHandler = (
     const newNode = (
       agentId: number,
       position: NodePosition,
-      customAgents?: Array<IAgent>,
       customSetNodes?: (nodes: Array<Node & IAgentNode>) => void,
       customHideConnector?: boolean
     ) => addNode(
       nodes,
       api,
-      customAgents || agents,
-      customSetNodes || setNodes,
+      agents,
+      customSetNodes ? customSetNodes : setNodes,
       edges,
       setEdges,
       agentId,
@@ -387,16 +391,12 @@ export const getDropHandler = (
 
         // Creating a new agent
         if (!id) {
-          // Push an empty agent node into the nodes stack
-          const now = new Date().toISOString();
-          const agentsPlusEmpty = [...agents, emptyAgent(api.user?.email)];
-        
           // Adding a new agent to a group agent
           if (agentTarget > 0) {
 
           }
           else {
-            newNode( -1, position, agentsPlusEmpty, (updatedNodes) => {
+            newNode( -1, position, (updatedNodes) => {
               const selected = updatedNodes.map(node => {
                 if (node.data.id === -1) {
                   node.selected = true;
@@ -411,7 +411,7 @@ export const getDropHandler = (
 
         // If dropping the agent onto a group agent
         else if (agentTarget > 0) {
-            api.linkAgent(agentTarget, id, callback);
+            api?.linkAgent(agentTarget, id, callback);
         }
 
         // Otherwise create a position on the canvas to render
@@ -424,7 +424,7 @@ export const getDropHandler = (
       case "agent-property":
         const targetId = eventTargetId(`drop-${type}s`);
 
-        if (targetId !== parent) {
+        if (api && targetId !== parent) {
             if (type === "model") {
               if (parent) {
                 api.unLinkAgentModel(parent, id, callback);
@@ -448,7 +448,7 @@ export const getDropHandler = (
         const skillTarget = eventTargetId("drop-skills");
         if(skillTarget >= 0) {
           if (id) {
-            api.linkAgentSkill(skillTarget, id, callback);
+            api?.linkAgentSkill(skillTarget, id, callback);
           }
           else {
             createSkill(api, nodes, setSkills, handleSelection, callback, skillTarget);
@@ -460,7 +460,7 @@ export const getDropHandler = (
         const modelTarget = eventTargetId("drop-models");
         if (modelTarget >= 0) {
             if (id) {
-              api.linkAgentModel(modelTarget, id, callback);
+              api?.linkAgentModel(modelTarget, id, callback);
             }
             else {
               createModel(api, nodes, setModels, handleSelection, callback, modelTarget);
@@ -472,7 +472,7 @@ export const getDropHandler = (
         const groupTarget = eventTargetId("drop-agents");
 
         if (parent && groupTarget !== parent) {
-            api.unlinkAgent(parent, id, callback as () => {});
+            api?.unlinkAgent(parent, id, callback as () => {});
         }
 
         break;

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import Workflow from "./canvas/Workflow";
-import Home from "./Home";
-import {API} from "./API";
-import EditWorkflow from "./EditWorkflow";
-import EditAgent from "./EditAgent";
-import EditModel from "./EditModel";
-import EditSkill from "./EditSkill";
-import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../types";
+import EditWorkflow from "./edit/EditWorkflow";
+import Home from "./home/Home";
+import {API} from "./utilities/API";
+import CreateWorkflow from "./edit/CreateWorkflow";
+import EditAgent from "./edit/EditAgent";
+import EditModel from "./edit/EditModel";
+import EditSkill from "./edit/EditSkill";
 import { useBuildStore } from "../../../hooks/buildStore";
 
 export type Categories = "agents" | "models" | "skills" | "workflows";
@@ -22,7 +21,8 @@ type BuildViewProps = {
  * @returns 
  */
 const BuildView = (props: BuildViewProps) => {
-  const { setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId, agents, workflows, skills, models } = useBuildStore(({setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId, agents, workflows, skills, models}) => ({
+  const { setApi, setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId, agents, workflows, skills, models } = useBuildStore(({ setApi, setAgents, setModels, setSkills, setWorkflows, editScreen, editId, workflowId, agents, workflows, skills, models}) => ({
+    setApi,
     setAgents,
     setModels,
     setSkills,
@@ -35,11 +35,12 @@ const BuildView = (props: BuildViewProps) => {
     skills,
     models
   }));
-  const [previousWork, setPreviousWork] = useState(false);
   const api = new API();
+  const [previousWork, setPreviousWork] = useState(false);
 
   // Load agents, models, skills and workflows on component mount
   useEffect(() => {
+    setApi(api);
     // Load workflows, agents, models and skills and push them to the store
     api.getWorkflows(setWorkflows);
     api.getAgents(setAgents);
@@ -65,22 +66,22 @@ const BuildView = (props: BuildViewProps) => {
   return (
     <div className="build h-full">
       {workflowId === null && editScreen === null &&
-        <Home hasPreviousWork={previousWork} api={api} />
+        <Home hasPreviousWork={previousWork} />
       }
       {editScreen === "workflow" &&
-        <EditWorkflow api={api} />
+        <CreateWorkflow />
       }
       {editScreen === "agent" &&
-        <EditAgent agentId={editId || 0} api={api} />
+        <EditAgent agentId={editId || 0} />
       }
       {editScreen === "model" &&
-        <EditModel api={api} />
+        <EditModel />
       }
       {editScreen === "skill" &&
-        <EditSkill api={api} />
+        <EditSkill />
       }
       {editScreen === null && workflowId !== null && workflowId >= 0 &&
-        <Workflow api={api} />
+        <EditWorkflow />
       }
     </div>
   );

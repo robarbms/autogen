@@ -1,10 +1,8 @@
-import React, { MouseEventHandler, ReactElement, JSX } from "react";
-import { IWorkItem } from "./utils";
-import { WorkflowIcon, AgentIcon, ModelIcon, SkillIcon } from "./Icons";
+import React from "react";
 import { Divider, Select } from "antd";
-import "../../../styles/build.css";
-import { useBuildStore } from "../../../hooks/buildStore";
-import { IWorkflow } from "../../types";
+import "../styles/build.css";
+import { useBuildStore } from "../hooks/buildStore";
+import { IWorkflow } from "./types";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
 /**

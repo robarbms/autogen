@@ -1,8 +1,8 @@
 import { useContext } from "react";
-import { IAgent, IChatSession, IStatus, IWorkflow, IModelConfig, ISkill } from "../../types";
-import { useConfigStore } from "../../../hooks/store";
-import { appContext, IUser } from "../../../hooks/provider";
-import { fetchJSON, getServerUrl } from "../../utils";
+import { IAgent, IChatSession, IStatus, IWorkflow, IModelConfig, ISkill } from "../../../types";
+import { useConfigStore } from "../../../../hooks/store";
+import { appContext, IUser } from "../../../../hooks/provider";
+import { fetchJSON, getServerUrl } from "../../../utils";
 import { message } from "antd";
 
 // Class for handling and caching api calls

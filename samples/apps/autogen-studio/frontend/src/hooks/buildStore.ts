@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../components/types";
 import { Node, Edge } from "reactflow";
+import { IAgentNode, AgentProperty, NodeSelection } from "../components/views/new_builder/canvas/Canvas";
+import { API } from "../components/views/new_builder/utilities/API";
 
 export type BuildSections = "agent" | "model" | "skill" | "workflow";
 
@@ -8,6 +10,8 @@ export type BuildSections = "agent" | "model" | "skill" | "workflow";
  * Build state type
  */
 export interface IBuildState {
+    api: API | null;
+    setApi: (api: API) => void;
     agents: IAgent[];
     setAgents: (agents: IAgent[]) => void;
     models: IModelConfig[];
@@ -27,14 +31,16 @@ export interface IBuildState {
     nodePropertiesOpen: boolean;
     setNodePropertiesOpen: (nodePropertiesOpen: boolean) => void;
     chatProperties: boolean;
-    nodes: Node[];
-    edges: Edge[];
+    selectedNode: NodeSelection;
+    setSelectedNode: (selectedNode: NodeSelection) => void;
 }
 
 /**
  * Store used to manage the state for the build page
  */
 export const useBuildStore = create<IBuildState>()((set) => ({
+    api: null,
+    setApi: (api: API) => set({api}),
     agents: [],
     setAgents: (agents: IAgent[]) => set({agents}),
     models: [],
@@ -54,6 +60,6 @@ export const useBuildStore = create<IBuildState>()((set) => ({
     nodePropertiesOpen: false,
     setNodePropertiesOpen: (nodePropertiesOpen: boolean) => set({nodePropertiesOpen}),
     chatProperties: false,
-    nodes: [],
-    edges: [],
+    selectedNode: null,
+    setSelectedNode: (selectedNode: NodeSelection) => set({selectedNode})
 }));

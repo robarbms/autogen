@@ -1,42 +1,51 @@
 import React, { useEffect, useState } from "react";
 import { IWorkflow } from "../../../types";
-import { API } from "../API";
-import { NodeSelection } from "./Canvas";
+import { NodeSelection } from "../canvas/Canvas";
 import { WorflowViewer } from "../../builder/utils/workflowconfig";
 import { useBuildStore } from "../../../../hooks/buildStore";
 
+// Properties for the workflow properties panel
 type WorkflowPropertiesProps = {
-    api: API;
     setSelectedNode: (node: NodeSelection) => void;
     workflow: IWorkflow | null;
 }
 
+/**
+ * Properties panel showing a workflows configuration
+ * @param props 
+ * @returns 
+ */
 const WorkflowProperties = (props: WorkflowPropertiesProps) => {
-    const { api, setSelectedNode, workflow } = props;
+    const { setSelectedNode, workflow } = props;
     const [ localWorkflow, setLocalWorkflow ] = useState<IWorkflow | null>();
-    const { setWorkflows, workflows } = useBuildStore(({setWorkflows, workflows}) => ({setWorkflows, workflows}));
+    const { api, setWorkflows, workflows } = useBuildStore(({ api, setWorkflows, workflows }) => ({ api, setWorkflows, workflows }));
 
+    // Loads the workflow for editing
     useEffect(() => {
         setLocalWorkflow(workflow)
     }, []);
 
+    // Writes changes to the workflow to the DB
     const update = (updatedWorkflow: IWorkflow) => {
-        api.addWorkflow(updatedWorkflow, (data) => {
-            const updatedWorkflows: IWorkflow[] = workflows.map((workflow) => {
-                if (workflow.id === data.id) {
-                    const workflowUpdated = {
-                        ...workflow,
-                        ...data
+        if (api) {
+            api.addWorkflow(updatedWorkflow, (data) => {
+                const updatedWorkflows: IWorkflow[] = workflows.map((workflow) => {
+                    if (workflow.id === data.id) {
+                        const workflowUpdated = {
+                            ...workflow,
+                            ...data
+                        }
+                        setLocalWorkflow(workflowUpdated);
+                        return workflowUpdated;
                     }
-                    setLocalWorkflow(workflowUpdated);
-                    return workflowUpdated;
-                }
-                return workflow;
+                    return workflow;
+                });
+                setWorkflows(updatedWorkflows)
             });
-            setWorkflows(updatedWorkflows)
-        })
+        }
     }
 
+    // Closes the workflow properties panel
     const close = () => {
         setSelectedNode(null);
     }
