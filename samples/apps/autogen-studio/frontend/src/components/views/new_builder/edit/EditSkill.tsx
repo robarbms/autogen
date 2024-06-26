@@ -84,10 +84,6 @@ const EditSkill = (props: EditSkillProps) => {
     return (
         <BuildLayout
             menu={<Library libraryItems={[{label: "Skills", items: [
-                {
-                    name: "New skill",
-                    content: ""
-                },
                 ...skills
             ]}]} addLibraryItem={addLibraryItem} />}
         >

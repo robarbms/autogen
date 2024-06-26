@@ -56,9 +56,6 @@ const EditModel = (props: EditModelProps) => {
         <BuildLayout className="edit-model" menu={<Library libraryItems={[{
                 label: "Models",
                 items: [
-                    {
-                        model: "New model",
-                    },
                     ...models
                 ]
             }]}
