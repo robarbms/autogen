@@ -158,7 +158,7 @@ const EditAgent = (props: EditAgentProps) => {
       setNodes(updatedNodes);
     });
   }, [models, skills]);
-  
+
   // Update selected agent properties when selectedNode changes
   useEffect(() => {
     if (!selectedNode || selectedNode.type === "model" || selectedNode.type === "skill") {
@@ -215,30 +215,32 @@ const EditAgent = (props: EditAgentProps) => {
     }, ...skills]}
   ];
 
-    return (
-        <ReactFlowProvider>
-            <BuildLayout
-                menu={<Library setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
-                properties={selectedNode !== null ? 
-                  <NodeProperties
-                    handleInteract={updateNodes}
-                    setSelectedNode={setSelectedNode as any}
-                    setNodes={setNodes}
-                  /> : null}
-            >
-                <AgentCanvas
-                    nodes={nodes}
-                    onNodesChange={onNodesChange}
-                    onDrop={handleDrop}
-                    onDragEnter={handleDrag}
-                    onDragOver={handleDrag}
-                    setBounding={setBounding}
-                    setNodes={setNodes as any}
-                    setSelection={handleSelection}
-                />
-            </BuildLayout>
-        </ReactFlowProvider>
-    )
+  return (
+    <ReactFlowProvider>
+      <BuildLayout
+        showMenu={showMenu}
+        setShowMenu={setShowMenu}
+        menu={<Library setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
+        properties={selectedNode !== null ? 
+          <NodeProperties
+            handleInteract={updateNodes}
+            setSelectedNode={setSelectedNode as any}
+            setNodes={setNodes}
+          /> : null}
+      >
+        <AgentCanvas
+            nodes={nodes}
+            onNodesChange={onNodesChange}
+            onDrop={handleDrop}
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            setBounding={setBounding}
+            setNodes={setNodes as any}
+            setSelection={handleSelection}
+        />
+      </BuildLayout>
+    </ReactFlowProvider>
+  )
 }
 
 export default EditAgent;
