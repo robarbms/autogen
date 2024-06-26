@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Node, useNodes } from "reactflow";
-import { IAgentNode, NodeSelection, nodeUpdater } from "../canvas/Canvas";
+import { IAgentNode, NodeSelection } from "../canvas/Canvas";
 import { IAgent } from "../../../types";
 import { ItemType } from "rc-collapse/es/interface";
 import { BugAntIcon, CpuChipIcon, UserGroupIcon } from "@heroicons/react/24/outline";
@@ -60,10 +60,12 @@ const AgentProperties = (props: AgentPropertiesProps) => {
         api.addAgent(agentData, (resp) => {
           // Update agents when new agent is added
           const updatedAgents = [...agents, agentData];
+          console.log("ADDING AGENT >>>>>>", {agents, updatedAgents})
           setAgents(updatedAgents);
           // get selected node and update it
           const tempNodeIndex = nodes.findIndex(node => node.data.id === -1);
           const tempNode = nodes[tempNodeIndex];
+          setNodes([]);
 
           if (tempNode) {
             // create a new node
@@ -79,12 +81,11 @@ const AgentProperties = (props: AgentPropertiesProps) => {
             } as Node & IAgentNode;
             const updatedNodes = JSON.parse(JSON.stringify(nodes));
             updatedNodes[tempNodeIndex] = newNode;
-            setNodes([newNode]);
-            nodeUpdater(api, setAgents, setNodes, nodes);
-            if (newNode.type !== "userproxy" && addEdge) {
-              // addEdge(newNode.id);
-            }
             setSelectedNode(newNode);
+            setNodes(updatedNodes);
+            if (newNode.type !== "userproxy" && addEdge) {
+              addEdge(newNode.id)
+            }
           }
         });
       }

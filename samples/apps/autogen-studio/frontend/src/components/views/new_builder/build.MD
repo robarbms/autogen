@@ -4,7 +4,7 @@
 
 - **canvas**: Files associated with the Workflow canvas editing screen.
     - **nodes**: Files for the nodes used on the canvas. These include the userproxy, assistant and groupchat agents.
-- **edit**: Files for editing agents, models, skills and workflow screens.
+- **edit**: Files for the editing agents, models, skills and workflow screens.
 - **home**: Files for the home landing screen for the new build experience.
 - **layout**: Files for the page layout, property panels and chat panel on edit screens.
     - **library**: Files used to make up the library used on the edit screens.
@@ -13,7 +13,7 @@
 # File overview
 
 ## build.tsx
-This is the entry point for the new builder page. It loads models, skills, agents, and workflows into the build store. It also handles state management for which edit screen should or home page should be shown.
+This is the entry point for the new builder page. It loads models, skills, agents, and workflows into the build store. It also handles state management for which edit screen or home page should be shown.
 
 ## Home
 The homepage components can be found in the home directory. This includes the overall home page and the recent work table.

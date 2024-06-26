@@ -31,45 +31,60 @@ const EditAgent = (props: EditAgentProps) => {
       setSkills
     }));
     const [selectedNode, setSelectedNode] = useState<Node & IAgentNode | AgentProperty | null>(null);
-    const [nodes, setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode>>([]);
+    const [nodes, _setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode>>([]);
     const [bounding, setBounding] = useState<DOMRect>();
     const [ showMenu, setShowMenu ] = useState(true);
     const [ initialized, setInitialized ] = useState<boolean>(false);
 
+    const setNodes = (nodes: Array<Node & IAgentNode>) => {
+      if (nodes) {
+        nodes = nodes.map(node => {
+          node.data.hideConnector = true;
+          return node;
+        });
+      }
+  
+      _setNodes(nodes);
+    }
+
     // On clicking of a node sets it as selected
     const handleSelection = (selected: NodeSelection) => {
-        if (selected) {
-          if (Array.isArray(selected)) {
-            setSelectedNode(selected.length > 0 ? selected[0].data : null);
+      console.log(selected);
+      if (Array.isArray(selected)) {
+        selected= selected[selected.length - 1];
+      }
+  
+      if (selected) {
+        // A selected model or skill
+        if ("parent" in selected && selected.parent) {
+          const selectedData: AgentProperty = {
+            id: selected.id || 0,
+            parent: selected.parent,
+            type: "model" in selected ? "model" : "skill",
           }
-          else if ("parent" in selected) {
-            const selectedData: AgentProperty = {
-              id: selected.id || 0,
-              parent: selected.parent,
-              type: "model" in selected ? "model" : "skill"
-            }
-            setSelectedNode(selectedData);
+          if (selected && "group" in selected) {
+            selectedData.group = selected.group as string;
           }
+          console.log(selectedData);
+          setSelectedNode(selectedData);
         }
         else {
-          setSelectedNode(null);
+          setSelectedNode(selected as any);
         }
       }
+      else {
+        setSelectedNode(null);
+      }
+    }
+
+    useEffect(() => {
+      console.log({selectedNode});
+    }, [selectedNode]);
     
     // suppresses event bubbling for drag events
     const handleDrag: MouseEventHandler = (event: MouseEvent) => {
         event.preventDefault();
     };
-
-  const agentSetNodes = (nodes: Array<Node & IAgentNode> | undefined) => {
-    if (nodes) {
-      const noConnectorNodes = nodes.map(node => {
-        node.data.hideConnector = true;
-        return node;
-      });
-      setNodes(noConnectorNodes);
-    }
-  }
 
   // Drag and drop handler for items dragged onto the canvas or agents
   const handleDrop = getDropHandler(bounding, api, setNodes, nodes as Array<Node & IAgentNode>, [], () => {}, agents, setAgents, setModels, setSkills, handleSelection, true) as any;
@@ -110,6 +125,8 @@ const EditAgent = (props: EditAgentProps) => {
       });
       setNodes(updatedNodes);
     }
+
+    console.log(selectedNode);
   }, [selectedNode]);
 
   // Updates nodes on the canvas when there are changes made
@@ -144,7 +161,7 @@ const EditAgent = (props: EditAgentProps) => {
         <ReactFlowProvider>
             <BuildLayout
                 menu={<Library setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
-                properties={selectedNode !== null ? <NodeProperties handleInteract={updateNodes} setSelectedNode={setSelectedNode as any} setNodes={agentSetNodes} /> : null}
+                properties={selectedNode !== null ? <NodeProperties handleInteract={updateNodes} setSelectedNode={setSelectedNode as any} setNodes={setNodes} /> : null}
             >
                 <AgentCanvas
                     nodes={nodes}
@@ -153,7 +170,7 @@ const EditAgent = (props: EditAgentProps) => {
                     onDragEnter={handleDrag}
                     onDragOver={handleDrag}
                     setBounding={setBounding}
-                    setNodes={setNodes}
+                    setNodes={setNodes as any}
                     setSelection={handleSelection}
                 />
             </BuildLayout>

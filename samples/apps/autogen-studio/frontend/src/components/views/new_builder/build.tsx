@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import EditWorkflow from "./edit/EditWorkflow";
 import Home from "./home/Home";
 import {API} from "./utilities/API";
@@ -35,17 +35,25 @@ const BuildView = (props: BuildViewProps) => {
     skills,
     models
   }));
+  const isInitialized = useRef(false);
   const api = new API();
+  api.error = (error) => {
+    if (!error.status) console.error(error);
+  }
   const [previousWork, setPreviousWork] = useState(false);
 
   // Load agents, models, skills and workflows on component mount
   useEffect(() => {
-    setApi(api);
-    // Load workflows, agents, models and skills and push them to the store
-    api.getWorkflows(setWorkflows);
-    api.getAgents(setAgents);
-    api.getModels(setModels);
-    api.getItems("skills", setSkills);
+    if (!isInitialized.current) {
+      console.log("Loading data......")
+      setApi(api);
+      // Load workflows, agents, models and skills and push them to the store
+      api.getWorkflows(setWorkflows);
+      api.getAgents(setAgents);
+      api.getModels(setModels);
+      api.getItems("skills", setSkills);
+      isInitialized.current = true;
+    }
   }, []);
 
   // If there are any workflows, agents, models or skill, set the previousWork to true

@@ -1,9 +1,9 @@
-import React, { useEffect, useState, MouseEvent, MouseEventHandler } from "react";
+import React, { useEffect, useState, MouseEvent, MouseEventHandler, createRef, useRef } from "react";
 import Library, { EmptyLibraryItem, LibraryGroup } from "../layout/library/Library";
 import BuildLayout from "../layout/BuildLayout";
 import WorkflowCanvas from "../canvas/WorkflowCanvas";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
-import ReactFlow, { Edge, Node, ReactFlowProvider, useNodesState, useEdgesState, MarkerType } from "reactflow";
+import ReactFlow, { Edge, Node, ReactFlowProvider, useNodesState, useEdgesState, MarkerType, useReactFlow } from "reactflow";
 import NodeProperties from "../layout/NodeProperties";
 import TestWorkflow from "../canvas/TestWorkflow";
 import Chat from "../layout/Chat";
@@ -45,17 +45,60 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     setNavigationExpand
   }));
   const [ bounding, setBounding ] = useState<DOMRect>();
-  const [ nodes, setNodes, onNodesChange ] = useNodesState<Array<Node & IAgentNode>>([]);
+  const [ nodes, _setNodes, onNodesChange ] = useNodesState<Array<Node & IAgentNode>>([]);
   const [ edges, setEdges, onEdgesChange ] = useEdgesState<Edge>([]);
   const [ showChat, setShowChat ] = useState<boolean>(false);
   const [ isValidWorkflow, setIsValidWorkflow ] = useState<boolean>(false);
   const [ editting, setEditting ] = useState<IWorkItem>();
-  const [ initialized, setInitialized ] = useState<boolean>(false);
+  const initialized = useRef(false);
   const [ showMenu, setShowMenu ] = useState(true);
-  const getInitiator = (): Node & IAgentNode | undefined => (nodes as Array<Node & IAgentNode>).find((node) => node.data.isInitiator)
+  const getInitiator = (): Node & IAgentNode | undefined => nodes ? (nodes as Array<Node & IAgentNode>).find((node) => node.data.isInitiator) : undefined;
+
+  // Adds selection properties to nodes
+  const getNodesWithProps = (_nodes_: Array<Node & IAgentNode>) => {
+    if (_nodes_ && _nodes_.length > 0) {
+      const nodesCopy = JSON.parse(JSON.stringify(_nodes_)); 
+      const nodesWithSelection = nodesCopy.map((node: Node & IAgentNode) => {
+        if (selectedNode && "parent" in selectedNode && (!("group" in selectedNode) || !selectedNode.group) && selectedNode.parent === node.id) {
+          node.data.selectedProp = selectedNode;
+        }
+        else {
+          delete node.data.selectedProp;
+        }
+        if (node.type === "groupchat" && "linkedAgents" in node.data && node.data.linkedAgents.length > 0) {
+          node.data.linkedAgents = node.data.linkedAgents.map((agent: IAgent & {selectedProp?: boolean}, idx: number) => {
+
+            if (selectedNode && "group" in selectedNode && selectedNode.group === node.id) {
+              if (idx === parseInt(selectedNode.parent)) {
+                agent.selectedProp = !!selectedNode;
+              }
+              else if ("selectedProp" in agent) {
+                delete agent.selectedProp;
+              }
+            }
+            else if ("selectedProp" in agent) {
+              delete agent.selectedProp;
+            }
+            return agent;
+          })
+        }
+        return node;
+      });
+      return nodesWithSelection;
+    }
+    return _nodes_;
+  }
+
+  // Data processing before new nodes are pushed
+  const setNodes = (newNodes: any) => {
+    const noEmptyAgents = newNodes.filter((node: Node & IAgentNode) => node.selected || node.data.id !== -1);
+    const nodesWithProps = getNodesWithProps(noEmptyAgents);
+    _setNodes(nodesWithProps);
+  }
+
+  // Adds a new edge
   const addEdge = (id: string) => {
     const initiator = getInitiator();
-    console.log({id, initiator});
     if (initiator) {
       setEdges([{
         source: initiator.id,
@@ -76,11 +119,10 @@ const EditWorkflow = (props: EditWorkflowProps) => {
 
   // Loads the current active workflows nodes to the canvas
   const loadWorkflow = () => {
-    if (!initialized) {
+    if (!initialized.current) {
       // Refresh workflows before rendering the current workflow
       api?.getWorkflows((updatedWorkflows) => {
         setWorkflows(updatedWorkflows);
-
         // Find the current active workflow data by it's id
         const curr_work = updatedWorkflows.find((work: IWorkflow) => work.id == workflowId)
 
@@ -98,22 +140,43 @@ const EditWorkflow = (props: EditWorkflowProps) => {
           // Add nodes for an existing workflow
           if (sender) {
             const sender_pos: NodePosition = { x: 100, y: 100};
-            addNode(nodes as Array<Node & IAgentNode>, api, agents, nodeToWorkflow, edges, () => {}, sender.id, sender_pos);
+            addNode(nodes as Array<Node & IAgentNode>, api, agents, nodeToWorkflow, edges, () => {}, sender.id as number, sender_pos);
           }
           if (receiver) {
             const receiver_pos: NodePosition = {x: 500, y: 100};
-            addNode(nodes as Array<Node & IAgentNode>, api, agents, nodeToWorkflow, edges, () => {}, receiver.id, receiver_pos);
+            addNode(nodes as Array<Node & IAgentNode>, api, agents, nodeToWorkflow, edges, () => {}, receiver.id as number, receiver_pos);
           }
           // If missing a sender or receiver, set initialized as there won't be any edges
           if (sender === null || receiver === null) {
-            setInitialized(true);
+            initialized.current = true;
           }
 
-          const ed_work = dataToWorkItem(api.user?.email || "", curr_work);
+          const ed_work = dataToWorkItem(api?.user?.email || "", curr_work);
           setEditting(ed_work);
         }
       });
     }
+  }
+
+  const validateWorkflow = () => {
+    // Make sure the work flow is valid.
+    let isValid = false;
+
+    // Should have an initiator
+    const initiator: Node & IAgentNode | undefined = getInitiator();
+
+    if (initiator && edges) {
+      // should be connected to an agent
+      const edge: Edge | undefined = edges.find(edge => edge.source === initiator.id);
+      if (edge && nodes) {
+          const target: Node | undefined = nodes.find(node => node.id === edge.target);
+          if (target) {
+            isValid = true;
+          }
+      }
+    }
+
+    setIsValidWorkflow(isValid);
   }
 
   // Load and set Agents and workflows
@@ -122,10 +185,14 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     // Collapse page left navigation
     setNavigationExpand(false);
     loadWorkflow();
+
+    return () => {
+      setSelectedNode(null);
+    }
   }, []);
 
   useEffect(() => {
-    if (!initialized) {
+    if (!initialized.current) {
       // Determine the current workflow and the number of nodes it should have
       const curr_work = workflows.find(workflow => workflow.id === workflowId);
       let nodeCount = 0;
@@ -155,42 +222,36 @@ const EditWorkflow = (props: EditWorkflowProps) => {
             }
           }]);
         }
-
-        setInitialized(true);
       }
     }
-
+    else {
+      if(workflowId) {
+        api?.getWorkflowLinks(workflowId, updateWorkflow, true);
+      }
+      validateWorkflow();
+    }
   }, [nodes]);
 
   useEffect(() => {
-    // Make sure the work flow is valid.
-    let isValid = false;
-
-    // Should have an initiator
-    const initiator: Node & IAgentNode | undefined = getInitiator();
-
-    if (initiator && edges) {
-      // should be connected to an agent
-      const edge: Edge | undefined = edges.find(edge => edge.source === initiator.id);
-      if (edge && nodes) {
-          const target: Node | undefined = nodes.find(node => node.id === edge.target);
-          if (target) {
-            isValid = true;
-          }
-      }
-    }
-
-    setIsValidWorkflow(isValid);
-
-    // update the workflows sender and receiver
-    if(initialized && workflowId) api?.getWorkflowLinks(workflowId, updateWorkflow, true);
-
     // Should only ever have 1 edge
     if (edges && edges.length > 1) {
       // Use only the last added edge
       setEdges([edges[edges.length -1]]);
     }
-  }, [nodes, edges]);
+
+    // update the workflows sender and receiver
+    if(initialized.current){
+      if(workflowId) {
+        api?.getWorkflowLinks(workflowId, updateWorkflow, true);
+      }
+    }
+    else if (edges.length > 0) {
+      initialized.current = true;
+    }
+
+
+    validateWorkflow();
+  }, [edges]);
 
   // Updates workflow agents sender and receiver based on canvas nodes and edges
   const updateWorkflow = (sender: IAgent, receiver: IAgent) => {
@@ -236,7 +297,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   // Updates the selected node when it changes
   const handleSelection = (selected: NodeSelection) => {
     if (Array.isArray(selected)) {
-      selected= selected[selected.length - 1];
+      selected = selected[selected.length - 1];
     }
 
     if (selected) {
@@ -261,48 +322,16 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     else {
       setSelectedNode(null);
     }
-    // remove any empty agents that are not selected
-    const removedEmpty = (nodes as Array<Node & IAgentNode>).filter((node: Node & IAgentNode) => node.data.id !== -1 || node.selected);
-    if (nodes.length > removedEmpty.length) {
-      setNodes(removedEmpty);
-    }
   }
+
+  useEffect(() => {
+    if (!selectedNode || selectedNode.type === "model" || selectedNode.type === "skill") {
+      setNodes(nodes);
+    }
+  }, [selectedNode]);
 
   // Drag and drop handler for items dragged onto the canvas or agents
   const handleDragDrop = getDropHandler(bounding, api, setNodes, nodes as Array<Node & IAgentNode>, edges, setEdges, agents, setAgents, setModels, setSkills, handleSelection);
-
-  // Update selected agent properties when selectedNode changes
-  useEffect(() => {
-    if (nodes && nodes.length > 0) {
-      const updatedNodes = JSON.parse(JSON.stringify(nodes)).map((node: Node & IAgentNode) => {
-        if (selectedNode && "parent" in selectedNode && (!("group" in selectedNode) || !selectedNode.group) && selectedNode.parent === node.id) {
-          node.data.selectedProp = selectedNode;
-        }
-        else {
-          delete node.data.selectedProp;
-        }
-        if (node.type === "groupchat" && "linkedAgents" in node.data) {
-          node.data.linkedAgents = node.data.linkedAgents.map((agent: IAgentNode, idx: number) => {
-            if (selectedNode && "group" in selectedNode && selectedNode.group === node.id) {
-              if (idx === parseInt(selectedNode.parent)) {
-                agent.data.selectedProp = !!selectedNode;
-              }
-              else {
-                delete agent.data.selectedProp;
-              }
-            }
-            else {
-              delete agent.data.selectedProp;
-            }
-            return agent;
-          })
-        }
-        return node;
-      });
-
-      setNodes(updatedNodes);
-    }
-  }, [selectedNode]);
 
   // Opens the chat pane to test the workflow if it is a valid workflow
   //  with a sender and receiver
@@ -312,32 +341,36 @@ const EditWorkflow = (props: EditWorkflowProps) => {
 
   // Refreshes agents from the database and 
   const updateNodes = () => {
-    console.log("Updating nodes and agents");
-    api?.getAgents((agentsFromDB: Array<IAgent>) => {
-      setAgents(agentsFromDB);
-      const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
-        const nodeCopy = JSON.parse(JSON.stringify(node));
-        const updatedAgent = agentsFromDB.find((agent: IAgent) => agent.id === node.data.id);
-        const newNode = {
-          ...nodeCopy,
-          data: {
-            ...nodeCopy.data,
-            ...updatedAgent,
-            deselected: !edges || edges.length < 1 || !edges.find(edge => edge.source === nodeCopy.id || edge.target === nodeCopy.id)
+    if (selectedNode && "data" in selectedNode && selectedNode.data.id !== -1) {
+      api?.getAgents((agentsFromDB: Array<IAgent>) => {
+        // setAgents(agentsFromDB);
+        const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
+          const nodeCopy = JSON.parse(JSON.stringify(node));
+          const updatedAgent = agentsFromDB.find((agent: IAgent) => agent.id === node.data.id);
+          const newNode = {
+            ...nodeCopy,
+            data: {
+              ...nodeCopy.data,
+              ...updatedAgent,
+              deselected: !edges || edges.length < 1 || !edges.find(edge => edge.source === nodeCopy.id || edge.target === nodeCopy.id)
+            }
           }
-        }
-
-        return newNode;
+  
+          return newNode;
+        });
+        setNodes(updatedNodes);
       });
-      setNodes(updatedNodes);
-    }, true);
+    }
   }
+
+  // New agent item for the library
   const newAgent: EmptyLibraryItem = {
     id: 0,
     config: {
       name: "New Agent"
     }
   };
+
   // Items to show in the library
   const libraryItems: Array<LibraryGroup> = [
     { label: "Agents", items: [ newAgent, ...agents]},
@@ -350,6 +383,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     }, ...skills]}
   ];
 
+  // Click handler for the workflow setting icon
   const editWorkflow = () => {
     // click handler to edit the currently active workflow
     const workflow = workflows.find(workflow => workflow.id === workflowId);
@@ -456,12 +490,6 @@ const EditWorkflow = (props: EditWorkflowProps) => {
       }
     }
   }
-
-  const changeNodes = (newNodes: any) => {
-    console.log(newNodes);
-
-    setNodes(newNodes);
-  }
   
   return (
     <ReactFlowProvider>
@@ -474,7 +502,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
           <NodeProperties
             handleInteract={updateNodes}
             setSelectedNode={handleSelection}
-            setNodes={changeNodes}
+            setNodes={setNodes}
             addEdge={addEdge}
           /> :
           null}

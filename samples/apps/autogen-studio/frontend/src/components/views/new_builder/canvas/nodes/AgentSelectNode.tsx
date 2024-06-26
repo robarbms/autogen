@@ -1,15 +1,12 @@
 import React, { memo, MouseEvent } from 'react';
-import { Handle, Position, Node } from 'reactflow';
+import { Node } from 'reactflow';
 import { AgentIcon } from '../../utilities/Icons';
-import AgentProperties from './AgentProperties';
-import { IModelConfig, ISkill } from '../../../../types';
 import { IAgentNode, AgentProperty } from "../Canvas";
 
 /**
  * A node representing an empty agent
  */
 const AgentSelectNode = memo((data: Node & IAgentNode & { setSelection: (event: MouseEvent) => void}, isConnectable) => {
-    const { id }: { id: string } = data;
     const { name, description } = data.data.config;
   
     return (

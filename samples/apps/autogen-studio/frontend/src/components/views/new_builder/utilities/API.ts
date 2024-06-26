@@ -163,6 +163,7 @@ export class API {
             const item = items.length > 0 ? items[0] : null;
             action(item);
         }, (error) => {
+            error.message += ` id: ${id}; type: ${type}`
             this._error(error);
         });
     }
@@ -261,40 +262,32 @@ export class API {
     }
 
     // Gets agents and their linked models and skills
-    public getAgents (callback: Function, refresh: boolean = false) {
-        if (this._agents.length === 0) {
-            refresh = true;
-        }
-        if (refresh === false) {
-            callback(this._agents);
-        }
-        else {
-            this.getItems("agents", (agents: IAgent[]) => {
-                const {length} = agents;
-                let updatedAgents: IAgent[] = [];
-                const addAgent = (agent: IAgent) => {
-                    updatedAgents.push(agent);
-                    if (updatedAgents.length === length) {
-                        updatedAgents = this.sortByDate(updatedAgents);
-                        this._agents = updatedAgents;
-                        callback(updatedAgents);
-                    }
+    public getAgents (callback: Function) {
+        this.getItems("agents", (agents: IAgent[]) => {
+            const {length} = agents;
+            let updatedAgents: IAgent[] = [];
+            const addAgent = (agent: IAgent) => {
+                updatedAgents.push(agent);
+                if (updatedAgents.length === length) {
+                    updatedAgents = this.sortByDate(updatedAgents);
+                    this._agents = updatedAgents;
+                    callback(updatedAgents);
                 }
-                while (agents.length > 0) {
-                    const agent: IAgent | undefined = agents.pop();
-                    if (agent !== undefined && agent.id && agent.type) {
-                        this.getAgentData(agent.id, agent.type, (data: {
-                            models: Array<IModelConfig>,
-                            skills: Array<ISkill>,
-                            linkedAgents?: Array<IAgent>
-                        }) => {
-                            const agentWithData = Object.assign({}, agent, data);
-                            addAgent(agentWithData);
-                        });
-                    }
+            }
+            while (agents.length > 0) {
+                const agent: IAgent | undefined = agents.pop();
+                if (agent !== undefined && agent.id && agent.type) {
+                    this.getAgentData(agent.id, agent.type, (data: {
+                        models: Array<IModelConfig>,
+                        skills: Array<ISkill>,
+                        linkedAgents?: Array<IAgent>
+                    }) => {
+                        const agentWithData = Object.assign({}, agent, data);
+                        addAgent(agentWithData);
+                    });
                 }
-            }, refresh);
-        }
+            }
+        }, true);
     }
 
     // Gets models, skills and linked agents for an agent and returns them
@@ -308,24 +301,26 @@ export class API {
                         const {length} = linkedAgents;
                         const order = linkedAgents.map(({id}: {id: number}) => id);
                         let updatedAgents: Array<IAgent> = [];
-                        while(updatedAgents.length < length) {
+                        while(linkedAgents && linkedAgents.length > 0) {
                             const agent = linkedAgents.pop();
-                            this.getAgentData(agent.id, agent.type, (agentData: IAgent) => {
-                                const updatedAgent = Object.assign({}, agent, agentData);
-                                updatedAgents.push(updatedAgent);
-                                if (updatedAgents.length === length) {
-                                    // Sort agents so they are in the same order as returned by the DB
-                                    const sortedAgents = new Array(length).fill(null).map((_, idx) => {
-                                        const id = order[idx];
-                                        return updatedAgents.find(agent => agent.id === id);
-                                    })
-                                    callback({
-                                        models,
-                                        skills,
-                                        linkedAgents: sortedAgents || []
-                                    });
-                                }
-                            });
+                            if (agent) {
+                                this.getAgentData(agent.id, agent.type, (agentData: IAgent) => {
+                                    const updatedAgent = Object.assign({}, agent, agentData);
+                                    updatedAgents.push(updatedAgent);
+                                    if (updatedAgents.length === length) {
+                                        // Sort agents so they are in the same order as returned by the DB
+                                        const sortedAgents = new Array(length).fill(null).map((_, idx) => {
+                                            const id = order[idx];
+                                            return updatedAgents.find(agent => agent.id === id);
+                                        })
+                                        callback({
+                                            models,
+                                            skills,
+                                            linkedAgents: sortedAgents || []
+                                        });
+                                    }
+                                });
+                            }
                         }
                         callback({
                             models,

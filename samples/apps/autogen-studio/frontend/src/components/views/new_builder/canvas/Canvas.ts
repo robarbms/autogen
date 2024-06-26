@@ -131,12 +131,13 @@ export const addNode = (
   position: NodePosition,
   hideConnector: boolean = false,
 ) => {
-  if(!agentId) return;
   // appending an empty agent to known agents
-  agents = [
-    ...agents,
-    emptyAgent(api?.user?.email || "")
-  ];
+  if (!agentId || agentId < 0) {
+    agents = [
+      ...agents,
+      emptyAgent(api?.user?.email || "")
+    ];
+  }
   const agentData: IAgent | undefined = agents.find((agent:IAgent) => agent.id === agentId);
   const initiator = nodes.find(node => node.data.isInitiator);
   const isInitiator: Boolean = !!(!initiator && agentData && agentData.type === "userproxy");
@@ -159,29 +160,25 @@ export const addNode = (
     }
     
     const newNodes: Array<Node & IAgentNode> = nodes.concat([nodeData]);
+    setNodes(newNodes);
 
-    if (setNodes){
-      setNodes(newNodes);
-
-      // Create a new edge from the initiator to the newly created node
-      if (nodeData.type === "assistant" || nodeData.type === "groupchat") {
-        if (initiator && "id" in initiator && node_id) {
-          console.log({initiator, edges, node_id});
-          setEdges([{
-            source: initiator.id,
-            id: `${edges.length + 2}`,
-            selected: false,
-            target: node_id.toString(),
-            markerStart: {
-              type: MarkerType.ArrowClosed,
-              color: "var(--agent-color)"
-            },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: "var(--agent-color)"
-            }
-          }]);
-        }
+    // Create a new edge from the initiator to the newly created node
+    if (nodeData.type === "assistant" || nodeData.type === "groupchat") {
+      if (initiator && "id" in initiator && node_id && agentId !== -1) {
+        setEdges([{
+          source: initiator.id,
+          id: `${edges.length + 2}`,
+          selected: false,
+          target: node_id.toString(),
+          markerStart: {
+            type: MarkerType.ArrowClosed,
+            color: "var(--agent-color)"
+          },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: "var(--agent-color)"
+          }
+        }]);
       }
     }
   }
@@ -196,13 +193,12 @@ export const nodeUpdater = (
 ) => {
   api?.getAgents((agentsFromDB: Array<IAgent>) => {
     setAgents(agentsFromDB);
-    const updatedNodes = nodes.map(node => {
-      const nodeCopy = JSON.parse(JSON.stringify(node));
+    const updatedNodes = JSON.parse(JSON.stringify(nodes)).map((node: Node & IAgentNode) => {
       const updatedAgent = agentsFromDB.find((agent) => agent.id === node.data.id);
       const newNode = {
-        ...nodeCopy,
+        ...node,
         data: {
-          ...nodeCopy.data,
+          ...node.data,
           ...updatedAgent
         }
       }
@@ -210,7 +206,7 @@ export const nodeUpdater = (
       return newNode;
     });
     setNodes(updatedNodes);
-  }, true);
+  });
 }
 
 // Creates a new empty agent
@@ -363,7 +359,7 @@ export const getDropHandler = (
       nodes,
       api,
       agents,
-      customSetNodes ? customSetNodes : setNodes,
+      customSetNodes || setNodes,
       edges,
       setEdges,
       agentId,
@@ -382,12 +378,10 @@ export const getDropHandler = (
       y: event.clientY + (offsetY || 0) - top,
     };
 
-
     switch (group) {
       // If dragging and dropping an agent
       case "agent":
         const agentTarget = eventTargetId("drop-agents");
-        const initiator = nodes.find(node => node.data.isInitiator);
 
         // Creating a new agent
         if (!id) {
@@ -395,12 +389,11 @@ export const getDropHandler = (
           if (agentTarget > 0) {
 
           }
+          // Adding a new agent to the canvas
           else {
             newNode( -1, position, (updatedNodes) => {
               const selected = updatedNodes.map(node => {
-                if (node.data.id === -1) {
-                  node.selected = true;
-                }
+                node.selected = node.data.id === -1;
                 node.data.deselected = !edges || edges.length < 1 || !edges.find(edge => node.id === edge.source || node.id === edge.target);
                 return node;
               });
@@ -411,7 +404,10 @@ export const getDropHandler = (
 
         // If dropping the agent onto a group agent
         else if (agentTarget > 0) {
+          const agentTargetData = agents.find((agent: IAgent) => agent.id === agentTarget);
+          if(agentTargetData && agentTargetData.type  === "groupchat") {
             api?.linkAgent(agentTarget, id, callback);
+          }
         }
 
         // Otherwise create a position on the canvas to render

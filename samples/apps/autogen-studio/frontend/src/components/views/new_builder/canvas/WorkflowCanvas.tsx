@@ -136,6 +136,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
             });
             const updatedAgents = updatedNodes.map((node: Node & IAgentNode) => node.data);
             setNodes(updatedNodes);
+            console.log("Removing an agent>>>>>", {updatedAgents});
             setAgents(updatedAgents);
         }
         // remove node from the canvas
@@ -190,12 +191,8 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
         edgeState.current = edges;
     }, [edges]);
 
-
     // Inject node types with setSelection handler
-    const nodeTypes = useMemo<typeof NodeTypes & { setSelection: (node: NodeSelection) => void, removeNode: (id: number | string, parent?: string) => void, setInitiator: (id: string) => void}[]>(
-        () => TypesWithProps({setSelection, removeNode, setInitiator}) as any,
-        []
-    )
+    const nodeTypes = useRef(TypesWithProps({setSelection, removeNode, setInitiator}));
 
     return (
         <ReactFlow
@@ -209,7 +206,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
             onEdgesChange={onEdgesChange}
             onEdgeUpdate={onEdgeUpdate}
             onConnect={onConnect}
-            nodeTypes={nodeTypes}
+            nodeTypes={nodeTypes.current}
             elementsSelectable={true}
             onDrop={onDrop}
             onDragEnter={onDragEnter}
