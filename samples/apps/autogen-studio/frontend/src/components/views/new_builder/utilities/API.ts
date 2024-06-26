@@ -266,7 +266,9 @@ export class API {
         this.getItems("agents", (agents: IAgent[]) => {
             const {length} = agents;
             let updatedAgents: IAgent[] = [];
-            const addAgent = (agent: IAgent) => {
+            const addUpdatedAgent = (agent: IAgent) => {
+                const exists = updatedAgents.find(ua => ua.id === agent.id);
+                if (exists) return;
                 updatedAgents.push(agent);
                 if (updatedAgents.length === length) {
                     updatedAgents = this.sortByDate(updatedAgents);
@@ -283,7 +285,7 @@ export class API {
                         linkedAgents?: Array<IAgent>
                     }) => {
                         const agentWithData = Object.assign({}, agent, data);
-                        addAgent(agentWithData);
+                        addUpdatedAgent(agentWithData);
                     });
                 }
             }
@@ -301,7 +303,7 @@ export class API {
                         const {length} = linkedAgents;
                         const order = linkedAgents.map(({id}: {id: number}) => id);
                         let updatedAgents: Array<IAgent> = [];
-                        while(linkedAgents && linkedAgents.length > 0) {
+                        while(linkedAgents.length > 0) {
                             const agent = linkedAgents.pop();
                             if (agent) {
                                 this.getAgentData(agent.id, agent.type, (agentData: IAgent) => {
@@ -341,6 +343,7 @@ export class API {
 
     // Inserts a new agent
     public addAgent(agent: IAgent, callback: (data: any) => void) {
+        console.log("ADDING AGENT >>>", {agent});
         let error_msg = "";
         if (!agent.id || agent.id < 1) {
             error_msg += ` Invalid agent id: ${agent.id}; `;

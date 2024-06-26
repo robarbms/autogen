@@ -82,7 +82,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
   
     return (
         <div className="node_properties">
-            {models &&
+            {models && models.length > 0 &&
                 models.map((model: IModelConfig, idx: number) => <Model
                         selected={selectedProp && selectedProp.type == "model" && selectedProp.id === model.id}
                         click={clickHandler(model, "model")}
@@ -94,7 +94,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
             {!models || models.length === 0 &&
                 <div className="node-property-empty">Drag & drop to add a model</div>
             }
-            {skills &&
+            {skills && skills.length > 0 &&
                 skills.map((skill: ISkill, idx: number) => <Skill
                         selected={selectedProp && selectedProp.type == "skill" && selectedProp.id === skill.id}
                         click={clickHandler(skill, "skill")}
