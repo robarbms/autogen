@@ -97,6 +97,30 @@ div.workflow-canvas {
   fill: #fff;
 }
 
+.model-selector {
+  display: inline-block;
+  width: 150px;
+  background: #f8f8f9;
+  font-size: 14px;
+  height: 140px;
+  padding: 10px;
+  vertical-align: top;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.model-selector + .model-selector {
+  margin: 0 0 0 10px;
+}
+
+.model-title {
+  font-weight: 600;
+}
+
+.model-title svg {
+  display: inline-block;
+}
+
 .node-skill {
   border-left-color: var(--skill-color);
 }

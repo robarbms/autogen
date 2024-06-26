@@ -141,6 +141,24 @@ const EditAgent = (props: EditAgentProps) => {
     return () => setSelectedNode(null);
   }, [])
 
+  // Updates nodes to reflect changes to models or skills
+  useEffect(() => {
+    api?.getAgents((updatedAgents: IAgent[]) => {
+      setAgents(updatedAgents);
+      const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
+        const foundAgent = updatedAgents.find((agent: IAgent) => node.data.id === agent.id);
+        if (foundAgent) {
+          node.data = {
+            ...node.data,
+            ...foundAgent
+          }
+        }
+        return node;
+      });
+      setNodes(updatedNodes);
+    });
+  }, [models, skills]);
+  
   // Update selected agent properties when selectedNode changes
   useEffect(() => {
     if (!selectedNode || selectedNode.type === "model" || selectedNode.type === "skill") {

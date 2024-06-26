@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { IModelConfig, IStatus } from "../../../types";
 import { NodeSelection } from "../canvas/Canvas";
-import { Button, Input } from "antd";
+import { Button, Input, Divider } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { InformationCircleIcon, CpuChipIcon } from "@heroicons/react/24/outline";
 import { ControlRowView } from "../../../atoms";
 import { useBuildStore } from "../../../../hooks/buildStore";
+import { sampleModelConfig } from "../../../utils";
 
 // Properties for the model properties pane
 type ModelPropertiesProps = {
@@ -25,7 +26,47 @@ const ModelProperties = (props: ModelPropertiesProps) => {
     const [ editModel, setEditModel ] = useState<IModelConfig>();
     const [ hasChanged, setHasChanged ] = useState(false);
     const { api, setModels } = useBuildStore(({ api, setModels }) => ({ api, setModels }));
+    const modelTypes = [
+      {
+        label: "OpenAI",
+        value: "open_ai",
+        description: "OpenAI or other endpoints that implement the OpenAI API",
+        icon: <CpuChipIcon className="h-6 w-6 text-primary" />,
+        hint: "In addition to OpenAI models, You can also use OSS models via tools like Ollama, vLLM, LMStudio etc. that provide OpenAI compatible endpoint.",
+      },
+      {
+        label: "Azure OpenAI",
+        value: "azure",
+        description: "Azure OpenAI endpoint",
+        icon: <CpuChipIcon className="h-6 w-6 text-primary" />,
+        hint: "Azure OpenAI endpoint",
+      },
+      {
+        label: "Gemini",
+        value: "google",
+        description: "Gemini",
+        icon: <CpuChipIcon className="h-6 w-6 text-primary" />,
+        hint: "Gemini",
+      },
+    ];
+  
+    const [selectedType, setSelectedType] = React.useState<string | undefined>(
+      model?.api_type
+    );
 
+    const ModelTypeSelector = modelTypes.map((modelType: any, i: number) => {
+      return (
+        <div
+          key={i}
+          className={`model-selector ${selectedType === modelType.value ? "model-seleted" : ""}`}
+          onClick={() => setSelectedType(modelType.value)}
+        >
+          <div className="model-title">{modelType.icon} {modelType.label}</div>
+          <div className="model-description">{modelType.description}</div>
+        </div>
+      );
+    });
+  
     // Updates the local model
     const updateModelConfig = (key: string, value: string) => {
         const newModel = {
@@ -36,20 +77,28 @@ const ModelProperties = (props: ModelPropertiesProps) => {
         setHasChanged(true);
     }
 
+    useEffect(() => {
+      if (selectedType) {
+        const modelInfo = sampleModelConfig(selectedType);
+        modelInfo.id = editModel?.id;
+        const newModel = {
+          ...editModel,
+          ...modelInfo
+        }
+        setEditModel(newModel);
+        setHasChanged(true);
+      }
+    }, [selectedType]);
+
     // Tests the current model configuration
     const testModel = (model: IModelConfig) => {
       if (api) {
         setLoading(true);
         api.testModel(model, (resp) => {
             setModelStatus(resp)
-            console.log(resp);
             setLoading(false);
         });
       }
-    }
-
-    const createModel = (model: IModelConfig) => {
-
     }
 
     // Writes changes to the DB
@@ -83,6 +132,10 @@ const ModelProperties = (props: ModelPropertiesProps) => {
         Enter parameters for your{" "}
         <span className="mx-1 text-accent">{editModel?.api_type}</span> model.
       </div>
+        <div>
+          {ModelTypeSelector}
+        </div>
+        <Divider />
         <div>
           <ControlRowView
             title="Model"
@@ -208,7 +261,6 @@ const ModelProperties = (props: ModelPropertiesProps) => {
             type="primary"
             onClick={() => {
               if (editModel) {
-                createModel(editModel);
                 setModel(editModel);
               }
             }}

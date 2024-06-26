@@ -338,7 +338,6 @@ export class API {
 
     // Inserts a new agent
     public addAgent(agent: IAgent, callback: (data: any) => void) {
-        console.log("ADDING AGENT >>>", {agent});
         let error_msg = "";
         if (!agent.id || agent.id < 1) {
             error_msg += ` Invalid agent id: ${agent.id}; `;
