@@ -19,6 +19,8 @@ const GroupChatNode = memo(
   const { name, description }: { name: string, description: string} = data.data.config;
   const container = createRef<HTMLDivElement>();
 
+  console.log(data);
+
   // Drag handle used by linked agents
   const dragHandle = (id: number, type: string) => {
     return (event: DragEvent) => {

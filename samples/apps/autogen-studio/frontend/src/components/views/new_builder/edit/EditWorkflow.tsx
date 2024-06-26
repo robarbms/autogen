@@ -57,15 +57,14 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   // Adds selection properties to nodes
   const getNodesWithProps = (_nodes_: Array<Node & IAgentNode>) => {
     if (_nodes_ && _nodes_.length > 0) {
-      const nodesCopy = JSON.parse(JSON.stringify(_nodes_)); 
-      const nodesWithSelection = nodesCopy.map((node: Node & IAgentNode) => {
+      const nodesWithSelection = _nodes_.map((node: Node & IAgentNode) => {
         if (selectedNode && "parent" in selectedNode && (!("group" in selectedNode) || !selectedNode.group) && selectedNode.parent === node.id) {
           node.data.selectedProp = selectedNode;
         }
         else {
           delete node.data.selectedProp;
         }
-        if (node.type === "groupchat" && "linkedAgents" in node.data && node.data.linkedAgents.length > 0) {
+        if (node.type === "groupchat" && "linkedAgents" in node.data) {
           node.data.linkedAgents = node.data.linkedAgents.map((agent: IAgent & {selectedProp?: boolean}, idx: number) => {
 
             if (selectedNode && "group" in selectedNode && selectedNode.group === node.id) {
@@ -80,7 +79,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
               delete agent.selectedProp;
             }
             return agent;
-          })
+          });
         }
         return node;
       });
@@ -93,6 +92,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   const setNodes = (newNodes: any) => {
     const noEmptyAgents = newNodes.filter((node: Node & IAgentNode) => node.selected || node.data.id !== -1);
     const nodesWithProps = getNodesWithProps(noEmptyAgents);
+    console.log({nodes, newNodes, nodesWithProps});
     _setNodes(nodesWithProps);
   }
 

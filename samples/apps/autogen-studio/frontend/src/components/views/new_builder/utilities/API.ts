@@ -324,11 +324,6 @@ export class API {
                                 });
                             }
                         }
-                        callback({
-                            models,
-                            skills,
-                            linkedAgents: updatedAgents
-                        });
                     });
                 }
                 else {
