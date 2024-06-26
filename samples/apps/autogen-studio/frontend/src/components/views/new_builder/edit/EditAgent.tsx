@@ -1,8 +1,8 @@
-import React, { MouseEvent, MouseEventHandler, useEffect, useState } from "react";
+import React, { MouseEvent, MouseEventHandler, useEffect, useRef, useState, useCallback } from "react";
 import BuildLayout from "../layout/BuildLayout";
 import Library, { LibraryGroup } from "../layout/library/Library";
 import AgentCanvas from "../canvas/AgentCanvas";
-import { Node, useNodesState, ReactFlowProvider } from "reactflow";
+import { Node, useNodesState, ReactFlowProvider, useNodes } from "reactflow";
 import { useBuildStore } from "../../../../hooks/buildStore";
 import { API } from "../utilities/API";
 import { AgentProperty, getDropHandler, IAgentNode, NodeSelection, nodeUpdater } from "../canvas/Canvas";
@@ -21,77 +21,102 @@ type EditAgentProps = {
  */
 const EditAgent = (props: EditAgentProps) => {
   const { agentId } = props;
-    const { api, agents, setAgents, models, skills, setModels, setSkills } = useBuildStore(({ api, agents, setAgents, models, skills, setModels, setSkills}) => ({
+    const { api, agents, setAgents, models, skills, setModels, setSkills, selectedNode, setSelectedNode } = useBuildStore(({ api, agents, setAgents, models, skills, setModels, setSkills, selectedNode, setSelectedNode}) => ({
       api,
       agents,
       setAgents,
       models,
       skills,
       setModels,
-      setSkills
+      setSkills,
+      selectedNode,
+      setSelectedNode
     }));
-    const [selectedNode, setSelectedNode] = useState<Node & IAgentNode | AgentProperty | null>(null);
     const [nodes, _setNodes, onNodesChange] = useNodesState<Array<Node & IAgentNode>>([]);
     const [bounding, setBounding] = useState<DOMRect>();
-    const [ showMenu, setShowMenu ] = useState(true);
-    const [ initialized, setInitialized ] = useState<boolean>(false);
+    const [ showMenu, setShowMenu ] = useState<boolean>(true);
+    const initialized = useRef<boolean>(false);
 
-    const setNodes = (nodes: Array<Node & IAgentNode>) => {
-      if (nodes) {
-        nodes = nodes.map(node => {
-          node.data.hideConnector = true;
-          return node;
-        });
-      }
-  
-      _setNodes(nodes);
-    }
-
-    // On clicking of a node sets it as selected
-    const handleSelection = (selected: NodeSelection) => {
-      console.log(selected);
-      if (Array.isArray(selected)) {
-        selected= selected[selected.length - 1];
-      }
-  
-      if (selected) {
-        // A selected model or skill
-        if ("parent" in selected && selected.parent) {
-          const selectedData: AgentProperty = {
-            id: selected.id || 0,
-            parent: selected.parent,
-            type: "model" in selected ? "model" : "skill",
-          }
-          if (selected && "group" in selected) {
-            selectedData.group = selected.group as string;
-          }
-          console.log(selectedData);
-          setSelectedNode(selectedData);
+  // Adds selection properties to nodes
+  const getNodesWithProps = (_nodes_: Array<Node & IAgentNode>) => {
+    if (_nodes_ && _nodes_.length > 0) {
+      const nodesWithSelection = _nodes_.map((node: Node & IAgentNode) => {
+        if (selectedNode && "parent" in selectedNode && (!("group" in selectedNode) || !selectedNode.group) && selectedNode.parent === node.id) {
+          node.data.selectedProp = selectedNode;
         }
         else {
-          setSelectedNode(selected as any);
+          delete node.data.selectedProp;
         }
-      }
-      else {
-        setSelectedNode(null);
-      }
+        if (node.type === "groupchat" && "linkedAgents" in node.data) {
+          node.data.linkedAgents = node.data.linkedAgents.map((agent: IAgent & {selectedProp?: boolean}, idx: number) => {
+
+            if (selectedNode && "group" in selectedNode && selectedNode.group === node.id) {
+              if (idx === parseInt(selectedNode.parent)) {
+                agent.selectedProp = !!selectedNode;
+              }
+              else if ("selectedProp" in agent) {
+                delete agent.selectedProp;
+              }
+            }
+            else if ("selectedProp" in agent) {
+              delete agent.selectedProp;
+            }
+            return agent;
+          });
+        }
+        node.data.isInitiator = false;
+        node.data.hideConnector = true;
+      return node;
+      });
+      return nodesWithSelection;
+    }
+    return _nodes_;
+  }
+
+  const setNodes = (nodes: Array<Node & IAgentNode>) => {
+    const nodesWithProps = getNodesWithProps(nodes);
+    _setNodes(nodesWithProps);
+  }
+
+  // On clicking of a node sets it as selected
+  const handleSelection = useCallback((selected: NodeSelection) => {
+    if (Array.isArray(selected)) {
+      selected = selected[selected.length - 1];
     }
 
-    useEffect(() => {
-      console.log({selectedNode});
-    }, [selectedNode]);
-    
-    // suppresses event bubbling for drag events
-    const handleDrag: MouseEventHandler = (event: MouseEvent) => {
-        event.preventDefault();
-    };
+    if (selected) {
+      // A selected model or skill
+      if ("parent" in selected && selected.parent) {
+        const selectedData: AgentProperty = {
+          id: selected.id || 0,
+          parent: selected.parent,
+          type: "model" in selected ? "model" : "skill",
+        }
+        if (selected && "group" in selected) {
+          selectedData.group = selected.group as string;
+        }
+        setSelectedNode(selectedData);
+      }
+      else {
+        setSelectedNode(selected as any);
+      }
+    }
+    else {
+      setSelectedNode(null);
+    }
+  }, [nodes]);
+  
+  // suppresses event bubbling for drag events
+  const handleDrag: MouseEventHandler = (event: MouseEvent) => {
+      event.preventDefault();
+  };
 
   // Drag and drop handler for items dragged onto the canvas or agents
   const handleDrop = getDropHandler(bounding, api, setNodes, nodes as Array<Node & IAgentNode>, [], () => {}, agents, setAgents, setModels, setSkills, handleSelection, true) as any;
 
   // Load a new node to the canvas if there is an agentId
   useEffect(() => {
-    if (initialized === false && agentId !== undefined) {
+    if (initialized.current === false && agentId !== undefined) {
       const agentNode = agents.find((agent: IAgent) => agent.id === agentId);
       if (agentNode) {
         const newAgent = {
@@ -109,28 +134,43 @@ const EditAgent = (props: EditAgentProps) => {
           type: agentNode.type,
           setSelection: handleSelection
         } as Node & IAgentNode;
-        console.log({agentId, agentNode, newAgent});
         setNodes([newAgent]);
-        setInitialized(true);
+        initialized.current = true;
       }
     }
+    return () => setSelectedNode(null);
   }, [])
 
   // Update selected agent properties when selectedNode changes
   useEffect(() => {
-    if (nodes && nodes.length > 0) {
-      const updatedNodes = JSON.parse(JSON.stringify(nodes)).map((node: Node & IAgentNode) => {
-        node.data.selectedProp = selectedNode && "parent" in selectedNode && selectedNode.parent === node.id ? selectedNode : null;
-        return node;
-      });
-      setNodes(updatedNodes);
+    if (!selectedNode || selectedNode.type === "model" || selectedNode.type === "skill") {
+      // setNodes(nodes as Array<Node & IAgentNode>);
     }
-
-    console.log(selectedNode);
   }, [selectedNode]);
 
   // Updates nodes on the canvas when there are changes made
-  const updateNodes = nodeUpdater.bind(this, api, setAgents, setNodes, nodes as Array<Node & IAgentNode>);
+  const updateNodes = () => {
+    if (selectedNode && "data" in selectedNode && selectedNode.data.id !== -1) {
+      api?.getAgents((agentsFromDB: Array<IAgent>) => {
+        // setAgents(agentsFromDB);
+        const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
+          const nodeCopy = JSON.parse(JSON.stringify(node));
+          const updatedAgent = agentsFromDB.find((agent: IAgent) => agent.id === node.data.id);
+          const newNode = {
+            ...nodeCopy,
+            data: {
+              ...nodeCopy.data,
+              ...updatedAgent,
+              deselected: false
+            }
+          }
+  
+          return newNode;
+        });
+        setNodes(updatedNodes);
+      });
+    }
+  }
 
   // Handles on click for library item
   // TO DO: This should be similar to workflow.tsx.
@@ -161,7 +201,12 @@ const EditAgent = (props: EditAgentProps) => {
         <ReactFlowProvider>
             <BuildLayout
                 menu={<Library setShowMenu={setShowMenu} libraryItems={libraryItems} addLibraryItem={addLibraryItem} />}
-                properties={selectedNode !== null ? <NodeProperties handleInteract={updateNodes} setSelectedNode={setSelectedNode as any} setNodes={setNodes} /> : null}
+                properties={selectedNode !== null ? 
+                  <NodeProperties
+                    handleInteract={updateNodes}
+                    setSelectedNode={setSelectedNode as any}
+                    setNodes={setNodes}
+                  /> : null}
             >
                 <AgentCanvas
                     nodes={nodes}

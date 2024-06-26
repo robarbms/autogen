@@ -60,12 +60,10 @@ const AgentProperties = (props: AgentPropertiesProps) => {
         api.addAgent(agentData, (resp) => {
           // Update agents when new agent is added
           const updatedAgents = [...agents, agentData];
-          console.log("ADDING AGENT >>>>>>", {agents, updatedAgents})
           setAgents(updatedAgents);
           // get selected node and update it
           const tempNodeIndex = nodes.findIndex(node => node.data.id === -1);
           const tempNode = nodes[tempNodeIndex];
-          setNodes([]);
 
           if (tempNode) {
             // create a new node

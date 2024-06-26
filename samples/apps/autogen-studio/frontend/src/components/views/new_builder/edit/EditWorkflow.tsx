@@ -92,7 +92,6 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   const setNodes = (newNodes: any) => {
     const noEmptyAgents = newNodes.filter((node: Node & IAgentNode) => node.selected || node.data.id !== -1);
     const nodesWithProps = getNodesWithProps(noEmptyAgents);
-    console.log({nodes, newNodes, nodesWithProps});
     _setNodes(nodesWithProps);
   }
 

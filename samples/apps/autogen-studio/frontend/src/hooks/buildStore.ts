@@ -61,5 +61,5 @@ export const useBuildStore = create<IBuildState>()((set) => ({
     setNodePropertiesOpen: (nodePropertiesOpen: boolean) => set({nodePropertiesOpen}),
     chatProperties: false,
     selectedNode: null,
-    setSelectedNode: (selectedNode: NodeSelection) => set({selectedNode})
+    setSelectedNode: (selectedNode: NodeSelection) => set({selectedNode}),
 }));
