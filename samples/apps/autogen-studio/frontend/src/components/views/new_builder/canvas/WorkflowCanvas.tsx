@@ -157,7 +157,7 @@ const WorkflowCanvas = (props: WorfkflowCanvasProps) => {
             return node;
         });
         setNodes(updatedNodes);
-        if (newInitiator && currentInitiator && edgeState.current[0].source === currentInitiator.id) {
+        if (newInitiator && currentInitiator && edgeState.current.length > 0 && edgeState.current[0].source === currentInitiator.id) {
             setEdges([{
                 ...edgeState.current[0],
                 source: newInitiator.id
