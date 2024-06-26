@@ -521,7 +521,6 @@ const EditWorkflow = (props: EditWorkflowProps) => {
           <NodeProperties
             handleInteract={updateNodes}
             setSelectedNode={handleSelection}
-            setNodes={setNodes}
             addEdge={addEdge}
           /> :
           null}

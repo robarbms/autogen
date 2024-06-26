@@ -157,8 +157,7 @@ const EditAgent = (props: EditAgentProps) => {
           }
           return node;
         });
-  
-        console.log("UPDATING on models and skills change", {updatedNodes});
+
         setNodes(updatedNodes);
       });
     }
@@ -230,7 +229,6 @@ const EditAgent = (props: EditAgentProps) => {
           <NodeProperties
             handleInteract={updateNodes}
             setSelectedNode={setSelectedNode as any}
-            setNodes={setNodes}
           /> : null}
       >
         <AgentCanvas

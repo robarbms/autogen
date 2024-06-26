@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Node, useNodes } from "reactflow";
+import { Node, useNodes, useReactFlow } from "reactflow";
 import { IAgentNode, NodeSelection } from "../canvas/Canvas";
 import { IAgent } from "../../../types";
 import { ItemType } from "rc-collapse/es/interface";
@@ -13,7 +13,6 @@ import { useBuildStore } from "../../../../hooks/buildStore";
 type AgentPropertiesProps = {
     agent: IAgent | null;
     setSelectedNode: (node: NodeSelection) => void;
-    setNodes: (nodes: Array<Node & IAgentNode>) => void;
     addEdge?: (id: string) => void;
 }
 
@@ -23,10 +22,11 @@ type AgentPropertiesProps = {
  * @returns 
  */
 const AgentProperties = (props: AgentPropertiesProps) => {
-    let { agent, setSelectedNode, setNodes, addEdge } = props;
+    let { agent, setSelectedNode, addEdge } = props;
     const [ agentEdit, setAgentEdit ] = useState<IAgent | null>(null);
     const { api, setAgents, agents } = useBuildStore(({ api, setAgents, agents }) => ({ api, setAgents, agents }));
     const nodes = useNodes() as Array<Node & IAgentNode>;
+    const { setNodes } = useReactFlow();
 
     useEffect(() => {
       // Create a copy of the agent details to an editable object

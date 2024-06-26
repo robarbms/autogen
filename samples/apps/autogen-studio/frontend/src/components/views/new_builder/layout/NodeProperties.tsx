@@ -13,7 +13,6 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 type NodePropertiesProps = {
   handleInteract: MouseEventHandler<HTMLDivElement>;
   setSelectedNode: (selected: NodeSelection)  => void;
-  setNodes: (nodes: Array<Node & IAgentNode>) => void;
   addEdge?: (id: string) => void;
 }
 
@@ -23,7 +22,7 @@ type NodePropertiesProps = {
  * @returns 
  */
 const NodeProperties = (props: NodePropertiesProps) => {
-  const { handleInteract, setSelectedNode, setNodes, addEdge } = props;
+  const { handleInteract, setSelectedNode, addEdge } = props;
   const { models, skills, selectedNode } = useBuildStore(({ models, skills, selectedNode }) => ({models, skills, selectedNode}));
   let type = selectedNode ? "agent" : null;
   if (selectedNode && "parent" in selectedNode && (selectedNode.type === "model" || selectedNode.type === "skill")) {
@@ -64,7 +63,7 @@ const NodeProperties = (props: NodePropertiesProps) => {
       <div className="node-properties h-full" onMouseUp={handleInteract}>
         <div className="properties-close" onClick={close}><XMarkIcon /></div>
         {type === "agent" && 
-          <AgentProperties agent={cleanAgent((selectedNode as IAgentNode)?.data)} setSelectedNode={setSelectedNode} setNodes={setNodes} addEdge={addEdge} />
+          <AgentProperties agent={cleanAgent((selectedNode as IAgentNode)?.data)} setSelectedNode={setSelectedNode} addEdge={addEdge} />
         }
         {type === "model" &&
           <ModelProperties model={getData(selectedNode as AgentProperty) as IModelConfig} setSelectedNode={setSelectedNode} />
