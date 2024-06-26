@@ -254,20 +254,22 @@ const EditWorkflow = (props: EditWorkflowProps) => {
 
   // Updates nodes to reflect changes to models or skills
   useEffect(() => {
-    api?.getAgents((updatedAgents: IAgent[]) => {
-      setAgents(updatedAgents);
-      const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
-        const foundAgent = updatedAgents.find((agent: IAgent) => node.data.id === agent.id);
-        if (foundAgent) {
-          node.data = {
-            ...node.data,
-            ...foundAgent
+    if (initialized.current) {
+      api?.getAgents((updatedAgents: IAgent[]) => {
+        setAgents(updatedAgents);
+        const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
+          const foundAgent = updatedAgents.find((agent: IAgent) => node.data.id === agent.id);
+          if (foundAgent) {
+            node.data = {
+              ...node.data,
+              ...foundAgent
+            }
           }
-        }
-        return node;
+          return node;
+        });
+        setNodes(updatedNodes);
       });
-      setNodes(updatedNodes);
-    });
+    }
   }, [models, skills]);
 
   // Updates workflow agents sender and receiver based on canvas nodes and edges

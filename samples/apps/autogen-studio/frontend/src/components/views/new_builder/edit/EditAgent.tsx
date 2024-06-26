@@ -73,9 +73,10 @@ const EditAgent = (props: EditAgentProps) => {
     return _nodes_;
   }
 
-  const setNodes = (nodes: Array<Node & IAgentNode>) => {
+  const setNodes = (nodes: Array<Node & IAgentNode>, onComplete?: Function) => {
     const nodesWithProps = getNodesWithProps(nodes);
     _setNodes(nodesWithProps);
+    if (onComplete) onComplete();
   }
 
   // On clicking of a node sets it as selected
@@ -134,8 +135,8 @@ const EditAgent = (props: EditAgentProps) => {
           type: agentNode.type,
           setSelection: handleSelection
         } as Node & IAgentNode;
-        setNodes([newAgent]);
-        initialized.current = true;
+        setNodes([newAgent], () => initialized.current = true);
+        
       }
     }
     return () => setSelectedNode(null);
@@ -143,20 +144,24 @@ const EditAgent = (props: EditAgentProps) => {
 
   // Updates nodes to reflect changes to models or skills
   useEffect(() => {
-    api?.getAgents((updatedAgents: IAgent[]) => {
-      setAgents(updatedAgents);
-      const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
-        const foundAgent = updatedAgents.find((agent: IAgent) => node.data.id === agent.id);
-        if (foundAgent) {
-          node.data = {
-            ...node.data,
-            ...foundAgent
+    if (initialized.current) {
+      api?.getAgents((updatedAgents: IAgent[]) => {
+        setAgents(updatedAgents);
+        const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
+          const foundAgent = updatedAgents.find((agent: IAgent) => node.data.id === agent.id);
+          if (foundAgent) {
+            node.data = {
+              ...node.data,
+              ...foundAgent
+            }
           }
-        }
-        return node;
+          return node;
+        });
+  
+        console.log("UPDATING on models and skills change", {updatedNodes});
+        setNodes(updatedNodes);
       });
-      setNodes(updatedNodes);
-    });
+    }
   }, [models, skills]);
 
   // Update selected agent properties when selectedNode changes
