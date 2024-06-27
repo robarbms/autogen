@@ -6,7 +6,7 @@ import { Node, useNodesState, ReactFlowProvider, useNodes } from "reactflow";
 import { useBuildStore } from "../../../../hooks/buildStore";
 import { API } from "../utilities/API";
 import { AgentProperty, getDropHandler, IAgentNode, NodeSelection, nodeUpdater } from "../canvas/Canvas";
-import NodeProperties from "../layout/NodeProperties";
+import NodeProperties from "../canvas/panels/NodeProperties";
 import { IAgent, IModelConfig, ISkill } from "../../../types";
 
 // Properties for EditAgent component
@@ -131,12 +131,10 @@ const EditAgent = (props: EditAgentProps) => {
             api,
             hideConnector: true,
           },
-          selected: true,
           type: agentNode.type,
           setSelection: handleSelection
         } as Node & IAgentNode;
         setNodes([newAgent], () => initialized.current = true);
-        
       }
     }
     return () => setSelectedNode(null);
@@ -144,7 +142,7 @@ const EditAgent = (props: EditAgentProps) => {
 
   // Updates nodes to reflect changes to models or skills
   useEffect(() => {
-    if (initialized.current) {
+    if (initialized.current === true) {
       api?.getAgents((updatedAgents: IAgent[]) => {
         setAgents(updatedAgents);
         const updatedNodes = (nodes as Array<Node & IAgentNode>).map((node: Node & IAgentNode) => {
@@ -165,7 +163,7 @@ const EditAgent = (props: EditAgentProps) => {
 
   // Update selected agent properties when selectedNode changes
   useEffect(() => {
-    if (!selectedNode || selectedNode.type === "model" || selectedNode.type === "skill") {
+    if (initialized.current === true && (!selectedNode || selectedNode.type === "model" || selectedNode.type === "skill")) {
       // setNodes(nodes as Array<Node & IAgentNode>);
     }
   }, [selectedNode]);

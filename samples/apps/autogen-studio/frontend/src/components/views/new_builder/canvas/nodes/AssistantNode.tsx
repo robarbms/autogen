@@ -3,7 +3,7 @@ import { Handle, Position } from 'reactflow';
 import { AgentIcon } from '../../utilities/Icons';
 import { AgentProperty, IAgentNode, NodeSelection } from '../Canvas';
 import { Node } from 'reactflow';
-import AgentProperties from './AgentProperties';
+import AgentConfig from './AgentConfig';
 import { IAgent, IModelConfig, ISkill } from '../../../../types';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 import { Popover } from 'antd';
@@ -74,7 +74,7 @@ const AssistantNode = memo(
         <h3><AgentIcon />{name}</h3>
         {description}
       </div>
-      <AgentProperties setSelection={data.setSelection} models={models} skills={skills} group={groupAgent ? data.parent : undefined} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
+      <AgentConfig setSelection={data.setSelection} models={models} skills={skills} group={groupAgent ? data.parent : undefined} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="target"

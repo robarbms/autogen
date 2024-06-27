@@ -45,7 +45,6 @@ const BuildView = (props: BuildViewProps) => {
   // Load agents, models, skills and workflows on component mount
   useEffect(() => {
     if (!isInitialized.current) {
-      console.log("Loading data......")
       setApi(api);
       // Load workflows, agents, models and skills and push them to the store
       api.getWorkflows(setWorkflows);

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Node, useNodes, useReactFlow } from "reactflow";
-import { IAgentNode, NodeSelection } from "../canvas/Canvas";
-import { IAgent } from "../../../types";
+import { IAgentNode, NodeSelection } from "../Canvas";
+import { IAgent } from "../../../../types";
 import { ItemType } from "rc-collapse/es/interface";
 import { BugAntIcon, CpuChipIcon, UserGroupIcon } from "@heroicons/react/24/outline";
-import { AgentConfigView } from "../../builder/utils/agentconfig";
-import { AgentTypeSelector, SkillSelector, AgentSelector, ModelSelector } from "../../builder/utils/selectors";
+import { AgentConfigView } from "../../../builder/utils/agentconfig";
+import { AgentTypeSelector, SkillSelector, AgentSelector, ModelSelector } from "../../../builder/utils/selectors";
 import { Collapse } from "antd";
-import { useBuildStore } from "../../../../hooks/buildStore";
+import { useBuildStore } from "../../../../../hooks/buildStore";
 
 // properties for the AgentProperties component
 type AgentPropertiesProps = {
@@ -62,8 +62,32 @@ const AgentProperties = (props: AgentPropertiesProps) => {
           const updatedAgents = [...agents, agentData];
           setAgents(updatedAgents);
           // get selected node and update it
-          const tempNodeIndex = nodes.findIndex(node => node.data.id === -1);
-          const tempNode = nodes[tempNodeIndex];
+          let tempNodeIndex = nodes.findIndex(node => node.data.id === -1);
+          let tempNode: Node & IAgentNode | IAgent = nodes[tempNodeIndex];
+          let parent = null;
+
+          // doesn't exist on the canvas
+          // Search for node in groupchat nodes
+          if (!tempNode) {
+            nodes.forEach((node: Node & IAgentNode, parentIndex: number) => {
+              if (node.type === "groupchat") {
+                node.data.linkedAgents?.map((agent: IAgent, index: number) => {
+                  if (agent.id === -1) {
+                    tempNode = {
+                      id: "0",
+                      isConnectable: false,
+                      position: {
+                        x: 0,
+                        y: 0
+                      }
+                    } as any;
+                    tempNodeIndex = index;
+                    parent = parentIndex;
+                  }
+                })
+              }
+            })
+          }
 
           if (tempNode) {
             // create a new node
@@ -76,10 +100,30 @@ const AgentProperties = (props: AgentPropertiesProps) => {
                 isInitiator: nodes.length === 1
               },
               type: agentData.type,
+              selected: true,
             } as Node & IAgentNode;
             const updatedNodes = JSON.parse(JSON.stringify(nodes));
-            updatedNodes[tempNodeIndex] = newNode;
-            setSelectedNode(newNode);
+            let selected: NodeSelection = newNode;
+
+            // If the node is a child of a groupchat agent
+            if (parent !== null) {
+              updatedNodes[parent].data.linkedAgents[tempNodeIndex] = agentData;
+              selected = {
+                data: {
+                  ...agentData,
+                  parent: nodes[parent].id
+                },
+                id: tempNodeIndex,
+                isConnectable: false,
+                selected: true,
+              } as any;
+            }
+            // Othewise, replace agent found on canvas
+            else {
+              updatedNodes[tempNodeIndex] = newNode;
+            }
+
+            setSelectedNode(selected);
             setNodes(updatedNodes);
             if (newNode.type !== "userproxy" && addEdge) {
               addEdge(newNode.id)

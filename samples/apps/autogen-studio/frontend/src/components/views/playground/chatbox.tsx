@@ -41,11 +41,13 @@ const ChatBox = ({
   session,
   editable = true,
   heightOffset = 160,
+  returnMessages
 }: {
   initMessages: IMessage[] | null;
   session: IChatSession | null;
   editable?: boolean;
   heightOffset?: number;
+  returnMessages?: (messages: string[]) => void;
 }) => {
   // const session: IChatSession | null = useConfigStore((state) => state.session);
   const textAreaInputRef = React.useRef<HTMLTextAreaElement>(null);
@@ -114,7 +116,7 @@ const ChatBox = ({
   };
 
   React.useEffect(() => {
-    // console.log("initMessages changed", initMessages);
+    console.log("initMessages changed", initMessages);
     const initMsgs: IChatMessage[] = parseMessages(initMessages);
     setMessages(initMsgs);
     wsMessages.current = initMsgs;
@@ -138,6 +140,7 @@ const ChatBox = ({
   });
 
   const messageListView = messages?.map((message: IChatMessage, i: number) => {
+    console.log({message});
     const isUser = message.sender === "user";
     const css = isUser ? "bg-accent text-white  " : "bg-light";
     // console.log("message", message);
@@ -232,12 +235,12 @@ const ChatBox = ({
               >
                 <MarkdownView
                   className="text-sm"
-                  data={message.text}
+                  data={!returnMessages ? message.text : message.text.replace(/\n\nTERMINATE/, '')}
                   showCode={false}
                 />
               </div>
             )}
-            {message.meta && (
+            {message.meta && returnMessages === undefined && (
               <div className="">
                 <MetaDataView metadata={message.meta} />
               </div>
@@ -564,7 +567,6 @@ const ChatBox = ({
           </div>
         )}
         <div className="ml-2"> {messageListView}</div>
-
         {loading && (
           <div className={` inline-flex gap-2 duration-300 `}>
             <div className=""></div>

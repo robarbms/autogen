@@ -387,7 +387,31 @@ export const getDropHandler = (
         if (!id) {
           // Adding a new agent to a group agent
           if (agentTarget > 0) {
+            console.log({id, nodes, agentTarget});
+            // Locate the parent group agent
+            const parent = nodes.find((node) => node.data.id == agentTarget);
+            const newAgent = emptyAgent(api?.user?.email);
+            const nodeSelect = {
+              data: {
+                ...newAgent,
+                parent: parent?.id,
+              },
+              type: "assistant",
+              selected: true
+            }
+            const updatedNodes = JSON.parse(JSON.stringify(nodes)).map((node: Node & IAgentNode) => {
+              if (node.data.id === agentTarget) {
+                node.data.linkedAgents = [
+                  ...(node.data.linkedAgents || []),
+                  newAgent
+                ]
+              }
+              return node;
+            });
 
+            console.log({updatedNodes, nodeSelect});
+            setNodes(updatedNodes);
+            handleSelection(nodeSelect);
           }
           // Adding a new agent to the canvas
           else {

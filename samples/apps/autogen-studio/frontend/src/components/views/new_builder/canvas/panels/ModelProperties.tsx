@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { IModelConfig, IStatus } from "../../../types";
-import { NodeSelection } from "../canvas/Canvas";
+import { IModelConfig, IStatus } from "../../../../types";
+import { NodeSelection } from "../Canvas";
 import { Button, Input, Divider } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { InformationCircleIcon, CpuChipIcon } from "@heroicons/react/24/outline";
-import { ControlRowView } from "../../../atoms";
-import { useBuildStore } from "../../../../hooks/buildStore";
-import { sampleModelConfig } from "../../../utils";
+import { ControlRowView } from "../../../../atoms";
+import { useBuildStore } from "../../../../../hooks/buildStore";
+import { sampleModelConfig } from "../../../../utils";
 
 // Properties for the model properties pane
 type ModelPropertiesProps = {

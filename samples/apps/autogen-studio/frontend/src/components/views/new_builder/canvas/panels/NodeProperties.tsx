@@ -1,12 +1,12 @@
 import React, { MouseEventHandler } from "react";
-import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
+import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../../types";
 import { Node } from "reactflow";
-import { IAgentNode, AgentProperty, NodeSelection } from "../canvas/Canvas";
+import { IAgentNode, AgentProperty, NodeSelection } from "../Canvas";
 import AgentProperties from "./AgentProperties";
 import ModelProperties from "./ModelProperties";
 import SkillProperties from "./SkillProperties";
 import WorkflowProperties from "./WorkflowProperties";
-import { useBuildStore } from "../../../../hooks/buildStore";
+import { useBuildStore } from "../../../../../hooks/buildStore";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 
 // Properties for the NodeProperties panel

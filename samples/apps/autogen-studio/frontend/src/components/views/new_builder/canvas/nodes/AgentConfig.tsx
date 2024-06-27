@@ -29,7 +29,7 @@ const Model = (props: IModelConfig & {dragHandle: (event: DragEvent) => boolean,
 }
 
 // Properties for AgentProperties component
-type AgentPropertiesProps = {
+type AgentConfigProps = {
     models: IModelConfig[],
     skills: ISkill[],
     parent: number,
@@ -44,7 +44,7 @@ type AgentPropertiesProps = {
  * @param props 
  * @returns 
  */
-const AgentProperties = (props: AgentPropertiesProps) => {
+const AgentConfig = (props: AgentConfigProps) => {
     const { models, skills, parent, instance, setSelection, selectedProp }: 
         { 
             models: IModelConfig[],
@@ -110,4 +110,4 @@ const AgentProperties = (props: AgentPropertiesProps) => {
     )
 }
 
-export default AgentProperties;
+export default AgentConfig;

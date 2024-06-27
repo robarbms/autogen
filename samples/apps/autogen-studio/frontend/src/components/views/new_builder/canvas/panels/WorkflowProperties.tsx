@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { IWorkflow } from "../../../types";
-import { NodeSelection } from "../canvas/Canvas";
-import { WorflowViewer } from "../../builder/utils/workflowconfig";
-import { useBuildStore } from "../../../../hooks/buildStore";
+import { IWorkflow } from "../../../../types";
+import { NodeSelection } from "../Canvas";
+import { WorflowViewer } from "../../../builder/utils/workflowconfig";
+import { useBuildStore } from "../../../../../hooks/buildStore";
 
 // Properties for the workflow properties panel
 type WorkflowPropertiesProps = {

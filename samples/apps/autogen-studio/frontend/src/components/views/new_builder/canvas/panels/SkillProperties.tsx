@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MonacoEditor } from "../../../atoms";
-import { ISkill } from "../../../types";
-import { API } from "../utilities/API";
-import { NodeSelection } from "../canvas/Canvas";
+import { MonacoEditor } from "../../../../atoms";
+import { ISkill } from "../../../../types";
+import { API } from "../../utilities/API";
+import { NodeSelection } from "../../canvas/Canvas";
 import { Button, Input } from "antd";
-import { useBuildStore } from "../../../../hooks/buildStore";
+import { useBuildStore } from "../../../../../hooks/buildStore";
 
 // Properties for the skill properties pane
 type SkillPropertiesProps = {

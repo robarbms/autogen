@@ -2,11 +2,11 @@ import React, { useEffect, useState, MouseEvent, MouseEventHandler, createRef, u
 import Library, { EmptyLibraryItem, LibraryGroup } from "../layout/library/Library";
 import BuildLayout from "../layout/BuildLayout";
 import WorkflowCanvas from "../canvas/WorkflowCanvas";
-import { IAgent, IModelConfig, ISkill, IWorkflow } from "../../../types";
+import { IAgent, IChatMessage, IModelConfig, ISkill, IWorkflow } from "../../../types";
 import ReactFlow, { Edge, Node, ReactFlowProvider, useNodesState, useEdgesState, MarkerType, useReactFlow } from "reactflow";
-import NodeProperties from "../layout/NodeProperties";
+import NodeProperties from "../canvas/panels/NodeProperties";
 import TestWorkflow from "../canvas/TestWorkflow";
-import Chat from "../layout/Chat";
+import Chat from "../canvas/panels/Chat";
 import BuildNavigation from "../../../BuildNavigation";
 import { IWorkItem, dataToWorkItem } from "../utilities/utils";
 import { useBuildStore } from "../../../../hooks/buildStore";
@@ -53,6 +53,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   const initialized = useRef(false);
   const [ showMenu, setShowMenu ] = useState(true);
   const getInitiator = (): Node & IAgentNode | undefined => nodes ? (nodes as Array<Node & IAgentNode>).find((node) => node.data.isInitiator) : undefined;
+  const [messages, setMessages ] = useState<IChatMessage[]>([]);
 
   // Adds selection properties to nodes
   const getNodesWithProps = (_nodes_: Array<Node & IAgentNode>) => {
@@ -524,7 +525,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
             addEdge={addEdge}
           /> :
           null}
-        chat={showChat && isValidWorkflow && workflowId !== null ? <Chat workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
+        chat={showChat && isValidWorkflow && workflowId !== null ? <Chat setMessages={setMessages} workflow_id={workflowId} close={() => setShowChat(false)} /> : null}
         chatTitle={editting?.name}
       >
         <div className="canvas-actions">

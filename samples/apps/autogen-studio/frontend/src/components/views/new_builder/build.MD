@@ -4,6 +4,7 @@
 
 - **canvas**: Files associated with the Workflow canvas editing screen.
     - **nodes**: Files for the nodes used on the canvas. These include the userproxy, assistant and groupchat agents.
+    - **panels**: Files for rendering the node properties panels on the canvas.
 - **edit**: Files for the editing agents, models, skills and workflow screens.
 - **home**: Files for the home landing screen for the new build experience.
 - **layout**: Files for the page layout, property panels and chat panel on edit screens.
@@ -29,21 +30,6 @@ All of the edit screens use the BuildLayout component in the layout folder. It h
 
 ### BuildLayout
 This is the component that renders components in the proper containers. It also manages classes on the main structure to handle layout when certain elements are not present.
-
-### NodeProperties
-This is a panel that opens on the right that shows the properties of the selected agent, model, skill or workflow. It will pick the corresponding component based on what is selected.
-
-### AgentProperties
-This populates the NodeProperties panel with an edit agent form. This can be either an existing agent or creating a new node.
-
-### ModelProperties
-This populates the NodeProperties panel with an edit model form. This can also create a new model.
-
-### SkillProperties
-This is the skill edit form. It can also create a new skill.
-
-### WorkflowProperties
-A form for the current active workflow which can be editted.
 
 ## Library
 Components that make up the library used on the edit screens and canvas, are in the library directory under the layout directory.
@@ -104,3 +90,21 @@ A component representing a group chat node. Manages nodes linked to it and rende
 
 ### AgentProperties
 A container used by userproxy and assistant nodes to render their associated models and skills which must be draggable and selectable.
+
+## Panels
+Components used in the property panels and the chat panel.
+
+### NodeProperties
+This is a panel that opens on the right that shows the properties of the selected agent, model, skill or workflow. It will pick the corresponding component based on what is selected.
+
+### AgentProperties
+This populates the NodeProperties panel with an edit agent form. This can be either an existing agent or creating a new node.
+
+### ModelProperties
+This populates the NodeProperties panel with an edit model form. This can also create a new model.
+
+### SkillProperties
+This is the skill edit form. It can also create a new skill.
+
+### WorkflowProperties
+A form for the current active workflow which can be editted.

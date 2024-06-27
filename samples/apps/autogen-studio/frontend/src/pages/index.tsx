@@ -1,5 +1,4 @@
 import * as React from "react";
-import Layout from "../components/layout";
 import { graphql } from "gatsby";
 import RAView from "../components/views/playground/ra";
 import PageLayout from "../components/PageLayout";

@@ -1,7 +1,7 @@
 import React, { memo, MouseEvent } from 'react';
 import { Handle, Position, Node } from 'reactflow';
 import { AgentIcon } from '../../utilities/Icons';
-import AgentProperties from './AgentProperties';
+import AgentConfig from './AgentConfig';
 import { IAgent, IModelConfig, ISkill } from '../../../../types';
 import { IAgentNode, AgentProperty, NodeSelection } from "../Canvas";
 import { Popover } from 'antd';
@@ -13,6 +13,7 @@ import { EllipsisHorizontalIcon } from '@heroicons/react/24/solid';
 const UserproxyNode = memo(
   (data: ((Node & IAgentNode | {data: IAgent, selected?: boolean, isConnectable?: boolean, id: string, removeNode: (id: number | string, parent?: string) => void, setInitiator: (id: string) => void}) & { setSelection: (node: NodeSelection) => void, parent: string}),
   isConnectable) => {
+  if (!data.data.config) return;
   const { isInitiator, models, skills, groupAgent, selectedProp }: { isInitiator: boolean, models: IModelConfig[], skills: ISkill[], groupAgent: boolean, selectedProp: AgentProperty } = data.data;
   const { description, name }: { description: string, name: string } = data.data.config;
   const dragStart = data.data.dragHandle ? (event: DragEvent) => {
@@ -79,7 +80,7 @@ const UserproxyNode = memo(
         <h3><AgentIcon />{name}</h3>
         {description}
       </div>
-      <AgentProperties setSelection={data.setSelection} {...{ models, skills }} group={groupAgent ? data.parent : undefined} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
+      <AgentConfig setSelection={data.setSelection} {...{ models, skills }} group={groupAgent ? data.parent : undefined} parent={data.data.id} instance={data.id} selectedProp={selectedProp} />
       {data.isConnectable && !data.data.hideConnector &&
         <Handle
           type="source"

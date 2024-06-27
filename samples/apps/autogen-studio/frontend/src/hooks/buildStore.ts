@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { IAgent, IModelConfig, ISkill, IWorkflow } from "../components/types";
-import { Node, Edge } from "reactflow";
-import { IAgentNode, AgentProperty, NodeSelection } from "../components/views/new_builder/canvas/Canvas";
+import { NodeSelection } from "../components/views/new_builder/canvas/Canvas";
 import { API } from "../components/views/new_builder/utilities/API";
 
 export type BuildSections = "agent" | "model" | "skill" | "workflow";
