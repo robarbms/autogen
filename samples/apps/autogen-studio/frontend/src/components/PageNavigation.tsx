@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { CollapseMenuIcon, BuildIcon, ExpandMenuIcon, PlaygroundIcon } from "./views/new_builder/utilities/Icons";
 import { IUser } from "../hooks/provider";
-import { Collapse } from "antd";
+import { Collapse, Dropdown } from "antd";
 import { useNavigationStore } from "../hooks/navigationStore";
 import { BuildSections, IBuildState, useBuildStore } from "../hooks/buildStore";
 
@@ -46,19 +46,31 @@ const PageNavigation = (props: PageNavigationProps) => {
         setWorkflowId(null);
     }
 
+    const links = [
+        <div key="1" className="build-nav-item" onClick={create("workflow")}>Workflows</div>,
+        <div key="2" className="build-nav-item" onClick={create("agent")}>Agents</div>,
+        <div key="3" className="build-nav-item" onClick={create("skill")}>Skills</div>,
+        <div key="4" className="build-nav-item" onClick={create("model")}>Models</div>,
+    ]
+
     const buildMenu = [
         {
             key: '1',
             label: (<a onClick={buildHome}><BuildIcon className="nav-icon" /> <label>Build</label></a>),
-            children: 
-            <>
-                <div className="build-nav-item" onClick={create("workflow")}>Workflows</div>
-                <div className="build-nav-item" onClick={create("agent")}>Agents</div>
-                <div className="build-nav-item" onClick={create("skill")}>Skills</div>
-                <div className="build-nav-item" onClick={create("model")}>Models</div>
-            </>
-        }
-    ]
+            children: links
+        }          
+    ];
+
+    const minimalMenu = links.map((link, idx) => ({
+        key: `${idx}`,
+        label: link
+    }));
+
+    const minimalBuildMenu = () => (
+        <Dropdown menu={{items: minimalMenu}} placement="bottomLeft">
+            <div className="build-min" onClick={buildHome}><BuildIcon className="nav-icon" /></div>
+        </Dropdown>
+    );
 
     return (
         <div className="page-navigation">
@@ -68,7 +80,12 @@ const PageNavigation = (props: PageNavigationProps) => {
             <nav>
                 <section>
                     <a href="/"><PlaygroundIcon className="nav-icon" /><label>Playground</label></a>
-                    <Collapse onChange={(value) => setBuildExpand(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildExpand ? ['1'] : []} />
+                    {navigationExpand &&
+                        <Collapse onChange={(value) => setBuildExpand(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildExpand ? ['1'] : []} />
+                    }
+                    {!navigationExpand &&
+                        minimalBuildMenu()
+                    }
                 </section>
                 {hasGallery &&
                     <section>

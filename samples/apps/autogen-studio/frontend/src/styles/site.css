@@ -136,10 +136,14 @@ svg.nav-icon {
     cursor: pointer;
 }
 
-.build-nav-item {
+.ant-collapse-content-box > .build-nav-item {
     cursor: pointer;
     margin: 0 0 0 26px;
     transition: opacity linear .2s .3s;
+}
+
+.build-min {
+    padding: 12px 0;
 }
 
 .nav-narrow .nav-minimize,
