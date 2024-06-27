@@ -9,6 +9,7 @@ import { BuildSections, IBuildState, useBuildStore } from "../hooks/buildStore";
 type PageNavigationProps = {
     buildNav: (category: "workflow" | "agent" | "skill" | "model") => void;
     hasGallery: boolean;
+    location?: "home" | "build";
 }
 
 /**
@@ -17,7 +18,7 @@ type PageNavigationProps = {
  * @returns 
  */
 const PageNavigation = (props: PageNavigationProps) => {
-    const { buildNav, hasGallery, } = props;
+    const { buildNav, hasGallery, location } = props;
     const { setEditScreen, setEditId, setWorkflowId } = useBuildStore(({setEditScreen, setEditId, setWorkflowId}) => ({
         setEditScreen,
         setEditId,
@@ -56,7 +57,7 @@ const PageNavigation = (props: PageNavigationProps) => {
     const buildMenu = [
         {
             key: '1',
-            label: (<a onClick={buildHome}><BuildIcon className="nav-icon" /> <label>Build</label></a>),
+            label: (<a onClick={buildHome} className={location === "build" ? "page-nav-loc" : ""}><BuildIcon className="nav-icon" /> <label>Build</label></a>),
             children: links
         }          
     ];
@@ -68,7 +69,7 @@ const PageNavigation = (props: PageNavigationProps) => {
 
     const minimalBuildMenu = () => (
         <Dropdown menu={{items: minimalMenu}} placement="bottomLeft">
-            <div className="build-min" onClick={buildHome}><BuildIcon className="nav-icon" /></div>
+            <div className={`build-min ${location === "build" ? "page-nav-loc" : ""}`} onClick={buildHome}><BuildIcon className="nav-icon" /></div>
         </Dropdown>
     );
 
@@ -79,7 +80,7 @@ const PageNavigation = (props: PageNavigationProps) => {
             </div>
             <nav>
                 <section>
-                    <a href="/"><PlaygroundIcon className="nav-icon" /><label>Playground</label></a>
+                    <a className={location === "home" ? "page-nav-loc" : ""} href="/"><PlaygroundIcon className="nav-icon" /><label>Playground</label></a>
                     {navigationExpand &&
                         <Collapse onChange={(value) => setBuildExpand(value.length > 0)} bordered={false} items={buildMenu} defaultActiveKey={buildExpand ? ['1'] : []} />
                     }

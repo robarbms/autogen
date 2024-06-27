@@ -10,6 +10,8 @@ type PageLayoutProps = {
     children: ReactElement | Array<ReactElement>;
     meta: any;
     title: string;
+    defaultCollapse?: boolean;
+    location?: "home" | "build"
 }
 
 /**
@@ -18,15 +20,19 @@ type PageLayoutProps = {
  * @returns 
  */
 const PageLayout = (props: PageLayoutProps) => {
-    const { setUser, navigationExpand } = useNavigationStore(({setUser, navigationExpand}) => ({
+    const { setUser, navigationExpand, setNavigationExpand } = useNavigationStore(({setUser, navigationExpand, setNavigationExpand}) => ({
         setUser,
-        navigationExpand
+        navigationExpand,
+        setNavigationExpand
     }));
-    const { buildNav, children, meta, title } = props;
+    const { buildNav, children, meta, title, defaultCollapse, location } = props;
     const { darkMode, user } = React.useContext(appContext);
 
     useEffect(() => {
         setUser(user);
+        if (defaultCollapse === true) {
+            setNavigationExpand(false);
+        }
     }, []);
 
     React.useEffect(() => {
@@ -39,7 +45,7 @@ const PageLayout = (props: PageLayoutProps) => {
         <>
         <title>{meta?.title + " | " + title}</title>
         <div className={`page-layout ${darkMode === "dark" ? "dark" : "light"} ${navigationExpand ? "nav-wide" : "nav-narrow"}`}>
-            <PageNavigation buildNav={buildNav} hasGallery={false} />
+            <PageNavigation location={location} buildNav={buildNav} hasGallery={false} />
             <main className="page-content">
                 {children}
             </main>

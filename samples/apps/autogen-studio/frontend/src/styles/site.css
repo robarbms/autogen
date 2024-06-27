@@ -170,3 +170,11 @@ svg.nav-icon {
     opacity: 0;
     transition: opacity linear .2s;
 }
+
+.page-nav-loc {
+    color: var(--color-text-accent);
+}
+
+.page-nav-loc svg path {
+    fill: var(--color-text-accent);
+}
