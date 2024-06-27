@@ -28,13 +28,14 @@ const UserproxyNode = memo(
   // Click handler for selecting the node instance
   const click = groupAgent ? (event: MouseEvent) => {
     event.stopPropagation();
-    const selected: NodeSelection = {
+    const selected = {
       ...data,
       data: {
         ...data.data,
         parent:  data.parent
       }
-    } as NodeSelection;
+    } as NodeSelection & { parent?: string };
+    delete selected?.parent;
     data.setSelection(selected);
   } : () => {};
 

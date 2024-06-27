@@ -1,4 +1,4 @@
-import React, { createRef, memo, MouseEvent } from 'react';
+import React, { createRef, memo, useMemo, MouseEvent } from 'react';
 import { Handle, Position, Node } from 'reactflow';
 import AssistantNode from './AssistantNode';
 import UserproxyNode from './UserProxyNode';
@@ -18,8 +18,6 @@ const GroupChatNode = memo(
   let { linkedAgents }: { linkedAgents: Array<IAgent & {dragHandle?: (event: DragEvent) => void }> | undefined }  = data.data;
   const { name, description }: { name: string, description: string} = data.data.config;
   const container = createRef<HTMLDivElement>();
-
-  console.log(data);
 
   // Drag handle used by linked agents
   const dragHandle = (id: number, type: string) => {

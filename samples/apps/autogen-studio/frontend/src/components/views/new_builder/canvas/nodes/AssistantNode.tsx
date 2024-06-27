@@ -45,7 +45,8 @@ const AssistantNode = memo(
         ...data.data,
         parent: data.parent
       }
-    } as NodeSelection;
+    } as NodeSelection & { parent?: string };
+    delete selected?.parent;
     data.setSelection(selected);
   } : () => {};
 
