@@ -171,7 +171,7 @@ div.workflow-canvas {
   color: #fff;
 }
 
-.selected h3 {
+.selected > .node > .node_title > h3 {
   color: #fff;
 }
 
