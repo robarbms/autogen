@@ -18,36 +18,30 @@ type WorkflowPropertiesProps = {
 const WorkflowProperties = (props: WorkflowPropertiesProps) => {
     const { setSelectedNode, workflow } = props;
     const [ localWorkflow, setLocalWorkflow ] = useState<IWorkflow | null>();
-    const { api, setWorkflows, workflows } = useBuildStore(({ api, setWorkflows, workflows }) => ({ api, setWorkflows, workflows }));
+    const { setWorkflows, workflows } = useBuildStore(({ workflows, setWorkflows}) => ({
+        workflows,
+        setWorkflows
+    }));
 
     // Loads the workflow for editing
     useEffect(() => {
         setLocalWorkflow(workflow)
     }, []);
 
-    // Writes changes to the workflow to the DB
-    const update = (updatedWorkflow: IWorkflow) => {
-        if (api) {
-            api.setWorkflow(updatedWorkflow, (data) => {
-                const updatedWorkflows: IWorkflow[] = workflows.map((workflow) => {
-                    if (workflow.id === data.id) {
-                        const workflowUpdated = {
-                            ...workflow,
-                            ...data
-                        }
-                        setLocalWorkflow(workflowUpdated);
-                        return workflowUpdated;
-                    }
-                    return workflow;
-                });
-                setWorkflows(updatedWorkflows)
-            });
-        }
-    }
-
     // Closes the workflow properties panel
     const close = () => {
         setSelectedNode(null);
+    }
+
+    // Updates workflows on save
+    const updated = (workflow: IWorkflow) => {
+        const updatedWorkflows = workflows.map((wf) => {
+            if (wf.id === workflow.id) {
+                wf = workflow;
+            }
+            return wf;
+        });
+        setWorkflows(updatedWorkflows);
     }
 
     return (
@@ -56,8 +50,9 @@ const WorkflowProperties = (props: WorkflowPropertiesProps) => {
             {localWorkflow &&
                 <WorflowViewer
                     workflow={localWorkflow}
-                    setWorkflow={update}
+                    setWorkflow={setLocalWorkflow}
                     close={close}
+                    onUpdate={updated}
                 />
             }
         </div>

@@ -16,10 +16,12 @@ export const WorkflowViewConfig = ({
   workflow,
   setWorkflow,
   close,
+  onUpdate
 }: {
   workflow: IWorkflow;
   setWorkflow: (newFlowConfig: IWorkflow) => void;
   close: () => void;
+  onUpdate: (workflow: IWorkflow) => void;
 }) => {
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<IStatus | null>(null);
@@ -157,6 +159,7 @@ export const WorkflowViewConfig = ({
             type="primary"
             onClick={() => {
               createWorkflow(localWorkflow);
+              if (onUpdate) onUpdate(localWorkflow);
             }}
             loading={loading}
           >
@@ -210,10 +213,12 @@ export const WorflowViewer = ({
   workflow,
   setWorkflow,
   close,
+  onUpdate
 }: {
   workflow: IWorkflow;
   setWorkflow: (workflow: IWorkflow) => void;
   close: () => void;
+  onUpdate?: (workflow: IWorkflow) => void;
 }) => {
   let items = [
     {
@@ -239,6 +244,7 @@ export const WorflowViewer = ({
               workflow={workflow}
               setWorkflow={setWorkflow}
               close={close}
+              onUpdate={onUpdate}
             />
           )}
         </div>
