@@ -440,6 +440,7 @@ export const getDropHandler = (
         }
 
         break;
+
       // Dragging a model or skill from an agent on the canvas
       case "agent-property":
         const targetId = eventTargetId(`drop-${type}s`);
@@ -463,6 +464,7 @@ export const getDropHandler = (
             }
         }
         break;
+
       // Dragging a skill from the library to an
       case "skill":
         const skillTarget = eventTargetId("drop-skills");
@@ -475,6 +477,7 @@ export const getDropHandler = (
           }
         }
         break;
+
       // Dragging a model from the library
       case "model":
         const modelTarget = eventTargetId("drop-models");
@@ -487,6 +490,7 @@ export const getDropHandler = (
             }
         }
         break;
+
       // Dragging an agent from a group-chat agent
       case "group-agent":
         const groupTarget = eventTargetId("drop-agents");

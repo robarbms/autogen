@@ -339,10 +339,19 @@ There are several methods for creating new agents, models and skills. There is `
 Most of the creating and attaching of agents, models and skills happens in this function. It is called anytime an element is drug from the library or canvas. 
 
 The `newNode()` function is a partially implemented `addNode()` so that I didn't have to keep applying many global arguments to it.
-The `dataTransfer` property is the data attached to the element during drag. This is import for knowing what item is being dragged.
-The `eventTargetId` is the element that it is being drug to, the parent. If there is none, the parent becomes the current active workflow.
+
+Data used to determine the item (agent, model or skill) data and the target parent (agent or workflow).
+- The `dataTransfer` property is the data attached to the element during drag. This is import for knowing what item is being dragged.
+- The `eventTargetId` is the element that it is being drug to, the parent. If there is none, the parent becomes the current active workflow.
 
 With these defined, I can use the data and parent to determine the correct action.
+- **group**: What is being dragged.
+    - **agent**: Dragging an agent from the library.
+        - **no id**: This means that a new agent is being created. If there is a target id and it's a valid `agents-drop` (a groupchat agent), it attaches to that agent. Otherwise it drops it on the canvas.
+        - **has id**: Drops an instance of the agent to the canvas as a new node. If there is a parent id, it will be linked to a groupchat with that id. Otherwise it will be added to the canvas.
+    - **agent-property**: This is a model or skill that was drug from another agent already on the canvas. This has to unlink from an existing agent before linking the model or skill to a new agent.
+    - **skill**: A skill drug from the library. Can only be dropped to an agent. This will link the skill to the agents id. The parent will be the agent's id.
+    - **model**: A skill drug from the library. Can only be dropped to an agent. This will link the model to the agents id. The parent will be the agent's id.
 
 ### AgentCanvas
 A canvas for editting agents. Manages loading an exisiting agent or creating a new agent. Manages the nodes on the canvas. Unlike the workflow canvas, the agent canvas does not support edges.
