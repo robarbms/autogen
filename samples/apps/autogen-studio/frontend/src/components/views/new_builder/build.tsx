@@ -7,6 +7,8 @@ import EditAgent from "./edit/EditAgent";
 import EditModel from "./edit/EditModel";
 import EditSkill from "./edit/EditSkill";
 import { useBuildStore } from "../../../hooks/buildStore";
+import { message } from 'antd';
+import { IStatus } from "../../types";
 
 export type Categories = "agents" | "models" | "skills" | "workflows";
 
@@ -37,9 +39,12 @@ const BuildView = (props: BuildViewProps) => {
   }));
   const isInitialized = useRef(false);
   const api = new API();
-  api.error = (error) => {
-    if (!error.status) console.error(error);
+  api.error = (error: IStatus) => {
+    if (!error.status) message.error(error.message)
   }
+  api.success = (success: IStatus) => {
+    message.success(success.message);
+  }  
   const [previousWork, setPreviousWork] = useState(false);
 
   // Load agents, models, skills and workflows on component mount

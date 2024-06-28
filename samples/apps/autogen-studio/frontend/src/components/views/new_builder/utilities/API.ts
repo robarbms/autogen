@@ -42,6 +42,7 @@ export class API {
     // Error and loading handlers
     private _error: (error: IStatus) => void = (error) => {};
     private _loading: (isLoading: Boolean) => void = (isLoading) => {};
+    private _success: (success: IStatus) => void = (success) => {};
 
     // Local copies of agents and workflows.
     // They might be empty, so flagging if they have been fetched.
@@ -83,6 +84,14 @@ export class API {
 
     get loading() {
         return this._loading;
+    }
+
+    set success (handler: (success: IStatus) => void) {
+        this._success = handler;
+    }
+
+    get success (): (success: IStatus) => void {
+        return this._success;
     }
 
     public timestamp () {
@@ -226,6 +235,7 @@ export class API {
 
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+            this._success(data);
         }, this._error);
     };
 
@@ -243,21 +253,27 @@ export class API {
     }
 
     // Links workflows to either a sender or receiver agent
-    public linkWorkflow (workflow_id: number, type: "sender" |  "receiver", agent_id: number) {
+    public linkWorkflow (workflow_id: number, type: "sender" |  "receiver", agent_id: number, callback?: (status: IStatus) => void) {
         const url = `${this.serverUrl}/workflows/link/agent/${workflow_id}/${agent_id}/${type}`;
-        fetchJSON(url, this.POST_HEADERS, (data) => {}, this._error);
+        fetchJSON(url, this.POST_HEADERS, (data) => {
+            if (callback) callback(data);
+            this._success(data);
+        }, this._error);
     }
 
     // Unlinks workflows from either a sender or receiver agent
-    public unlinkWorkflow (workflow_id: number, type: "sender" | "receiver", agent_id?: number) {
+    public unlinkWorkflow (workflow_id: number, type: "sender" | "receiver", agent_id?: number, callback?: (status: IStatus) => void) {
         if (agent_id === undefined) {
             this.getWorkflowLinks(workflow_id, (sender: IAgent, receiver: IAgent) => {
-                this.unlinkWorkflow(workflow_id, type, type === "sender" ? sender.id : receiver.id);
+                this.unlinkWorkflow(workflow_id, type, type === "sender" ? sender.id : receiver.id, () => {});
             });
         }
         else {
             const url = this.getLinkPath(workflow_id, type, agent_id)
-            fetchJSON(url, this.DELETE_HEADERS, (data) => {}, () => {});
+            fetchJSON(url, this.DELETE_HEADERS, (data) => {
+                if (callback) callback(data);
+                this._success(data);
+            }, () => {});
         }
     }
 
@@ -358,6 +374,7 @@ export class API {
 
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+            this._success(data);
         }, this._error);
     }
 
@@ -406,6 +423,7 @@ export class API {
             fetchJSON(url, headers, (data) => {
                 const newSkills = skills.concat([data.data]);
                 callback(newSkills);
+                this._success(data);
                 }, this._error)
         }, true);
     }
@@ -431,6 +449,7 @@ export class API {
         const headers = this.POST_HEADERS;
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+            this._success(data);
         }, this._error);
     }
 
@@ -438,8 +457,9 @@ export class API {
     public unlinkAgent(agentId: number, linkedAgent: number, callback: () => void) {
         const url = `${this.serverUrl}/agents/link/agent/${agentId}/${linkedAgent}`;
         const headers = this.DELETE_HEADERS;
-        fetchJSON(url, headers, () => {
+        fetchJSON(url, headers, (data) => {
             callback();
+            this._success(data);
         }, this._error);
     }
 
@@ -449,6 +469,7 @@ export class API {
         const headers = this.POST_HEADERS;
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+            this._success(data);
         }, this._error);
     }
 
@@ -464,6 +485,7 @@ export class API {
         const headers = this.POST_HEADERS;
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+            this._success(data);
         }, this._error);
     }
 
@@ -479,6 +501,7 @@ export class API {
         const headers = this.DELETE_HEADERS;
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+            this._success(data);
         }, this._error);
     }
 
@@ -488,6 +511,7 @@ export class API {
         const headers = this.DELETE_HEADERS;
         fetchJSON(url, headers, (data) => {
             callback(data.data);
+            this._success(data);
         }, this._error);
     }
 
@@ -499,6 +523,7 @@ export class API {
 
         fetchJSON(url, headers, (data) => {
             callback(data);
+            this._success(data);
         }, this._error);
     }
 

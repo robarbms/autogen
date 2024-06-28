@@ -54,6 +54,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   const [ showMenu, setShowMenu ] = useState(true);
   const getInitiator = (): Node & IAgentNode | undefined => nodes ? (nodes as Array<Node & IAgentNode>).find((node) => node.data.isInitiator) : undefined;
   const [messages, setMessages ] = useState<IChatMessage[]>([]);
+  const [updatingWorkflow, setUpdatingWorkflow] = useState<boolean>(false);
 
   // Adds selection properties to nodes
   const getNodesWithProps = (_nodes_: Array<Node & IAgentNode>) => {
@@ -181,7 +182,6 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   }
 
   // Load and set Agents and workflows
-  // TODO: Load all first, then set all in a single object so there are fewer rerenders.
   useEffect(() => {
     // Collapse page left navigation
     setNavigationExpand(false);
@@ -225,34 +225,30 @@ const EditWorkflow = (props: EditWorkflowProps) => {
         }
       }
     }
-    else {
-      if(workflowId) {
-        api?.getWorkflowLinks(workflowId, updateWorkflow, true);
-      }
-      validateWorkflow();
-    }
   }, [nodes]);
 
+  // Edge management and setting initialization once edges loaded
   useEffect(() => {
-    // Should only ever have 1 edge
+    if (edges.length > 0) {
+      initialized.current = true;
+    }
+  // Should only ever have 1 edge
     if (edges && edges.length > 1) {
       // Use only the last added edge
       setEdges([edges[edges.length -1]]);
     }
+  }, [edges]);
 
-    // update the workflows sender and receiver
-    if(initialized.current){
-      if(workflowId) {
+  // Updating workflow when there are changes to nodes or edges
+  useEffect(() => {
+      // update the workflows sender and receiver
+      if(initialized.current && workflowId && updatingWorkflow === false){
+        setUpdatingWorkflow(true);
         api?.getWorkflowLinks(workflowId, updateWorkflow, true);
       }
-    }
-    else if (edges.length > 0) {
-      initialized.current = true;
-    }
 
-
-    validateWorkflow();
-  }, [edges]);
+      validateWorkflow();
+  }, [nodes, edges])
 
   // Updates nodes to reflect changes to models or skills
   useEffect(() => {
@@ -277,6 +273,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   // Updates workflow agents sender and receiver based on canvas nodes and edges
   const updateWorkflow = (sender: IAgent, receiver: IAgent) => {
     if (!workflowId) return;
+
     // make sure the sender is correctly set or update it
     const initiator = getInitiator();
 
@@ -308,6 +305,8 @@ const EditWorkflow = (props: EditWorkflowProps) => {
       // delete receiver
       api.unlinkWorkflow(workflowId, "receiver", receiver.id);
     }
+
+    setUpdatingWorkflow(false);
   }
 
     // suppresses event bubbling for drag events
