@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createRef, useEffect, useRef, useState } from "react";
 import RecentWork from "./RecentWork";
 import { AgentIcon, ModelIcon, SkillIcon, WorkflowIcon } from "../utilities/Icons";
 import { BuildSections, useBuildStore } from "../../../../hooks/buildStore";
@@ -34,7 +34,6 @@ const BuildTile = (props: BuildTileProps) => {
 
 // Properties for the Home component
 type HomeProps = {
-    hasPreviousWork: boolean;
 }
 
 /**
@@ -43,17 +42,36 @@ type HomeProps = {
  * @returns 
  */
 const Home = (props: HomeProps) => {
-    const { hasPreviousWork }: { hasPreviousWork: boolean} = props;
-    const { setEditScreen, setEditId} = useBuildStore(({setEditScreen, setEditId}) => ({
+    const { setEditScreen, setEditId, workflows, agents, models, skills} = useBuildStore(({setEditScreen, setEditId, workflows, agents, models, skills}) => ({
         setEditScreen,
         setEditId,
+        workflows,
+        agents,
+        models,
+        skills
     }));
+    const [ hasPreviousWork, setHasPreviousWork ] = useState(false);
 
     // Creates action handlers for editing a workflow, agent, model or skill
     const editNew = (category: BuildSections) => () => {
         setEditScreen(category);
         setEditId(null);
     }
+
+    // If there are workflows, agents, models or skills, show recent work
+    useEffect(() => {
+        if (
+            (workflows && workflows.length > 0) ||
+            (agents && agents.length > 0) ||
+            (models && models.length > 0) ||
+            (skills && skills.length > 0)
+          ) {
+            setHasPreviousWork(true);
+        }
+        else {
+        setHasPreviousWork(false);
+        }
+    }, [ workflows, agents, models, skills ]);
 
     return (
         <div className="build-home h-full">

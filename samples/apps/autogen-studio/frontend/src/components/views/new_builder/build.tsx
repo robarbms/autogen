@@ -37,21 +37,28 @@ const BuildView = (props: BuildViewProps) => {
     skills,
     models
   }));
-  const isInitialized = useRef(false);
+  const isInitialized = useRef(false); // Used to prevent unnecissary reloading
+
+  // API for DB calls
   const api = new API();
+
+  // API error handling
   api.error = (error: IStatus) => {
     if (!error.status) message.error(error.message)
   }
+
+  // API success message handling
   api.success = (success: IStatus) => {
     message.success(success.message);
   }  
-  const [previousWork, setPreviousWork] = useState(false);
 
   // Load agents, models, skills and workflows on component mount
   useEffect(() => {
     if (!isInitialized.current) {
+      // Push the api to the builder store
       setApi(api);
-      // Load workflows, agents, models and skills and push them to the store
+
+      // Load workflows, agents, models and skills and push them to the builder store
       api.getWorkflows(setWorkflows);
       api.getAgents(setAgents);
       api.getModels(setModels);
@@ -60,25 +67,10 @@ const BuildView = (props: BuildViewProps) => {
     }
   }, []);
 
-  // If there are any workflows, agents, models or skill, set the previousWork to true
-  useEffect(() => {
-    if (
-      (workflows && workflows.length > 0) ||
-      (agents && agents.length > 0) ||
-      (models && models.length > 0) ||
-      (skills && skills.length > 0)
-    ) {
-        setPreviousWork(true);
-    }
-    else {
-      setPreviousWork(false);
-    }
-  }, [workflows, agents, models, skills]);
-
   return (
     <div className="build h-full">
       {workflowId === null && editScreen === null &&
-        <Home hasPreviousWork={previousWork} />
+        <Home />
       }
       {editScreen === "workflow" &&
         <CreateWorkflow />

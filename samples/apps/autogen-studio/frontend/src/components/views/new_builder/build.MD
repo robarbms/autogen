@@ -14,7 +14,30 @@
 # File overview
 
 ## build.tsx
-This is the entry point for the new builder page. It loads models, skills, agents, and workflows into the build store. It also handles state management for which edit screen or home page should be shown.
+This is the entry point for the new builder page. It handles loading the initial data and state as well as managing where in the build section the user is.
+
+- Creates the api for making DB calls. `const api = new API();`
+    - Primes the error handling.
+```
+  api.error = (error: IStatus) => {
+    if (!error.status) message.error(error.message)
+  }
+```
+    - Primes the success message handling.
+```
+  api.success = (success: IStatus) => {
+    message.success(success.message);
+  }  
+```
+- On page load, loads workflows, agents, models and skills.
+    - Uses the api to load workflows, agents, models and skills.
+    - Sets workflows, agents, models and skills on the builder store
+- Renders the appropriate screen based on state.
+    - Home page is rendered if there isn't an active workflow id or edit screen.
+    - Edit screens are displayed if set to workflow, agent, model or skill.
+    - If workflow id is set and no edit screen is selected, it shows the edit workflow canvas.
+
+
 
 ## Home
 The homepage components can be found in the home directory. This includes the overall home page and the recent work table.
