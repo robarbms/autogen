@@ -90,10 +90,11 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   }
 
   // Data processing before new nodes are pushed
-  const setNodes = (newNodes: any) => {
+  const setNodes = (newNodes: any, onComplete?: () => void) => {
     const noEmptyAgents = newNodes.filter((node: Node & IAgentNode) => node.selected || node.data.id !== -1);
     const nodesWithProps = getNodesWithProps(noEmptyAgents);
     _setNodes(nodesWithProps);
+    if (onComplete) setTimeout(onComplete, 100);
   }
 
   // Adds a new edge

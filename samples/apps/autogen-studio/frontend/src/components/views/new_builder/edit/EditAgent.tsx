@@ -76,7 +76,7 @@ const EditAgent = (props: EditAgentProps) => {
   const setNodes = (nodes: Array<Node & IAgentNode>, onComplete?: Function) => {
     const nodesWithProps = getNodesWithProps(nodes);
     _setNodes(nodesWithProps);
-    if (onComplete) onComplete();
+    if (onComplete) setTimeout(onComplete, 100);
   }
 
   // On clicking of a node sets it as selected
