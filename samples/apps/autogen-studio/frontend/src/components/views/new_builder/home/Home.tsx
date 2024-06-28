@@ -78,7 +78,7 @@ const Home = (props: HomeProps) => {
             <div className="build-home-back"></div>
             <div className="build-home-const h-full">
                 <div className="build-home-create">
-                    <BuildTile category="workflow" label="Build workflow" action={editNew("workflow")} />
+                    <BuildTile category="workflow" label="Build Workflow" action={editNew("workflow")} />
                     <BuildTile category="agent" label="Add Agents" action={editNew("agent")} />
                     <BuildTile category="model" label="Add Models" action={editNew("model")} />
                     <BuildTile category="skill" label="Add Skills" action={editNew("skill")} />

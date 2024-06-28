@@ -27,6 +27,7 @@ const BuildLayout = (props: BuildLayoutProps) => {
     const {menu, children, properties, chat, className, showMenu, setShowMenu, closeChat, chatTitle} = props;
     const [ structure, setStructure ] = useState("");
 
+    // Updates CSS classes based on elements shown
     useEffect(() => {
         let cn = "build-layout h-full";
         if (properties) {
@@ -44,6 +45,8 @@ const BuildLayout = (props: BuildLayoutProps) => {
 
         setStructure(cn);
     }, [ properties, chat, showMenu, menu]);
+
+    // Opens the left menu
     const openMenu = (event: MouseEvent) => {
         if (setShowMenu) {
             setShowMenu(true);

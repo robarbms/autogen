@@ -21,7 +21,18 @@ const RecentRow = (props: IWorkItem & {
 }) => {
     const {category, id, name, description, type, time, edit, setEditScreen, setEditId, setWorkflowId} = props;
     const { api, workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels } = useBuildStore(({ api, workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels }) => ({ api,workflows, setWorkflows, agents, setAgents, skills, setSkills, models, setModels }));
-    let click = () => {
+
+    // Icon map based on work type
+    const icons: {[key: string]: React.JSX.Element} = {
+        "agent": <AgentIcon />,
+        "workflow": <WorkflowIcon />,
+        "model": <ModelIcon />,
+        "skill": <SkillIcon />
+    }
+
+    // Handler for selecting a workflow, agent, model or skill for editting
+    const click = (event: MouseEvent) => {
+        event.stopPropagation();
         if (category === "workflow") {
             setWorkflowId(id);
             setEditScreen(null);
@@ -33,13 +44,7 @@ const RecentRow = (props: IWorkItem & {
         }
     }
 
-    const icons: {[key: string]: React.JSX.Element} = {
-        "agent": <AgentIcon />,
-        "workflow": <WorkflowIcon />,
-        "model": <ModelIcon />,
-        "skill": <SkillIcon />
-    }
-
+    // Handler for downloading a workflow, agent, model or skill
     const downloadWork = (event: MouseEvent) => {
         event.stopPropagation();
         // find the data to download

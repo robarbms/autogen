@@ -23,7 +23,7 @@ nav + .flex-1 {
 
 .build-layout {
     display: grid;
-    grid-template-columns: 270px 1fr 0;
+    grid-template-columns: 270px 1fr 0; /* menu open, properties closed */
     transition: all .3s ease-out;
 }
 
@@ -61,16 +61,14 @@ nav + .flex-1 {
     margin-left: var(--spacing);
 }
 
+/* menu and properties panels open */
 .build-layout-properties {
     grid-template-columns: 270px 1fr 540px;
 }
 
+/* menu closed and properties panel open */
 .build-layout-properties.menu-closed {
     grid-template-columns: 0 1fr 540px;
-}
-
-.build-layout-chat.menu-closed {
-    grid-template-columns: 0 1fr 0 540px;
 }
 
 .menu-closed .build-layout-content {
