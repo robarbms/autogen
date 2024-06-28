@@ -389,7 +389,6 @@ export const getDropHandler = (
         if (!id) {
           // Adding a new agent to a group agent
           if (agentTarget > 0) {
-            console.log({id, nodes, agentTarget});
             // Locate the parent group agent
             const parent = nodes.find((node) => node.data.id == agentTarget);
             const newAgent = emptyAgent(api?.user?.email);
@@ -411,7 +410,6 @@ export const getDropHandler = (
               return node;
             });
 
-            console.log({updatedNodes, nodeSelect});
             setNodes(updatedNodes);
             handleSelection(nodeSelect);
           }
@@ -465,7 +463,7 @@ export const getDropHandler = (
             }
         }
         break;
-      // Dragging a skill from the library
+      // Dragging a skill from the library to an
       case "skill":
         const skillTarget = eventTargetId("drop-skills");
         if(skillTarget >= 0) {

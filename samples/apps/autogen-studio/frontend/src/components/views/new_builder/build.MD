@@ -169,11 +169,15 @@ Components that make up the library used on the edit screens and canvas, are in 
 ### Library component
 This component has the basic structure, maintains the open state and loads the agents, models and skills into collapsible menus.
 
+It maintains the items in state. These are pulled from the libraryItems property but also have any search filters applied to the list. It uses a dataToWorkItem method to convert agents, models and skills to a normalized data structure for presentation.
+
 ### Library title
 Title of the library panel. Includes search functions.
 
+The search function uses the Ant Design AutoComplete component. The library title takes a `searchChanged(text)` handler and applies it to the AutoComplete.onChange().
+
 ### LibraryGroup
-A group of library items including their title and items in them. The 3 groups are agents, models and skills.
+A group of library items including their title and items in them. The 3 groups are agents, models and skills. It uses the Ant Design Collapse component to show each section.
 
 ### LibraryItem
 A component representing an agent, model or skill in the DB. Also includes creating a new one of eacth.
@@ -198,6 +202,147 @@ Components used to create and work with the canvas.
 
 ### Canvas.ts
 This contains several shared functions used by both the agent and workflow canvas screens.
+
+At the top are some special definitions defined.
+
+**NodePosition**
+This is the position that a node can be rendered. I sometimes create the position outside of the node and wanted a type to encapsulate just the position.
+
+```javascript
+// Type for positioning of a node
+export type NodePosition = {
+  x: number;
+  y: number;
+}
+```
+
+**NodeSelection**
+This is the format for when an item is selected. It's used by ReactFlow when selecting a Node but I extended it to support selecting models, skills and a workflow. This is primaryly used to trigger opening and passing data to the properties panel.
+
+```javascript
+// Node selection
+export type NodeSelection = Node & IAgentNode | AgentProperty | IModelConfig & AgentProperty | ISkill & AgentProperty | IWorkflow | null;
+```
+
+**IAgentNode**
+This is an interface to extend Node or to replace Node in some cases for use in ReactFlows nodes[] collection. It contains additional information needed to support rendering.
+It adds a data property to Node to include information about the agent. It also links models and skills associated with the agent, if it's the initiator (sender), if one of its models, skills or in groupchats case, agents, is selected.
+Some handlers needed by the nodes themselves are also passed though the IAgentNode datasource. These include setSelection(), removeNode() and setInitiator(). I'm using a wrapper method to attach these as ReactFlow doesn't support it.
+
+```javascript
+/**
+ * Encapsulating IAgent config and node information
+ */
+export interface IAgentNode {
+  position?: NodePosition;
+  id: string;
+  type: "userproxy" | "assistant" | "groupchat" | undefined;
+  isConnectable?: Boolean;
+  dragHandle?: string;
+  data: IAgent & {
+    isInitiator?: Boolean;
+    models?: IModelConfig[];
+    skills?: ISkill[];
+    hideConnector?: boolean;
+    linkedAgents?: Array<IAgent & {dragHandle?: Function, isSelected?: boolean}>;
+    selectedProp?: boolean;
+  },
+  setSelection?: (node: NodeSelection) => void;
+  selected?: boolean;
+  removeNode?: (id: string | number, parent?: string) => void;
+  setInitiator?: (id: string) => void;
+  active?: boolean;
+}
+```
+
+**AgentProperty**
+These represent the selection of a model, skill or agent in a groupchat.
+
+```javascript
+/**
+ * Data for targeting a model or skill for an agent instance
+ */
+export type AgentProperty = {
+  id?: number;
+  parent: string;
+  type: "model" | "skill";
+  group?: string;
+}
+```
+
+**IDropData**
+These represent information about a drag and drop event or an element. These are attached to the drag event by the element when the dragstart event fires. This passes data to the drop handler about the element being dragged.
+
+```javascript
+/**
+ * Data attached to the events dataTransfer property for an item being dragged
+ */
+export interface IDropData {
+  group: "agent" | "model" | "skill" | "group-agent" | "agent-property";
+  id: number;
+  offsetX: number;
+  offsetY: number;
+  parent?: number;
+  type?: "model" | "skill";
+}
+```
+
+**NodeTypes**
+This is a map required by ReactFlow. It maps keys to concrete components. This allows the drop handler to just pass the key and data to the Node implemented by ReactFlow. I am using 4 node types. UserProxyNode, AssistantNode, GroupChat and AgentSelectNode which is a temporary node rendering when creating a new agent before it's type has been picked.
+
+```javascript
+/**
+ * Nodes used by the canvas
+ */
+export const NodeTypes: INodeTypes = {
+  userproxy: UserProxyNode,
+  assistant: AssistantNode,
+  groupchat: GroupChatNode,
+  agentselect: AgentSelectNode
+}
+```
+**TypesWithProps()**
+This is a wrapper method for injecting extra data into the different NodeTypes. This is used to inject methods such as setSelection, removeNode and setInitiator.
+
+```javascript
+/**
+ * Injects additional props into node components
+ * @param extraProps 
+ * @returns 
+ */
+export const TypesWithProps = (extraProps: any) => {
+  const typeWithProps:  {[key: string]: any} = {};
+  for (let key in NodeTypes) {
+    const node = NodeTypes[key];
+    typeWithProps[key] = (props: any) => createElement(node, {
+      ...extraProps,
+      ...props
+    });
+  }
+  return typeWithProps;
+}
+```
+
+**getTargetId()**
+When dropping an element, I need to figure out what element it is being dropped onto. The getTargetId() walks up the DOM looking for a valid drop target. Once it finds a correct element, it returns that elements id which is attached to it as a `data-id` property. Elements can be designated with the types they accept by adding a class of `drop-[type]`, such as 'drop-agents', 'drop-models' or 'drop-skills'.
+
+**addNode()**
+Function for creating a new node and pushing it to the nodes[] collection to render on the canvas based on an agent id. It handles some creation logic. In addition to creating a new node and assigning a new unique id, it sets initiator for new userproxy if none is set yet and attaches a new edge if it's not a userproxy.
+
+**nodeUpdater()**
+A helper function to trigger an update of agents from the DB and setting them in the builder store.
+
+**Agent, model and skill create**
+There are several methods for creating new agents, models and skills. There is `emptyAgent()` and `createAgent()` for agents and `createModel()` for models and `createSkill()` for skills. This all work similarly, they create a call to the DB, push the new item to the builder store and select the new instance so that it loads into the property panels for editting.
+
+**getDropHandler()**
+Most of the creating and attaching of agents, models and skills happens in this function. It is called anytime an element is drug from the library or canvas. 
+
+The `newNode()` function is a partially implemented `addNode()` so that I didn't have to keep applying many global arguments to it.
+The `dataTransfer` property is the data attached to the element during drag. This is import for knowing what item is being dragged.
+The `eventTargetId` is the element that it is being drug to, the parent. If there is none, the parent becomes the current active workflow.
+
+With these defined, I can use the data and parent to determine the correct action.
 
 ### AgentCanvas
 A canvas for editting agents. Manages loading an exisiting agent or creating a new agent. Manages the nodes on the canvas. Unlike the workflow canvas, the agent canvas does not support edges.

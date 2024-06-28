@@ -13,7 +13,6 @@ type LibraryTitleProps = {
     searchChanged: (value: any) => void;
 }
 
-
 /**
  * Title component for the Library
  * Includes a search bar
@@ -27,9 +26,9 @@ const LibraryTitle = (props: LibraryTitleProps) => {
     } = {title: "Library"};
     props = Object.assign({}, defaultProperties, props);
     const {  title,  searchChanged} = props;
-    const [options, setOptions] = useState<Group[] | []>([]);
+    const [ options, setOptions ] = useState<Group[] | []>([]);
 
-
+    // Creates a list of options for autocomplete based on query string
     const getPanelValue = (searchText: string): Group[] => {
       const searchResults: Group[] = !searchText
         ? []
@@ -51,6 +50,7 @@ const LibraryTitle = (props: LibraryTitleProps) => {
                 onChange={searchChanged}
                 placeholder="Search for items"
                 onSearch={(text) => setOptions(getPanelValue(text))}
+                options={options}
             />
         </div>
     );

@@ -5,7 +5,7 @@ import AgentCanvas from "../canvas/AgentCanvas";
 import { Node, useNodesState, ReactFlowProvider, useNodes } from "reactflow";
 import { useBuildStore } from "../../../../hooks/buildStore";
 import { API } from "../utilities/API";
-import { AgentProperty, getDropHandler, IAgentNode, NodeSelection, nodeUpdater } from "../canvas/Canvas";
+import { AgentProperty, getDropHandler, IAgentNode, NodeSelection } from "../canvas/Canvas";
 import NodeProperties from "../canvas/panels/NodeProperties";
 import { IAgent, IModelConfig, ISkill } from "../../../types";
 
@@ -73,6 +73,8 @@ const EditAgent = (props: EditAgentProps) => {
     return _nodes_;
   }
 
+  // Sets new nodes when changed
+  // Adds highlighting for selected items not controled by ReactFlow (ie. models, skills and agents in groupchat)
   const setNodes = (nodes: Array<Node & IAgentNode>, onComplete?: Function) => {
     const nodesWithProps = getNodesWithProps(nodes);
     _setNodes(nodesWithProps);
