@@ -18,17 +18,19 @@ This is the entry point for the new builder page. It handles loading the initial
 
 - Creates the api for making DB calls. `const api = new API();`
     - Primes the error handling.
-```javascript
-  api.error = (error: IStatus) => {
-    if (!error.status) message.error(error.message)
-  }
-```
+    ```javascript
+    api.error = (error: IStatus) => {
+        if (!error.status) message.error(error.message)
+    }
+    ```
+
     - Primes the success message handling.
-```javascript
-  api.success = (success: IStatus) => {
-    message.success(success.message);
-  }  
-```
+
+    ```javascript
+    api.success = (success: IStatus) => {
+        message.success(success.message);
+    }  
+    ```
 - On page load, loads workflows, agents, models and skills.
     - Uses the api to load workflows, agents, models and skills.
     - Sets workflows, agents, models and skills on the builder store
@@ -75,35 +77,47 @@ The menu, properties and chat panels can be opened or closed in any combination.
 -**chat**: A drawer for showing chat.
 
 
-**No menu, properties or chat**
+No menu, properties or chat
+```
 ---------------------------------
-|       content full width       |
+|       content full width      |
 ---------------------------------
+```
 
-**With menu, no properties or chat**
+With menu, no properties or chat
+```
 ---------------------------------
 |menu|        content           |
 ---------------------------------
+```
 
-**With menu and properties, no chat**
+With menu and properties, no chat
+```
 ---------------------------------
 |menu|     content      | props |
 ---------------------------------
+```
 
-**With properties, no menu or chat**
+With properties, no menu or chat
+```
 ---------------------------------
-|        content         | props |
+|        content        | props |
 ---------------------------------
+```
 
-**With menu, props and chat**
+With menu, props and chat
+```
 ---------------------------------
-|menu|     content       | chat  |
+|menu|     content      | chat  |
 ---------------------------------
+```
 
-**With chat, no menu or props**
+With chat, no menu or props
+```
 ---------------------------------
 |        content         | chat |
 ---------------------------------
+```
 
 There is a useEffect watching properties, chat, menu and showMenu that modifies the CSS classes on the wrapper to control layout.
 
