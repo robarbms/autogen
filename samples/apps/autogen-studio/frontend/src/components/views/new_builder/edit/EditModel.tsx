@@ -45,7 +45,7 @@ const EditModel = (props: EditModelProps) => {
 
     const updateModel = (model: IModelConfig) => {
         setLocalModel(model);
-        api?.getItems("models", setModels, true);
+        api?.getModels(setModels);
     }
 
     const addLibraryItem = () => {

@@ -57,7 +57,7 @@ const AgentProperties = (props: AgentPropertiesProps) => {
           type: data.type
         }
 
-        api.addAgent(agentData, (resp) => {
+        api.setAgent(agentData, (resp) => {
           // Update agents when new agent is added
           const updatedAgents = [...agents, agentData];
           setAgents(updatedAgents);

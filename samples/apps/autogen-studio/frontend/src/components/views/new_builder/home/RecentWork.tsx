@@ -89,7 +89,7 @@ const RecentRow = (props: IWorkItem & {
                     delete workflowCopy.sender;
                     delete workflowCopy.receiver;
                     delete workflowCopy.id;
-                    api?.addWorkflow(workflowCopy, (workflow) => {
+                    api?.setWorkflow(workflowCopy, (workflow) => {
                         // link the workflow if they exist
                         if (workflowData.sender) {
                             api.linkWorkflow(workflow.id, "sender", workflowData.sender.id || 0);
@@ -122,7 +122,7 @@ const RecentRow = (props: IWorkItem & {
                     delete agentCopy.models;
                     delete agentCopy.skills;
 
-                    api?.addAgent(agentCopy, (data) => {
+                    api?.setAgent(agentCopy, (data) => {
                         // link models
                         agentData.models.forEach(model => api.linkAgentModel(data.id, model.id || 0, () =>{}));
                         agentData.skills.forEach(skill => api.linkAgentSkill(data.id, skill.id || 0, () => {}));
@@ -178,7 +178,7 @@ const RecentRow = (props: IWorkItem & {
                     });
                     delete skillCopy.id;
 
-                    api?.addSkill(skillCopy, ((updatedSkills: ISkill[]) => {
+                    api?.setSkill(skillCopy, ((updatedSkills: ISkill[]) => {
                         setSkills(updatedSkills);
                         const newSkill = updatedSkills[updatedSkills.length - 1];
                         setEditId(newSkill.id);

@@ -39,10 +39,10 @@ const SkillProperties = (props: SkillPropertiesProps) => {
       if (api) {
         setLoading(true);
         api.setSkill(updatedSkill, (resp) => {
-            api.getItems("skills", (skills: Array<ISkill>) => {
+            api.getSkills((skills: Array<ISkill>) => {
                 setSkills(skills);
                 setLoading(false);
-            }, true);
+            });
         });
       }
     } 

@@ -105,9 +105,9 @@ const ModelProperties = (props: ModelPropertiesProps) => {
     const setModel = (model: IModelConfig) => {
       if (api) {
         api.setModel(model, (resp) => {
-            api.getItems("models", (models: Array<IModelConfig>) => {
+            api.getModels((models: Array<IModelConfig>) => {
                 setModels(models);
-            }, true)
+            })
         });
         setHasChanged(false);
       }

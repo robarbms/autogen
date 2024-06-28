@@ -28,7 +28,7 @@ const WorkflowProperties = (props: WorkflowPropertiesProps) => {
     // Writes changes to the workflow to the DB
     const update = (updatedWorkflow: IWorkflow) => {
         if (api) {
-            api.addWorkflow(updatedWorkflow, (data) => {
+            api.setWorkflow(updatedWorkflow, (data) => {
                 const updatedWorkflows: IWorkflow[] = workflows.map((workflow) => {
                     if (workflow.id === data.id) {
                         const workflowUpdated = {

@@ -24,8 +24,6 @@ const EditSkill = (props: EditSkillProps) => {
     const [ localSkill, setLocalSkill ] = useState<ISkill>();
     const [loading, setLoading] = useState<boolean>(false);
     const editorRef = useRef<any | null>(null);
-    const loggedInUser = useNavigationStore(({user}) => user);
-    const user = loggedInUser?.name || "Uknown";
 
     // If a skill is being editted, it will be passed and set
     // Otherwise use an empty skill
@@ -39,12 +37,15 @@ const EditSkill = (props: EditSkillProps) => {
         else {
             const emptySkill: ISkill = {
                 name: "new_skill",
-                content: "// Code goes here"
+                content: "// Code goes here",
+                description: "",
+                user_id: api?.user?.email,
             }
             setLocalSkill(emptySkill);
         }
     }, []);
 
+    // Closes the edit screen
     const cancel = () => {
         setEditScreen(null);
         setEditId(null);
@@ -55,8 +56,8 @@ const EditSkill = (props: EditSkillProps) => {
         if (editorRef.current) {
             const value = editorRef.current.getValue();
             const updatedSkill: ISkill = { ...localSkill, content: value } as ISkill;
-            api?.addSkill(updatedSkill, () => {
-                api.getItems("skills", setSkills, true);
+            api?.setSkill(updatedSkill, () => {
+                api.getSkills(setSkills);
             });
         }
         cancel();

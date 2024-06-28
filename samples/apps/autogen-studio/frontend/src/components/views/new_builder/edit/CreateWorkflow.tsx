@@ -47,7 +47,7 @@ const CreateWorkflow = (props: CreateWorkflowProps) => {
                 api.linkWorkflow(workflow.id, "sender", userproxy?.id);
             }
             // refresh workflows
-            api.getItems("workflows", (workflows: Array<IWorkflow>) => {
+            api.getWorkflows((workflows: Array<IWorkflow>) => {
                 setWorkflows(workflows);
                 if (workflow.id) {
                     setWorkflowId(workflow.id); 

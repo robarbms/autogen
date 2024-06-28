@@ -253,24 +253,26 @@ export const createModel = (
     user_id: api?.user?.email,
   }
 
-  api?.setModel(modelData, (data: any) => {
-    const {id} = data.data;
-    api.linkAgentModel(modelTarget, id, (resp) => {
-      callback(resp);
-      api.getItems("models", (models: Array<IModelConfig>) => {
-        setModels(models);
-        setTimeout(() => {
-          const nodeParent = nodes.find(node => node.data.id === modelTarget);
-          handleSelection({
-            group: "agent-property",
-            parent: nodeParent?.id || modelTarget,
-            id,
-            type: "model",
-            model: true
-          });
-        }, 100);
-      }, true);
-    });
+  api?.setModel(modelData, (response: IModelConfig) => {
+    const {id} = response;
+    if (id) {
+      api.linkAgentModel(modelTarget, id, (resp) => {
+        callback(resp);
+        api.getModels((models: Array<IModelConfig>) => {
+          setModels(models);
+          setTimeout(() => {
+            const nodeParent = nodes.find(node => node.data.id === modelTarget);
+            handleSelection({
+              group: "agent-property",
+              parent: nodeParent?.id || modelTarget,
+              id,
+              type: "model",
+              model: true
+            });
+          }, 100);
+        });
+      });
+    }
   });
 }
 
@@ -297,7 +299,7 @@ export const createSkill = (
     secrets: {},
     libraries: {},
   }
-  api?.addSkill(skillData, (data: any) => {
+  api?.setSkill(skillData, (data: any) => {
     setSkills(data);
     let targetIndex = data.length - 1;
     while (targetIndex > 0 && data[targetIndex].name !== name) {

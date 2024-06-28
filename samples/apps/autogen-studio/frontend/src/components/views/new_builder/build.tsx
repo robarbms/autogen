@@ -55,7 +55,7 @@ const BuildView = (props: BuildViewProps) => {
       api.getWorkflows(setWorkflows);
       api.getAgents(setAgents);
       api.getModels(setModels);
-      api.getItems("skills", setSkills);
+      api.getSkills(setSkills);
       isInitialized.current = true;
     }
   }, []);
