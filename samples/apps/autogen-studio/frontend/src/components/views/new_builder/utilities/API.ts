@@ -58,6 +58,8 @@ export class API {
         this.serverUrl = getServerUrl();
     }
 
+    /* ================ STATUS HANDLING ================ */
+
     set error (handler: (error: IStatus) => void) {
         this._error = handler;
     }
@@ -104,7 +106,6 @@ export class API {
         const url = `${this.serverUrl}/models`;
         const headers = this.POST_HEADERS;
         headers.body = JSON.stringify(model);
-        console.log({model});
 
         fetchJSON(url, headers, (response: IStatus) => {
             callback(response.data);
@@ -155,8 +156,6 @@ export class API {
         const url =`${this.serverUrl}/skills?user_id=${this.user?.email || ""}`;
         const headers = this.POST_HEADERS;
         headers.body = JSON.stringify(skill);
-
-        console.log({skill});
 
         fetchJSON(url, headers, (data: IStatus) => {
             callback(data.data);
@@ -378,12 +377,7 @@ export class API {
         }, this._error);
     }
     
-
     /* ================ WORKFLOWS ================ */
-    // Gets a workflow link path based on workflow id, type and agent id
-    public getLinkPath (workflow_id: number, type: "sender" | "receiver", agent_id?: number) {
-        return `${this.serverUrl}/workflows/link/agent/${workflow_id}/${agent_id ? agent_id + "/" : ""}${type}`;
-    }
 
     // Gets all workflows and their associated agents
     public getWorkflows(callback: (data: any) => void) {
@@ -439,39 +433,33 @@ export class API {
 
     /* ================ WORKFLOW AGENTS ================ */
 
+    // Gets a workflow link path based on workflow id, type and agent id
+    public getLinkPath (workflow_id: number, type: "sender" | "receiver", agent_id?: number) {
+        return `${this.serverUrl}/workflows/link/agent/${workflow_id}/${agent_id ? agent_id + "/" : ""}${type}`;
+    }
+
     // Helper function to load a worklfows sender or receiver
-    private loadLink (id: number, type: "sender" | "receiver", action: Function) {
+    private loadLink (id: number, type: "sender" | "receiver", callback: Function) {
         const url = this.getLinkPath(id, type);
         const target = `_${type}`;
 
         fetchJSON(url, this.GET_HEADERS, (data) => {
             const items = data.data;
             const item = items.length > 0 ? items[0] : null;
-            action(item);
+            callback(item);
         }, (error) => {
-            error.message += ` id: ${id}; type: ${type}`
+            error.message += `; id: ${id}; type: ${type}`
             this._error(error);
         });
     }
     
     // Gets agents linked to a workflow
-    public getWorkflowLinks (id: number, action: Function, refresh: Boolean = false) {
-        // If refreshing, reload workflows and agents
-        // After refreshing, call back into getWorkflowLinks without a refresh
-        if (refresh) {
-            this.getAgents(() => {
-                this.getWorkflows(() => {
-                    this.getWorkflowLinks(id, action, false);
-                });
-            })
-        }
-        else {
-            this.loadLink(id, "sender", (sender: IAgent) => {
-                this.loadLink(id, "receiver", (receiver: IAgent) => {
-                    action(sender, receiver);
-                });
+    public getWorkflowLinks (id: number, callback: Function,) {
+        this.loadLink(id, "sender", (sender: IAgent) => {
+            this.loadLink(id, "receiver", (receiver: IAgent) => {
+                callback(sender, receiver);
             });
-        }
+        });
     }
 
     // Links workflows to either a sender or receiver agent

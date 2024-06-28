@@ -116,7 +116,6 @@ const ChatBox = ({
   };
 
   React.useEffect(() => {
-    console.log("initMessages changed", initMessages);
     const initMsgs: IChatMessage[] = parseMessages(initMessages);
     setMessages(initMsgs);
     wsMessages.current = initMsgs;
@@ -140,7 +139,6 @@ const ChatBox = ({
   });
 
   const messageListView = messages?.map((message: IChatMessage, i: number) => {
-    console.log({message});
     const isUser = message.sender === "user";
     const css = isUser ? "bg-accent text-white  " : "bg-light";
     // console.log("message", message);
@@ -205,6 +203,8 @@ const ChatBox = ({
         </div>
       </Dropdown>
     );
+
+    console.log({message});
 
     return (
       <div

@@ -160,6 +160,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
     }
   }
 
+  // Makes sure the current workflow has a sender and linked receiver
   const validateWorkflow = () => {
     // Make sure the work flow is valid.
     let isValid = false;
@@ -242,12 +243,7 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   // Updating workflow when there are changes to nodes or edges
   useEffect(() => {
       // update the workflows sender and receiver
-      if(initialized.current && workflowId && updatingWorkflow === false){
-        setUpdatingWorkflow(true);
-        api?.getWorkflowLinks(workflowId, updateWorkflow, true);
-      }
-
-      validateWorkflow();
+      if (initialized.current === true) updateWorkflow();
   }, [nodes, edges])
 
   // Updates nodes to reflect changes to models or skills
@@ -271,42 +267,61 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   }, [models, skills]);
 
   // Updates workflow agents sender and receiver based on canvas nodes and edges
-  const updateWorkflow = (sender: IAgent, receiver: IAgent) => {
-    if (!workflowId) return;
+  const updateWorkflow = (onUpdated?: () => void) => {
+    if (updatingWorkflow || !workflowId) return;
+    setUpdatingWorkflow(true);
 
-    // make sure the sender is correctly set or update it
-    const initiator = getInitiator();
+    api?.getWorkflowLinks(workflowId, (sender: IAgent, receiver: IAgent) => {
+      // make sure the sender is correctly set or update it
+      const initiator = getInitiator();
+      const status = {
+        sender: false,
+        receiver: false
+      }
 
-
-    if (!initiator && sender) {
-      // delete the existing sender
-    }
-    else if (!sender && initiator || (sender && initiator && initiator?.data.id !== sender.id)) {
-      // update incorrect sender
-      api?.linkWorkflow(workflowId, "sender", initiator.data.id);
-    }
-
-
-    const edge: Edge | undefined = edges.find(edge => edge.source === initiator?.id);
-    if (edge) {
-      const target: Node | undefined = nodes.find(node => node.id === edge.target);
-      if (api && target) {
-        if (!receiver || receiver && target.data.id !== receiver.id) {
-          if (receiver) {
-            // delete previous receiver
-            api.unlinkWorkflow(workflowId, "receiver", receiver.id);
+      // Tracking async functions. Fire onUpdated callback once all have completed
+      const updateHandler = (flag: "sender" | "receiver") => () => {
+        status[flag] = true;
+        for (let key in status) {
+          if (status[key as "sender" | "receiver"] === false) return;
+          if (onUpdated) {
+            onUpdated();
           }
-          // link the receiver
-          api.linkWorkflow(workflowId, "receiver", target.data.id);
         }
       }
-    }
-    else if (api && receiver) {
-      // delete receiver
-      api.unlinkWorkflow(workflowId, "receiver", receiver.id);
-    }
 
-    setUpdatingWorkflow(false);
+      if (!initiator && sender) {
+        // delete the existing sender
+        api.unlinkWorkflow(workflowId, "sender", sender.id, updateHandler("sender"));
+      }
+      else if (!sender && initiator || (sender && initiator && initiator?.data.id !== sender.id)) {
+        // update incorrect sender
+        api?.linkWorkflow(workflowId, "sender", initiator.data.id, updateHandler("sender"));
+      }
+
+      const edge: Edge | undefined = edges.find(edge => edge.source === initiator?.id);
+      if (edge) {
+        const target: Node | undefined = nodes.find(node => node.id === edge.target);
+        if (api && target) {
+          if (!receiver || receiver && target.data.id !== receiver.id) {
+            if (receiver) {
+              // delete previous receiver
+              api.unlinkWorkflow(workflowId, "receiver", receiver.id, updateHandler("receiver"));
+            }
+            // link the receiver
+            api.linkWorkflow(workflowId, "receiver", target.data.id, updateHandler("receiver"));
+          }
+        }
+      }
+      else if (api && receiver) {
+        // delete receiver
+        api.unlinkWorkflow(workflowId, "receiver", receiver.id, updateHandler("receiver"));
+      }
+
+      validateWorkflow();
+
+      setUpdatingWorkflow(false);
+    });
   }
 
     // suppresses event bubbling for drag events
@@ -356,6 +371,8 @@ const EditWorkflow = (props: EditWorkflowProps) => {
   // Opens the chat pane to test the workflow if it is a valid workflow
   //  with a sender and receiver
   const testWorkflow = () => {
+    // Make sure the current workflow is updated
+
     setShowChat(true);
   }
 
