@@ -220,14 +220,16 @@ export class API {
                         const addUpdatedLink = (agent: IAgent) => {
                             updatedAgents.add(agent);
                             if (updatedAgents.size === linkedAgents.length) {
-                                const orderedLinks = this.orderById(Array.from(updatedAgents), linkedAgents);
-                                callback(orderedLinks);
+                                callback({linkedAgents: Array.from(updatedAgents)});
                             }
                         }
                         linkedAgents.forEach((agent: IAgent) => {
                             if (agent.id && agent.type) {
                                 this.getAgentData(agent.id, agent.type, (agentData: IAgent) => {
-                                    addUpdatedLink(agentData);
+                                    addUpdatedLink({
+                                        ...agent,
+                                        ...agentData
+                                    });
                                 });
                             }
                         });
@@ -291,6 +293,7 @@ export class API {
         const url = `${this.serverUrl}/agents/link/agent/${agentId}`;
         const headers = this.GET_HEADERS;
         fetchJSON(url, headers, (data) => {
+            console.log({agentId, data});
             const groupAgents = data.data.map((agent: IAgent & {
                 groupAgent?: boolean
             }) => {
